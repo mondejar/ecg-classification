@@ -1,11 +1,12 @@
 import numpy as np
-import matplotlib.pyplot as pp
+import matplotlib.pyplot as plt
 import os
 import csv
 import pickle
 
 dataset_path = '/local/scratch/mondejar/ECG/dataset/mitdb/csv'
 window_size = 160
+compute_RR_interval_feature = True
 
 # read files
 filenames = next(os.walk(dataset_path))[2]
@@ -20,27 +21,121 @@ annotation_files = []
 for f in filenames:
     filename, file_extension = os.path.splitext(f)
     if(file_extension == '.csv'):
-        num_recs = num_recs + 1
         records.insert(num_recs, dataset_path + '/' + filename + file_extension)
+        num_recs = num_recs + 1
     else:
-        num_annotations = num_annotations +1
         annotation_files.insert(num_annotations, dataset_path + '/' + filename + file_extension)
+        num_annotations = num_annotations +1
             
 records.sort()
 annotation_files.sort()
 
-list_classes = {'N', 'L', 'R', 'e', 'j', 'A', 'a', 'J', 'S', 'V', 'E', 'F', 'P', '/', 'f', 'u'}
-# read anotations
+list_classes = ['N', 'L', 'R', 'e', 'j', 'A', 'a', 'J', 'S', 'V', 'E', 'F', 'P', '/', 'f', 'u']
 
-for r in records:
-    with open(r, 'rb') as csvfile:
-        spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
-        for row in spamreader:
-            print ', '.join(row)
+# signal_II = [[] for i in range(len(records))]
+signal_II_w = [[] for i in range(len(records))]
+classes = [[] for i in range(len(records))]
+selected_R = [[] for i in range(len(records))]
+R_poses = [[] for i in range(len(records))]
 
-    #data_csv = 
-    #signal_II = 
+r_index = 0
+for r in range(0,len(records),1):
+    
+    signal_II = []
 
+    print(r)
+    csvfile = open(records[r], 'rb')
+    spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
+    row_index = -1
+    for row in spamreader:
+        if(row_index >= 0):
+            signal_II.insert(row_index, int(row[1]))
+        row_index = row_index +1
+
+    # Display signal II 
+    #plt.plot(signal_II)
+    #plt.show()
+
+    # read anotations
+    fileID = open(annotation_files[r], 'r')
+    data = fileID.readlines() 
+    for d in range(1, len(data), 1):
+        splitted = data[d].split(' ')
+        splitted = filter(None, splitted) 
+        pos = int(splitted[1]) 
+        type = splitted[2]
+        if(type in list_classes):
+            if(pos > window_size and pos < (len(signal_II) - window_size)):
+                #signals{r} = [signals{r} data1(pos-window_size+1: pos+ window_size)];
+                signal_II_w[r] = signal_II[pos-window_size+1:pos+window_size]
+                # plt.plot(signal_II_w[r])
+                # plt.show()
+                classes[r].append(type)
+                selected_R[r].append(1)
+            else:
+                selected_R[r].append(0)
+        else:
+            selected_R[r].append(0)
+        
+        R_poses[r].append(pos)
+
+    # Compute RR Interval, feature Time
+    if(compute_RR_interval_feature):
+        pre_R = [0]
+        post_R = [R_poses[r][1] - R_poses[r][0]]
+        local_R = [] # Average of the ten past R intervals
+        global_R = [] # Average of the last 5 minutes of the signal
+        
+        for i in range(1,len(R_poses[r])-1, 1):
+            pre_R.insert(i, R_poses[r][i] - R_poses[r][i-1])
+            post_R.insert(i, R_poses[r][i+1] - R_poses[r][i])
+        
+        pre_R[0] = pre_R[1]
+        pre_R.append(R_poses[r][-1] - R_poses[r][-2])
+        post_R.append(post_R[-1])
+        
+        # Local R: AVG from past 10 RR intervals
+    
+    #    for i in range(0,len(R_poses[r]), 1):
+    #        window = range(i-10,i,1)
+    #        valid_window = window > 0
+    #        window = window .* valid_window
+    #        window = window(window~=0)
+    #        avg_val = sum(pre_R(window))
+    #        avg_val = avg_val / (sum(valid_window))       
+    #        local_R = [local_R, avg_val]
+    #    end
+        
+    #    % Global R: AVG from past 5 minutes
+    #    % 360 Hz  5 minutes = 108000 samples;
+    #    for(i=1:length(R_poses{r}))
+    #        back = -1;
+    #        back_length = 0;
+    #        if(R_poses{r}(i) < 108000)
+    #            window = 1:i;
+    #        else
+    #            while(i+back > 0 && back_length < 108000) 
+    #               back_length =  R_poses{r}(i) - R_poses{r}(i+back);
+    #               back = back -1; 
+    #            end
+    #            window = max(1,(back+i)):i;
+    #        end
+    #        % Considerando distancia maxima hacia atras 
+    #        avg_val = sum(pre_R(window));
+    #        avg_val = avg_val / length(window);
+    #        
+    #        global_R = [global_R, avg_val];
+    #    end
+        
+    #    %% Only keep those features from beats that we save list_classes
+    #    %% but for the computation of temporal features all the beats must be used
+    #    temporal_features{r}.pre_R = pre_R(selected_R{r} == 1);
+    #    temporal_features{r}.post_R = post_R(selected_R{r} == 1);
+    #    temporal_features{r}.local_R = local_R(selected_R{r} == 1);
+    #    temporal_features{r}.global_R = global_R(selected_R{r} == 1);
+ 
+    # data_csv = 
+    # signal_II = 
 
 # Save data
 #f = open('store.pckl', 'wb')
@@ -51,11 +146,5 @@ for r in records:
 #f = open('store.pckl', 'rb')
 #object = pickle.load(f)
 #f.close()
-
-
-#val = 0. # this is the value where you want the data to appear on the y-axis.
-#ar = np.arange(10) # just as an example array
-#pp.plot(ar, np.zeros_like(ar) + val, 'x')
-#pp.show()
 
 # Create dataset
