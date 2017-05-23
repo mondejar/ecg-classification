@@ -42,7 +42,6 @@ r_index = 0
 for r in range(0,len(records),1):
     
     signal_II = []
-
     print(r)
     csvfile = open(records[r], 'rb')
     spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
@@ -95,37 +94,41 @@ for r in range(0,len(records),1):
         post_R.append(post_R[-1])
         
         # Local R: AVG from past 10 RR intervals
-    
-    #    for i in range(0,len(R_poses[r]), 1):
-    #        window = range(i-10,i,1)
-    #        valid_window = window > 0
-    #        window = window .* valid_window
-    #        window = window(window~=0)
-    #        avg_val = sum(pre_R(window))
-    #        avg_val = avg_val / (sum(valid_window))       
-    #        local_R = [local_R, avg_val]
-    #    end
+        for i in range(0,len(R_poses[r]), 1):
+            avg_val = 0
+            num_elems = 0
+            window = range(i-10,i,1)
+            
+            for w in window:
+                if w >= 0:
+                    avg_val = avg_val + pre_R[w]
+                    num_elems = num_elems + 1
+
+            if num_elems == 0:
+                local_R.append(0)   
+            else:
+                avg_val = avg_val / num_elems
+                local_R.append(avg_val)   
         
-    #    % Global R: AVG from past 5 minutes
-    #    % 360 Hz  5 minutes = 108000 samples;
-    #    for(i=1:length(R_poses{r}))
-    #        back = -1;
-    #        back_length = 0;
-    #        if(R_poses{r}(i) < 108000)
-    #            window = 1:i;
-    #        else
-    #            while(i+back > 0 && back_length < 108000) 
-    #               back_length =  R_poses{r}(i) - R_poses{r}(i+back);
-    #               back = back -1; 
-    #            end
-    #            window = max(1,(back+i)):i;
-    #        end
-    #        % Considerando distancia maxima hacia atras 
-    #        avg_val = sum(pre_R(window));
-    #        avg_val = avg_val / length(window);
-    #        
-    #        global_R = [global_R, avg_val];
-    #    end
+            # Global R: AVG from past 5 minutes
+            # 360 Hz  5 minutes = 108000 samples;
+            for i in range(1, len(R_poses[r]), 1):
+                avg_val = 0
+                back = -1
+                back_length = 0
+                if R_poses[r][i] < 108000:
+                    window = range(1,i,1)
+                else:
+                    while (i + back) > 0 and back_length < 108000:
+                        back_length = R_poses[r][i] - R_poses[r][i+back]
+                        back = back -1
+                    window = range(max(1,(back+i)), i, 1)
+                # Considerando distancia maxima hacia atras 
+                for w in window:
+                    avg_val = avg_val + pre_R[w]
+
+                avg_val = avg_val / len(window)
+                global_R.append(avg_val)
         
     #    %% Only keep those features from beats that we save list_classes
     #    %% but for the computation of temporal features all the beats must be used
