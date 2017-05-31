@@ -26,7 +26,6 @@ from tensorflow.contrib.learn.python.learn.estimators import model_fn as model_f
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
-
 def cnn_model_fn(features, labels, mode):
   """Model function for CNN."""
   # Input Layer
@@ -157,7 +156,6 @@ def main(unused_argv):
   eval_results = mnist_classifier.evaluate(
       x=eval_data, y=eval_labels, metrics=metrics)
   print(eval_results)
-
 
 if __name__ == "__main__":
   tf.app.run()

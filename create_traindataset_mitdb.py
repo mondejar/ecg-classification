@@ -37,15 +37,68 @@ class mit_data:
         self.temporal_features = []       
         self.window_size = []       
      
+# Function that given a list of patient extract the signals and 
+# perform the wavelet descomposition (optionally) and return
+# the data and label prepaed for future classification tasks
+def get_data_label_mitdb( list_patient, mit_db ):
+    labels = np.array([], dtype=np.int32)
+    data = np.array([], dtype=float)
+
+    for p in list_patient:
+        index = mit_db.patients.index(str(p))
+        for b in range(0, len(mit_db.classes[index]), 1):
+            RR = [mit_db.temporal_features[index].pre_R[b], mit_db.temporal_features[index].post_R[b], mit_db.temporal_features[index].local_R[b], mit_db.temporal_features[index].global_R[b]]
+            signal = mit_db.signals[index][b]
+            beat_type = mit_db.classes[index][b]
+            # Name class by numbers np.int32
+            #['N', 'L', 'R', 'e', 'j', 'A', 'a', 'J', 'S', 'V', 'E', 'F', 'P', '/', 'f', 'u']
+            for i in range(0,5,1):
+                if beat_type in superclass[i]:
+                    class_n = i
+                    break #exit loop
+            
+            labels = np.append(labels, class_n)
+            
+            #Display raw and wave signal
+            if not compute_wavelets:
+                features = signal
+
+            else: # db of order 8 
+                db8 = pywt.Wavelet('db8')
+                coeffs = pywt.wavedec(signal, db8, level=4)
+                features = coeffs[1]
+
+            #TODO add RR interval
+            if compute_RR_interval_feature:
+                features = np.append(features, RR)
+
+            if len(data) == 0:
+                data = features
+            else:
+                data = np.vstack((data, features))           
+        
+                #plt.subplot(211)
+                #plt.plot(signal)
+                #plt.subplot(212)
+                #plt.plot(coeffs[1])
+                #plt.show()
+    return (data, labels)
+
 dataset = '/home/mondejar/dataset/ECG/mitdb/'
 output_path = dataset + 'm_learning/'
-
 window_size = 160
 compute_RR_interval_feature = True
+compute_wavelets = True
+
+list_classes = ['N', 'L', 'R', 'e', 'j', 'A', 'a', 'J', 'S', 'V', 'E', 'F', 'P', '/', 'f', 'u']
+superclass = []
+superclass.append(['N', 'L', 'R', 'e', 'j'])   # N
+superclass.append(['A', 'a', 'J', 'S'])        # SVEB 
+superclass.append(['V', 'E'])                  # VEB
+superclass.append(['F'])                       # F
+superclass.append(['P', '/', 'f', 'u'])        # Q
 
 if not os.path.exists(output_path + 'mit_db_' + str(window_size) + '.p'):
-
-    list_classes = ['N', 'L', 'R', 'e', 'j', 'A', 'a', 'J', 'S', 'V', 'E', 'F', 'P', '/', 'f', 'u']
     # read files
     filenames = next(os.walk(dataset + 'csv'))[2]
 
@@ -202,36 +255,23 @@ else:
     # Load data
     mit_db  = pickle.load(open(output_path + 'mit_db_' + str(window_size) + '.p', 'rb'))
 
-compute_wavelets = True
-
 # Select data for training
 list_train_pat = [101, 106, 108, 109, 112, 114, 115, 116, 118, 119, 122, 124, 201, 203, 205, 207, 208, 209, 215, 220, 223, 230]
 list_test_pat = [100, 103, 105, 111, 113, 117, 121, 123, 200, 202, 210, 212, 213, 214, 219, 221, 222, 228, 231, 232, 233, 234]
 
-label = []
-data = []
-
-for p in list_train_pat:
-    index = mit_db.patients.index(str(p))
-    for b in range(0, len(mit_db.classes[index]), 1):
-        signal = mit_db.signals[index][b]
-
-        np.append(label, mit_db.classes[index][b])
-
-        #Display raw and wave signal
-        if not compute_wavelets:
-            np.append(data, signal)
-
-        else: # db of order 8 
-            db8 = pywt.Wavelet('db8')
-            coeffs = pywt.wavedec(signal, db8, level=4)
-            np.append(data, coeffs[1])
-
-            #plt.subplot(211)
-            #plt.plot(signal)
-            #plt.subplot(212)
-            #plt.plot(coeffs[1])
-            #plt.show()
-
-print 'end'
 #TODO export data and label directly like Tensorflow would require     
+train_data, train_labels = get_data_label_mitdb(list_train_pat, mit_db)
+eval_data, eval_labels = get_data_label_mitdb(list_test_pat, mit_db)
+
+extension = '_' + str(window_size)
+if compute_wavelets:
+    extension = extension + '_' + 'wv'
+if compute_RR_interval_feature:
+    extension = extension + '_' + 'RR'
+extension = extension + '.csv'
+
+# Export, save
+np.savetxt(output_path + 'train_data' + extension, train_data, delimiter=",")
+np.savetxt(output_path + 'train_label' + extension, train_labels, delimiter=",")
+np.savetxt(output_path + 'eval_data' + extension, eval_data, delimiter=",")
+np.savetxt(output_path + 'eval_label' + extension, eval_labels, delimiter=",")
