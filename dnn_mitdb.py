@@ -13,7 +13,7 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
-
+import collections
 tf.logging.set_verbosity(tf.logging.INFO)
 
 def load_data(output_path, window_size, compute_RR_interval_feature, compute_wavelets):
@@ -31,11 +31,6 @@ def load_data(output_path, window_size, compute_RR_interval_feature, compute_wav
   eval_labels = np.loadtxt(output_path + 'eval_label' + extension, delimiter=",",  dtype=np.int32)
 
   return (train_data, train_labels, eval_data, eval_labels)
-
-def my_input_fn(data, label):
-  x = tf.constant(data)
-  y = tf.constant(label)
-  return x, y
 
 def main():
   window_size = 160
@@ -75,7 +70,6 @@ def main():
 
     # [34,38] RR interval
 
-
   # 2 Create model 
 
   # Specify that all features have real-value data
@@ -83,17 +77,10 @@ def main():
 
   # Build 3 layer DNN with 10, 20, 10 units respectively.
 
-  #TODO modify the optimization parameter it must depends on accuracy taking the average accuracy 
-  # of each class not only at instance level because the test contains much unbalanced between normal
-  # and anomalies class
-
-  #https://www.tensorflow.org/api_guides/python/contrib.losses
   mitdb_classifier = tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,
                                               hidden_units=[10, 20, 10],
                                               n_classes=5,
                                               model_dir="/tmp/mitdb")
-
-  # if model was previously trained skip the fit step
 
   # Fit model.
   # Define the training inputs
@@ -104,8 +91,6 @@ def main():
     return x, y
     
   mitdb_classifier.fit(input_fn=get_train_inputs, steps=2000)
-
-  #mitdb_classifier._config.save_summary_steps
 
   # Evaluate accuracy. 
   def get_test_inputs():
@@ -119,9 +104,9 @@ def main():
   def get_eval_data():
     return np.array(eval_data, dtype=np.float32)
 
-  # TODO Obtain the confussion matrix
   predictions = list(mitdb_classifier.predict(input_fn=get_eval_data))
 
+  # Compute the matrix confussion
   confusion_matrix = np.zeros((5,5), dtype='int')
   for p in range(0, len(predictions), 1):
       confusion_matrix[predictions[p]][eval_labels[p]] = confusion_matrix[predictions[p]][eval_labels[p]] + 1
