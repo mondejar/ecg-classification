@@ -36,7 +36,6 @@ def load_data(output_path, window_size, compute_RR_interval_feature, compute_wav
   return (train_data, train_labels, eval_data, eval_labels)
 
 
-
 # normalize data features: wave & RR intervals...
 def normalize_data():
   feature_size = len(train_data[0])
@@ -85,37 +84,39 @@ def my_model_fn(features, targets, mode, params):
   # Calculate loss using mean squared error
   # predictions [batch_size, params["num_classes"]]
 
-  # weights same dimension as output layer (batch) and the weight depending on the class
-  loss = tf.contrib.losses.softmax_cross_entropy(targets_onehot, output_layer, weights=params["weights"])
+  if mode == 'train':
+    weights_tf = tf.constant(params["weights"])
+  else:
+    weights_tf = tf.ones([features.shape[0].value], tf.float32) 
+      
+  loss = tf.losses.softmax_cross_entropy(targets_onehot, output_layer, weights=weights_tf)
   # tf.losses.softmax_cross_entropy
   # tf.contrib.losses.softmax_cross_entropy
+  train_op = tf.contrib.layers.optimize_loss(
+    loss=loss,
+    global_step=tf.contrib.framework.get_global_step(),
+    learning_rate=params["learning_rate"],
+    optimizer="SGD")
 
-  #loss = tf.losses.mean_squared_error(targets, predictions)
+  # loss = tf.losses.mean_squared_error(targets, predictions)
 
-  #Adagrad optimizer.
+  # Adagrad optimizer.
   # Calculate root mean squared error as additional eval metric
-
   correct_prediction = tf.equal(tf.argmax(targets_onehot, 1), tf.argmax(output_layer, 1))
   accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))   
   eval_metric_ops = {
-      "accuracy": accuracy
-      #tf.metrics.accuracy(targets_onehot, output_layer)
-      #"rmse": tf.metrics.root_mean_squared_error(
-      #    tf.cast(targets, tf.float64), predictions)
+    "accuracy": accuracy
+        #tf.metrics.accuracy(targets_onehot, output_layer)
+        #"rmse": tf.metrics.root_mean_squared_error(
+        #    tf.cast(targets, tf.float64), predictions)
   }
 
-  train_op = tf.contrib.layers.optimize_loss(
-      loss=loss,
-      global_step=tf.contrib.framework.get_global_step(),
-      learning_rate=params["learning_rate"],
-      optimizer="SGD")
-
   return model_fn_lib.ModelFnOps(
-      mode=mode,
-      predictions=output_layer,#predictions_dict,
-      loss=loss,
-      train_op=train_op,
-      eval_metric_ops=eval_metric_ops)
+    mode=mode,
+    predictions=output_layer,#predictions_dict,
+    loss=loss,
+    train_op=train_op,
+    eval_metric_ops=eval_metric_ops)
 
 
 def main():
@@ -132,7 +133,7 @@ def main():
   # Apply some norm? convolution? another approach?
   normalize = False
   #if normalize:
-  #  normalize_data()
+  # normalize_data()
     
   # [34,38] RR interval
 
@@ -173,14 +174,17 @@ def main():
   total = 0
   for c in range(0,num_classes):
     total = count[c] + total
-  #weight = tf.multiply(4, tf.cast(tf.equal(labels, 3), tf.float32)) + 1
+
   class_weight = np.zeros(5)
   for c in range(0,num_classes):
     if count[c] > 0:
       class_weight[c] = 1- float(count[c]) / float(total)
 
-  2 de junio seguir por aqui, lista de weight uno por cada instancia de entrenamiento indicando su importancia
-  para balancear. La idea es darle mas importancia a aquellas clases que menos instancias tengan
+  weights = np.zeros((len(train_labels)), dtype='float')
+  for i in range(0,len(train_labels)):
+    weights[i] = class_weight[train_labels[i]]
+
+  #weights = tf.multiply(4.0, tf.cast(tf.equal(tf.constant(train_labels), 3), tf.float32)) + 1
   #TODO weights = tf.mul(train_labels, class_weight) 
   model_params = {"learning_rate": LEARNING_RATE, "num_classes": num_classes, "weights": weights}
 
@@ -191,7 +195,7 @@ def main():
     return x, y
   
   # Fit
-  nn.fit(input_fn=get_train_inputs, steps=100)
+  nn.fit(input_fn=get_train_inputs, steps=2000)
 
   # Score accuracy
   def get_test_inputs():
@@ -200,15 +204,15 @@ def main():
     return x, y
   
   ev = nn.evaluate(input_fn=get_test_inputs, steps=1)["accuracy"]
-  #print("Accuracy = %s " + ev["accuracy"])
+  # print("Accuracy = %s " + ev["accuracy"])
 
-  #print("Loss: %s" % ev["loss"])
-  #print("Root Mean Squared Error: %s" % ev["rmse"])
+  # print("Loss: %s" % ev["loss"])
+  # print("Root Mean Squared Error: %s" % ev["rmse"])
 
   # Print out predictions
-  #predictions = nn.predict(x=prediction_set.data, as_iterable=True)
-  #for i, p in enumerate(predictions):
-  #  print("Prediction %s: %s" % (i + 1, p["ages"]))
+  # predictions = nn.predict(x=prediction_set.data, as_iterable=True)
+  # for i, p in enumerate(predictions):
+  # print("Prediction %s: %s" % (i + 1, p["ages"]))
 
   # Compute the matrix confussion
   predictions = list(nn.predict(input_fn=get_test_inputs))
