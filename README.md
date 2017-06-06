@@ -1,44 +1,13 @@
 # ECG Classification on Tensorflow
 
 ## Description
-Code for training and test **MIT-BIH Arrhythmia Database** with Artificial Neural Networks (**ANNs**) using *Tensorflow*.
+Code for training and test **MIT-BIH Arrhythmia Database** with Artificial Neural Networks (**ANNs**) on TensorFlow and Support Vector Machine (**SVM**) on MATLAB.
 
 The data is splited in training and eval sets in an **inter-patient** way, i.e the training and eval set not contain any patient in common, as proposed in the work of [Chazal *et al*](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1306572)
 
-## Models
+[Python TensorFlow](tensorflow/README.md)
 
-### DNN classifier
-In *dnn_mitdb.py* a DNN default classifier from tensorflow is used
-
-```python
-    mitdb_classifier = tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,
-    hidden_units=[10, 20, 10],
-    n_classes=5)
-```
-
-### My own model classifier
-Due to the imbalanced data (common in that problem) between N class and anomalies class (SVEB, VEB, F). In *my_dnn_mitdb.py* a classifier that adjust the weight for loss computation during training step is defined. 
-
-```python
-def my_model_fn(features, targets, mode, params):
-    ...
-    loss = tf.losses.softmax_cross_entropy(targets_onehot, output_layer, weights=weights_tf)
-    ...
-
-my_nn = tf.contrib.learn.Estimator(model_fn=my_model_fn, params=model_params)
-```
-
-## Requirements
-
-[Installation guide](installation_guide.md)
-
-Tensorflow
-
-python-matplotlib
-
-pywavelets
-
-
+[MATLAB SVM](matlab/README.md)
 
 ## About dataset
 
