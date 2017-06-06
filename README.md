@@ -8,11 +8,25 @@ The data is splited in training and eval sets in an **inter-patient** way, i.e t
 ## Models
 
 ### DNN classifier
-In dnn_mitdb.py a DNN default classifier from tensorflow is used
+In *dnn_mitdb.py* a DNN default classifier from tensorflow is used
+
+```python
+    mitdb_classifier = tf.contrib.learn.DNNClassifier(feature_columns=feature_columns,
+    hidden_units=[10, 20, 10],
+    n_classes=5)
+```
 
 ### My own model classifier
-Due to the imbalanced data between N class and anomalies class (V, F) (common in that problem). In my_dnn_mitdb.py a classifier that adjust the weight for loss computation during training step is defined. 
+Due to the imbalanced data (common in that problem) between N class and anomalies class (SVEB, VEB, F). In *my_dnn_mitdb.py* a classifier that adjust the weight for loss computation during training step is defined. 
 
+```python
+def my_model_fn(features, targets, mode, params):
+    ...
+    loss = tf.losses.softmax_cross_entropy(targets_onehot, output_layer, weights=weights_tf)
+    ...
+
+my_nn = tf.contrib.learn.Estimator(model_fn=my_model_fn, params=model_params)
+```
 
 ## Requirements
 
@@ -28,7 +42,7 @@ pywavelets
 
 ## About dataset
 
-# MIT-BIH Arrhythmia 
+### MIT-BIH Arrhythmia 
 
 | Symbol|   Meaning                                     |
 |-------|-----------------------------------------------|
@@ -73,7 +87,7 @@ pywavelets
 |(VFL|	Ventricular flutter|
 |(VT|	    Ventricular tachycardia
 
-## AAMI recomendation form MIT 
+### AAMI recomendation form MIT 
 There are 15 recommended classes for arrhythmia that are classified into 5 superclasses: 
 
 - Normal                        (N) 
@@ -91,7 +105,7 @@ There are 15 recommended classes for arrhythmia that are classified into 5 super
 | Q    |   | P      | / | f | u |   |   
 
 
-## Inter-patient train/test split ([Chazal *et al*](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1306572)):
+### Inter-patient train/test split ([Chazal *et al*](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1306572)):
 DS_1 Train: 101, 106, 108, 109, 112, 114, 115, 116, 118, 119, 122, 124, 201, 203, 205, 207, 208, 209, 215, 220, 223, 230
 
 | Class|  instances| 
