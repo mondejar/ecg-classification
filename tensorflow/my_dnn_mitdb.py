@@ -21,7 +21,7 @@ from tensorflow.contrib.learn.python.learn.estimators import model_fn as model_f
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
-def load_data(output_path, window_size, compute_RR_interval_feature, compute_wavelets):
+def load_data(output_path, window_size, compute_RR_interval_feature, compute_wavelets, binary_problem):
   extension = '_' + str(window_size)
   if compute_wavelets:
       extension = extension + '_' + 'wv'
@@ -34,6 +34,18 @@ def load_data(output_path, window_size, compute_RR_interval_feature, compute_wav
   train_labels =  np.loadtxt(output_path + 'train_label' + extension, delimiter=",",  dtype=np.int32)
   eval_data = np.loadtxt(output_path + 'eval_data' + extension, delimiter=",", dtype=float)
   eval_labels = np.loadtxt(output_path + 'eval_label' + extension, delimiter=",",  dtype=np.int32)
+
+  if binary_problem: 
+    # Uses only two classes 
+    #   [0]: N (0)
+    #   [1]: SVEB, VEB, F, Q (1, 2, 3, 4)
+    for i in range(0, len(train_labels), 1):
+      if train_labels[i] > 0:
+        train_labels[i] = 1
+
+    for i in range(0, len(eval_labels), 1):
+      if eval_labels[i] > 0:
+        eval_labels[i] = 1        
 
   return (train_data, train_labels, eval_data, eval_labels)
 
@@ -69,10 +81,12 @@ def my_model_fn(features, targets, mode, params):
   #first_hidden_layer = tf.contrib.layers.relu(features, 10)
   first_hidden_layer = tf.contrib.layers.fully_connected(features, 64)
 
+  # tf.nn.conv1d
+
   # Connect the second hidden layer to first hidden layer with relu
   second_hidden_layer = tf.contrib.layers.fully_connected(first_hidden_layer, 128)
 
-  third_hidden_layer = tf.contrib.layers.relu(second_hidden_layer, 32)
+  third_hidden_layer = tf.contrib.layers.fully_connected(second_hidden_layer, 32)
 
   # Connect the output layer to second hidden layer (no activation fn)
   output_layer = tf.contrib.layers.linear(third_hidden_layer, params["num_classes"])# num classes 4
@@ -115,7 +129,8 @@ def main():
   output_path = dataset + 'm_learning/'
 
   # 0 Load Data
-  train_data, train_labels, eval_data, eval_labels = load_data(output_path, window_size, compute_RR_interval_feature, compute_wavelets)
+  binary_problem = True
+  train_data, train_labels, eval_data, eval_labels = load_data(output_path, window_size, compute_RR_interval_feature, compute_wavelets, binary_problem)
 
   # 1 TODO Preprocess data? norm? if RR interval, last 4 features are pre, post, local and global RR
   # Apply some norm? convolution? another approach?
@@ -129,7 +144,10 @@ def main():
 
   # Learning rate for the model
   LEARNING_RATE = 0.001
-  num_classes = 5
+  if binary_problem:
+    num_classes = 2
+  else:
+    num_classes = 5
   # Set model params
 
   count = collections.Counter(train_labels)
@@ -143,9 +161,11 @@ def main():
   class_weight = np.zeros(5)
   for c in range(0,num_classes):
     if count[c] > 0:
-      class_weight[c] = 1- float(count[c]) / float(total)
-      #class_weight[c] = float(max_class) / float(count[c]) # the class with more instance will have weight = 1, and the others x times ...
+      #class_weight[c] = 1- float(count[c]) / float(total)
+      class_weight[c] = float(max_class) / float(count[c]) # the class with more instance will have weight = 1, and the others x times ...
 
+
+  # TODO give more weigth to anomaly classes? We want to detect always these bad anomalies
   weights = np.zeros((len(train_labels)), dtype='float')
   for i in range(0,len(train_labels)):
     weights[i] = class_weight[train_labels[i]]

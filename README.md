@@ -64,34 +64,25 @@ There are 15 recommended classes for arrhythmia that are classified into 5 super
 - Fusion beat                   (F) 
 - Unknown beat                  (Q)
 
-| SuperClass| | | | | | | 
-|------|---|--------|---|---|---|---|
-| N    |   | N      | L | R | e | j |
-| SVEB |   | A      | a | J | S |   |
-| VEB  |   | V      | E |   |   |   |
-| F    |   | F      |   |   |   |   |
-| Q    |   | P      | / | f | u |   |   
+| SuperClass| | | | | | 
+|------|--------|---|---|---|---|
+| N    | N      | L | R | e | j |
+| SVEB | A      | a | J | S |   |
+| VEB  | V      | E |   |   |   |
+| F    | F      |   |   |   |   |
+| Q    | P      | / | f | u |   |   
 
 
 ### Inter-patient train/test split ([Chazal *et al*](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1306572)):
 DS_1 Train: 101, 106, 108, 109, 112, 114, 115, 116, 118, 119, 122, 124, 201, 203, 205, 207, 208, 209, 215, 220, 223, 230
 
-| Class|  instances| 
-|------|--------|
-|N     |   45842|
-|SVEB  |     944|   
-|VEB   |    3788|      
-|F     |     414|   
-|Q     |       0|    
+| Class|N|SVEB|VEB|F|Q|
+|------|-|-|-|-|-|-|
+| instances| 45842|944|3788|414|0|    
  
 DS_2 Test: = 100, 103, 105, 111, 113, 117, 121, 123, 200, 202, 210, 212, 213, 214, 219, 221, 222, 228, 231, 232, 233, 234
- 
-| Class|  instances| 
-|------|--------|
-|N     |   44743|
-|SVEB  |    1837|   
-|VEB   |    3447|      
-|F     |     388|   
-|Q     |    8005|    
+| Class|N|SVEB|VEB|F|Q|
+|------|-|-|-|-|-|-|
+| instances| 44743|1837|3447|388|8005|    
  
 
