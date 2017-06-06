@@ -3,6 +3,9 @@ Author: Mondejar Guerra
 VARPA
 University of A Coruna
 April 2017
+
+Description: Train and evaluate mitdb with interpatient split (train/test)
+Uses my own model clasifier with weights for imbalanced class
 """
 
 import numpy as np
@@ -15,7 +18,6 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 import collections
 from tensorflow.contrib.learn.python.learn.estimators import model_fn as model_fn_lib
-
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
@@ -34,7 +36,6 @@ def load_data(output_path, window_size, compute_RR_interval_feature, compute_wav
   eval_labels = np.loadtxt(output_path + 'eval_label' + extension, delimiter=",",  dtype=np.int32)
 
   return (train_data, train_labels, eval_data, eval_labels)
-
 
 # normalize data features: wave & RR intervals...
 def normalize_data():
@@ -70,38 +71,24 @@ def my_model_fn(features, targets, mode, params):
   # Connect the second hidden layer to first hidden layer with relu
   second_hidden_layer = tf.contrib.layers.fully_connected(first_hidden_layer, 128)
 
-  third_hidden_layer = tf.contrib.layers.fully_connected(second_hidden_layer, 32)
+  third_hidden_layer = tf.contrib.layers.relu(second_hidden_layer, 32)
 
   # Connect the output layer to second hidden layer (no activation fn)
   output_layer = tf.contrib.layers.linear(third_hidden_layer, params["num_classes"])# num classes 4
 
-  # Reshape output layer to 1-dim Tensor to return predictions
-  #predictions = tf.reshape(output_layer, [-1]) 
-  #predictions_dict = {"ages": predictions}
-
-  #TODO add the weights depending on labels 
-
-  # Calculate loss using mean squared error
-  # predictions [batch_size, params["num_classes"]]
-
   if mode == 'train':
     weights_tf = tf.constant(params["weights"])
+
   else:
     weights_tf = tf.ones([features.shape[0].value], tf.float32) 
       
   loss = tf.losses.softmax_cross_entropy(targets_onehot, output_layer, weights=weights_tf)
-  # tf.losses.softmax_cross_entropy
-  # tf.contrib.losses.softmax_cross_entropy
   train_op = tf.contrib.layers.optimize_loss(
     loss=loss,
     global_step=tf.contrib.framework.get_global_step(),
     learning_rate=params["learning_rate"],
     optimizer="SGD")
 
-  # loss = tf.losses.mean_squared_error(targets, predictions)
-
-  # Adagrad optimizer.
-  # Calculate root mean squared error as additional eval metric
   correct_prediction = tf.equal(tf.argmax(targets_onehot, 1), tf.argmax(output_layer, 1))
   accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))   
   eval_metric_ops = {
@@ -139,31 +126,10 @@ def main():
 
   # 2 Create my own model
 
-  # Specify that all features have real-value data
-  #feature_columns = [tf.contrib.layers.real_valued_column("", dimension=len(train_data[0]))]
 
   # Build 3 layer DNN with 10, 20, 10 units respectively.
-
-  #TODO modify the optimization parameter it must depends on accuracy taking the average accuracy 
-  # of each class not only at instance level because the test contains much unbalanced between normal
-  # and anomalies class
-
-  # We can add weight on each class analyzing the training. Then:
-  # we can obtain the proportions of each class in training dataset and add a factor in order to 
-  # make each class matter the same
-
-  # TODO but this must be done with my own Model Classifier at the loss selection
-  #  ..tf.contrib.losses.softmax_cross_entropy(logits, onehot_labels, weight=weight)
-
-  # https://www.tensorflow.org/api_guides/python/contrib.losses
-  # ...
-  # inputs, labels = LoadData(batch_size=3)
-  # logits = MyModelPredictions(inputs)
-  # Ensures that the loss for examples whose ground truth class is `3` is 5x
-  # higher than the loss for all other examples.
-  # weight = tf.multiply(4, tf.cast(tf.equal(labels, 3), tf.float32)) + 1
-  # onehot_labels = tf.one_hot(labels, num_classes=5)
-  # tf.contrib.losses.softmax_cross_entropy(logits, onehot_labels, weight=weight)
+    # Imbalanced class: weights
+    # https://www.tensorflow.org/api_guides/python/contrib.losses
 
   # Learning rate for the model
   LEARNING_RATE = 0.001
@@ -172,13 +138,17 @@ def main():
 
   count = collections.Counter(train_labels)
   total = 0
+  max_class = 0
   for c in range(0,num_classes):
     total = count[c] + total
+    if count[c] > max_class:
+      max_class = count[c]
 
   class_weight = np.zeros(5)
   for c in range(0,num_classes):
     if count[c] > 0:
       class_weight[c] = 1- float(count[c]) / float(total)
+      #class_weight[c] = float(max_class) / float(count[c]) # the class with more instance will have weight = 1, and the others x times ...
 
   weights = np.zeros((len(train_labels)), dtype='float')
   for i in range(0,len(train_labels)):
@@ -204,22 +174,12 @@ def main():
     return x, y
   
   ev = nn.evaluate(input_fn=get_test_inputs, steps=1)["accuracy"]
-  # print("Accuracy = %s " + ev["accuracy"])
-
-  # print("Loss: %s" % ev["loss"])
-  # print("Root Mean Squared Error: %s" % ev["rmse"])
-
-  # Print out predictions
-  # predictions = nn.predict(x=prediction_set.data, as_iterable=True)
-  # for i, p in enumerate(predictions):
-  # print("Prediction %s: %s" % (i + 1, p["ages"]))
 
   # Compute the matrix confussion
   predictions = list(nn.predict(input_fn=get_test_inputs))
 
   confusion_matrix = np.zeros((5,5), dtype='int')
   for p in range(0, len(predictions), 1):
-    #confusion_matrix[predictions[p]][eval_labels[p]] = confusion_matrix[predictions[p]][eval_labels[p]] + 1
     ind_p = np.argmax(predictions[p])
     confusion_matrix[ind_p][eval_labels[p]] = confusion_matrix[ind_p][eval_labels[p]] + 1
 

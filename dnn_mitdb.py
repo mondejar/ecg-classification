@@ -3,6 +3,9 @@ Author: Mondejar Guerra
 VARPA
 University of A Coruna
 April 2017
+
+Description: Train and evaluate mitdb with interpatient split (train/test)
+Uses DNN clasifier 
 """
 
 import numpy as np
