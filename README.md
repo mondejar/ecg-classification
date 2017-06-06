@@ -1,7 +1,9 @@
-# ECG Classification on Tensorflow
+# ECG Classification 
 
 ## Description
-Code for training and test **MIT-BIH Arrhythmia Database** with Artificial Neural Networks (**ANNs**) on TensorFlow and Support Vector Machine (**SVM**) on MATLAB.
+Code for training and test **MIT-BIH Arrhythmia Database** with:
+1. Artificial Neural Networks (**ANNs**) on TensorFlow
+2. Support Vector Machine (**SVM**) on MATLAB.
 
 The data is splited in training and eval sets in an **inter-patient** way, i.e the training and eval set not contain any patient in common, as proposed in the work of [Chazal *et al*](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1306572)
 

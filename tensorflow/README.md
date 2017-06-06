@@ -26,7 +26,7 @@ my_nn = tf.contrib.learn.Estimator(model_fn=my_model_fn, params=model_params)
 
 # Requirements
 
-[Installation guide](tensorflow/installation_guide.md)
+[Installation guide](installation_guide.md)
 
 Tensorflow
 
