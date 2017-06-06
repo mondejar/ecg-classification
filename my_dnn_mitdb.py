@@ -38,7 +38,7 @@ def load_data(output_path, window_size, compute_RR_interval_feature, compute_wav
   return (train_data, train_labels, eval_data, eval_labels)
 
 # normalize data features: wave & RR intervals...
-def normalize_data():
+def normalize_data(train_data, eval_data):
   feature_size = len(train_data[0])
   if compute_RR_interval_feature:
     feature_size = feature_size - 4
@@ -57,6 +57,7 @@ def normalize_data():
 
     train_data[:, feature_size:] = ((train_data[:, feature_size:] - min_rr) / (max_rr - min_rr))
     eval_data[:,  feature_size:] = ((eval_data[:, feature_size:] - min_rr) / (max_rr - min_rr))
+  return (train_data, eval_data)
 
 
 def my_model_fn(features, targets, mode, params):
@@ -119,17 +120,12 @@ def main():
   # 1 TODO Preprocess data? norm? if RR interval, last 4 features are pre, post, local and global RR
   # Apply some norm? convolution? another approach?
   normalize = False
-  #if normalize:
-  # normalize_data()
+  if normalize:
+    train_data, eval_data =  normalize_data(train_data, eval_data)
     
-  # [34,38] RR interval
-
   # 2 Create my own model
-
-
-  # Build 3 layer DNN with 10, 20, 10 units respectively.
-    # Imbalanced class: weights
-    # https://www.tensorflow.org/api_guides/python/contrib.losses
+  # Imbalanced class: weights
+  # https://www.tensorflow.org/api_guides/python/contrib.losses
 
   # Learning rate for the model
   LEARNING_RATE = 0.001
@@ -154,8 +150,6 @@ def main():
   for i in range(0,len(train_labels)):
     weights[i] = class_weight[train_labels[i]]
 
-  #weights = tf.multiply(4.0, tf.cast(tf.equal(tf.constant(train_labels), 3), tf.float32)) + 1
-  #TODO weights = tf.mul(train_labels, class_weight) 
   model_params = {"learning_rate": LEARNING_RATE, "num_classes": num_classes, "weights": weights}
 
   nn = tf.contrib.learn.Estimator(model_fn=my_model_fn, params=model_params)
