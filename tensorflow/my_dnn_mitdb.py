@@ -27,7 +27,8 @@ def compute_accuracy(m):
   acc = np.zeros(classes)
   acc_global = 0
   for c in range(0, classes):
-    acc[c] = float(m[c,c]) / float(sum(m[:,c]))
+    if sum(m[:,c]) > 0:
+      acc[c] = float(m[c,c]) / float(sum(m[:,c]))
     acc_global = acc_global + m[c,c]
     print ('acc ' + str(c) + ': ' + str(acc[c]))
   
@@ -137,7 +138,7 @@ def main():
   dataset = '/home/mondejar/dataset/ECG/mitdb/'
   output_path = dataset + 'm_learning/'
 
-  binary_problem = True
+  binary_problem = False
   weight_imbalanced = True
 
 
