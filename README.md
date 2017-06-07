@@ -7,6 +7,117 @@ Code for training and test **MIT-BIH Arrhythmia Database** with:
 
 The data is splited in training and eval sets in an **inter-patient** way, i.e the training and eval set not contain any patient in common, as proposed in the work of [Chazal *et al*](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1306572)
 
+## Method
+This code analyzes the state of the beats with 5, 2 classes (see ###AAMI recomendation form MIT). A window of 160 is centered on *R peak* which is know by the dataset. 
+The peaks can be detected using the code *third_party/pan_tompkin.m*. 
+
+Feature:
+
+The inputs of the machine learning methods are form by 34 dimensional features:
+
+    30 waves: The signal is decomposed using *wave_decomposition* function using family *db8*  and 4 levels. 
+
+    4 interval RR: information extracted about the rhythm 
+        1. pre_RR
+        2. post_RR
+        3. local_RR
+        4. global_RR
+
+Preprocess:
+
+Normalization
+
+## Results
+
+### Accuracy 
+
+*Note: using AAMI recomendation form MIT. Class N also contains some anomalies*
+
+To handle the imbalanced data we also prove setting the weights depending on class in the loss step.
+
+|Model|2-Class|5-Class|
+|-----|-------|-------|
+|SVM  | | |
+|SVM_weight  | | |
+|NN  | | |
+|NN_weight  | | |
+
+### Confussion-matrix
+
+
+NN
+*LEARNING_RATE = 0.001 step = 2000   1. fc(64) 2. fc(32) 3. relu(16)*
+
+Accuracy = 
+
+Classes = 5
+| | N | SVEB | VEB | F |
+|--|---|--|--|--|
+|N   |**44175** | 1820 | 2629  | 385 |
+|SVEB|    4 |  **12** |    4  |   0 |
+|VEB |   57 |    3 |  **438**  |   3 |
+|F   |    0 |    0 |    0  |  **0** |
+
+
+Classes = 2
+
+acc 0: 0.98
+
+acc 1: 0.38
+
+global acc = 0.92
+
+||N|A|
+|--|--|--|
+|N|**43544**|  3329|
+|A|693 | **2116**|
+
+
+NN_weight
+*LEARNING_RATE = 0.001 step = 2000   1. fc(64) 2. fc(32) 3. relu(16)*
+
+Accuracy = 
+
+| | N | SVEB | VEB | F |
+|--|---|--|--|--|
+|N   | **32477** |545| 175|168 |
+|SVEB| 5318  |**674**|317|41|
+|VEB | 4341  | 607  |**2546**|115
+|F| 2101|11 |181|64|**0**|
+
+
+Classes = 2
+
+acc 0: 0.81
+
+acc 1: 0.79
+
+global acc = 0.81
+||N|A|
+|--|--|--|
+|N|**35872**|  1096|
+|A|8365 | **4349**|
+
+
+
+
+
+SVM *C = 32, gamma = 0.05*
+
+Accuracy = 
+
+| | N | SVEB | VEB | F |
+|--|---|--|--|--|
+|N | **42281** |1313 |463|355|
+|SVEB|196 |**58**| 45|0 |
+|VEB|2067|454|**2936**|33|
+|F|199|12|3|**0**|
+
+
+
+
+
+____
 
 ## About dataset
 
@@ -58,19 +169,13 @@ The data is splited in training and eval sets in an **inter-patient** way, i.e t
 ### AAMI recomendation form MIT 
 There are 15 recommended classes for arrhythmia that are classified into 5 superclasses: 
 
-- Normal                        (N) 
-- Supraventricular ectopic beat (SVEB) 
-- Ventricular ectopic beat      (VEB) 
-- Fusion beat                   (F) 
-- Unknown beat                  (Q)
-
 | SuperClass| | | | | | 
 |------|--------|---|---|---|---|
-| N    | N      | L | R | e | j |
-| SVEB | A      | a | J | S |   |
-| VEB  | V      | E |   |   |   |
-| F    | F      |   |   |   |   |
-| Q    | P      | / | f | u |   |   
+| N  (Normal)  | N      | L | R | e | j |
+| SVEB (Supraventricular ectopic beat) | A      | a | J | S |   |
+| VEB  (Ventricular ectopic beat)| V      | E |   |   |   |
+| F    (Fusion beat) | F      |   |   |   |   |
+| Q   (Unknown beat)  | P      | / | f | u |   |   
 
 
 ### Inter-patient train/test split ([Chazal *et al*](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1306572)):

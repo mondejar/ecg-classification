@@ -21,6 +21,19 @@ from tensorflow.contrib.learn.python.learn.estimators import model_fn as model_f
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
+def compute_accuracy(m):
+  # Accuracy by column
+  classes = m.shape[0]
+  acc = np.zeros(classes)
+  acc_global = 0
+  for c in range(0, classes):
+    acc[c] = float(m[c,c]) / float(sum(m[:,c]))
+    acc_global = acc_global + m[c,c]
+    print ('acc ' + str(c) + ': ' + str(acc[c]))
+  
+  acc_global = float(acc_global) / float(sum(sum(m)))
+  print ('global acc = ' + str(acc_global))
+
 def load_data(output_path, window_size, compute_RR_interval_feature, compute_wavelets, binary_problem):
   extension = '_' + str(window_size)
   if compute_wavelets:
@@ -80,18 +93,14 @@ def my_model_fn(features, targets, mode, params):
   # (features) with relu activation
   #first_hidden_layer = tf.contrib.layers.relu(features, 10)
   first_hidden_layer = tf.contrib.layers.fully_connected(features, 64)
-
   # tf.nn.conv1d
-
-  # Connect the second hidden layer to first hidden layer with relu
-  second_hidden_layer = tf.contrib.layers.fully_connected(first_hidden_layer, 128)
-
-  third_hidden_layer = tf.contrib.layers.fully_connected(second_hidden_layer, 32)
+  second_hidden_layer = tf.contrib.layers.fully_connected(first_hidden_layer, 32)
+  third_hidden_layer = tf.contrib.layers.relu(second_hidden_layer, 16)
 
   # Connect the output layer to second hidden layer (no activation fn)
-  output_layer = tf.contrib.layers.linear(third_hidden_layer, params["num_classes"])# num classes 4
+  output_layer = tf.contrib.layers.linear(third_hidden_layer, params["num_classes"])
 
-  if mode == 'train':
+  if mode == 'train' and params["weight_imbalanced"]:
     weights_tf = tf.constant(params["weights"])
 
   else:
@@ -128,8 +137,11 @@ def main():
   dataset = '/home/mondejar/dataset/ECG/mitdb/'
   output_path = dataset + 'm_learning/'
 
-  # 0 Load Data
   binary_problem = True
+  weight_imbalanced = True
+
+
+  # 0 Load Data
   train_data, train_labels, eval_data, eval_labels = load_data(output_path, window_size, compute_RR_interval_feature, compute_wavelets, binary_problem)
 
   # 1 TODO Preprocess data? norm? if RR interval, last 4 features are pre, post, local and global RR
@@ -158,19 +170,18 @@ def main():
     if count[c] > max_class:
       max_class = count[c]
 
-  class_weight = np.zeros(5)
+  class_weight = np.zeros(num_classes)
   for c in range(0,num_classes):
     if count[c] > 0:
       #class_weight[c] = 1- float(count[c]) / float(total)
       class_weight[c] = float(max_class) / float(count[c]) # the class with more instance will have weight = 1, and the others x times ...
-
 
   # TODO give more weigth to anomaly classes? We want to detect always these bad anomalies
   weights = np.zeros((len(train_labels)), dtype='float')
   for i in range(0,len(train_labels)):
     weights[i] = class_weight[train_labels[i]]
 
-  model_params = {"learning_rate": LEARNING_RATE, "num_classes": num_classes, "weights": weights}
+  model_params = {"learning_rate": LEARNING_RATE, "num_classes": num_classes, "weights": weights, "weight_imbalanced": weight_imbalanced}
 
   nn = tf.contrib.learn.Estimator(model_fn=my_model_fn, params=model_params)
   def get_train_inputs():
@@ -192,12 +203,13 @@ def main():
   # Compute the matrix confussion
   predictions = list(nn.predict(input_fn=get_test_inputs))
 
-  confusion_matrix = np.zeros((5,5), dtype='int')
+  confusion_matrix = np.zeros((num_classes,num_classes), dtype='int')
   for p in range(0, len(predictions), 1):
     ind_p = np.argmax(predictions[p])
     confusion_matrix[ind_p][eval_labels[p]] = confusion_matrix[ind_p][eval_labels[p]] + 1
 
   print confusion_matrix
+  compute_accuracy(confusion_matrix)
 
 if __name__ == "__main__":
   main()
