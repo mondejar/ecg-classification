@@ -86,7 +86,6 @@ else % Wavelets
     if(exist(wavelet_features_filename, 'file') ~= 2)
         
         for(i = 1:size(N_data, 2))
-            % TODO db8  level 4?¿
             [C, L] = wavedec(N_data(:, i), 8, 'db4');
             app_w = appcoef(C, L, 'db4', 4);
             features_N(1:length(app_w), i) = app_w;

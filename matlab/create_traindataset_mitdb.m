@@ -13,7 +13,7 @@ function [mit_data] = create_traindataset(window_size, compute_RR_interval_featu
 % create_traindataset_mitdb(160, true)
 
 %% 0 read the dataset
-path_dataset = '/home/mondejar/dataset/ECG/';
+path_dataset = '/local/scratch/mondejar/ECG/dataset/';
 dataset = 'mitdb';
 fs = 360;
 jump_lines = 1;
