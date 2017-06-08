@@ -28,18 +28,18 @@
 % April 2017
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function train_SVM_mitdb_Rahhal(window_r_beat, use_wavelets, use_RR_interval_features, norm_features, norm_R, svm_type, kernel_type)
-% train_SVM_mitdb_Rahhal(160, true, true, true, true, 0, 2)
+function train_SVM_mitdb_interpatient(window_r_beat, use_wavelets, use_RR_interval_features, norm_features, norm_R, weight_imbalanced, svm_type, kernel_type)
+% train_SVM_mitdb_interpatient(160, true, true, true, true, true, 0, 2)
 
 %% Includes
 % LIBSVM
-addpath('/home/imagen/mondejar/libsvm-3.22/matlab')
+addpath('/home/mondejar/libsvm-3.22/matlab')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 0 Load Data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-path_dataset = '/local/scratch/mondejar/ECG/dataset/';
+path_dataset = '/home/mondejar/dataset/ECG/';
 dataset = 'mitdb';
 full_path = [path_dataset, dataset, '/m_learning/'];
 
@@ -74,8 +74,8 @@ if(use_wavelets )% Full Signal
         
         for(s = 1:size(mit_data.signals, 2))
             for(b =1:size(mit_data.signals{s}, 2))
-                [C, L] = wavedec(mit_data.signals{s}(:, b), 8, 'db4');
-                app_w = appcoef(C, L, 'db4', 4);
+                [C, L] = wavedec(mit_data.signals{s}(:, b), 4, 'db8');
+                app_w = appcoef(C, L, 'db8', 4);
                 features_wave{s}(1:length(app_w), b) = app_w;
             end
         end
@@ -94,7 +94,6 @@ if(norm_features)
             maximum = max(features_wave{s}(:, b));
             minimum = min(features_wave{s}(:, b));
             features_wave{s}(:, b) = (features_wave{s}(:, b) - minimum) / (maximum - minimum);
-            
         end
     end
     mit_data.features_wave = features_wave;
@@ -107,7 +106,6 @@ n_features = size(mit_data.features_wave{1}, 1);
 
 patients_train = [101, 106, 108, 109, 112, 114, 115, 116, 118, 119, 122, 124, 201, 203, 205, 207, 208, 209, 215, 220, 223, 230];
 patients_test = [100, 103, 105, 111, 113, 117, 121, 123, 200, 202, 210, 212, 213, 214, 219, 221, 222, 228, 231, 232, 233, 234];
-
 
 num_classes = 4;
 % Superclasses
@@ -128,7 +126,6 @@ subclasses{2} = {'A', 'a', 'J', 'S'} ;
 subclasses{3} = {'V', 'E'};
 subclasses{4} = {'F'};
 %subclasses{5} = {'P', '/', 'f', 'u'}; 
-
 
 max_temp_f = 1000;% definimos este valor suponiendo el max de valor temporal
 b_i = 0;
@@ -183,10 +180,14 @@ train_data = train_data';
 %% 3 Classification SVM
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-best_C = 32;
+%best_C = 32;
+%best_gamma = 0.05;
+
+
+best_C = 64;
 best_gamma = 0.05;
 
-model_name = [full_path,  'SVM_models/svm_Rahhal_w_', num2str(window_r_beat * 2)];
+model_name = [full_path,  'SVM_models/svm_interpt_w_', num2str(window_r_beat * 2)];
 
 % if(svm_kernel == )
 %    model_name = [model_name, '_'];
@@ -208,22 +209,29 @@ if(norm_R)
     model_name = [model_name, '_NR'];
 end
 
+if(weight_imbalanced)
+    model_name = [model_name, '_wi'];
+end
+
+
 model_name = [model_name, '_C_', num2str(best_C), '_g_', num2str(best_gamma), '_one_vs_all.mat'];
 
 if(exist(model_name) == 2)
     load(model_name);
 else
     for(k =1:num_classes)
-        model_SVM = svmtrain(train_label{k}', train_data, ['-s 0 -t 2 -b 1 -c ' num2str(best_C) ' -g ' num2str(best_gamma)]); %, options...
-        % -b probability_estimates
+        if(weight_imbalanced)
+            w0 =  size(train_data, 1) / (size(train_data, 1) - size(find(train_label{k} == 1), 2))
+            w1 =  size(train_data, 1) / size(find(train_label{k} == 1), 2) 
+            model_SVM = svmtrain(train_label{k}', train_data, ['-s 0 -t 2 -b 0 -c ' num2str(best_C) ' -g ' num2str(best_gamma) ' -w0 ' num2str(w0) ' -w1 ' num2str(w1)]); %, options...
+        else% -b probability_estimates
+             model_SVM = svmtrain(train_label{k}', train_data, ['-s 0 -t 2 -b 0 -c ' num2str(best_C) ' -g ' num2str(best_gamma)]); %, options...           
+        end
         models_SVM{k} = model_SVM;
-    end
-    
+    end    
     %% WRITE DATA
     save([model_name], 'models_SVM');
 end
-
-
 
 % Predict test
 % predict will all models and select for each test instance the class with
@@ -289,7 +297,6 @@ total_acc
 %dif_selected_class_true_class
 
 [dif_selected_class_true_class_sorted, index] = sort(dif_selected_class_true_class,'ascend');
-
 
 g_truth_test(index(1:10));
 

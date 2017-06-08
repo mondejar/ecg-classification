@@ -5,23 +5,22 @@ Code for training and test **MIT-BIH Arrhythmia Database** with:
 1. [Artificial Neural Networks (**ANNs**) on TensorFlow](tensorflow/README.md)
 2. [Support Vector Machine (**SVM**) on MATLAB](matlab/README.md).
 
-The data is splited in training and eval sets in an **inter-patient** way, i.e the training and eval set not contain any patient in common, as proposed in the work of [Chazal *et al*](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1306572)
+The data is splited in training and eval sets in an **inter-patient** way, i.e the training and eval set not contain any patient in common, as proposed in the work of [Chazal *et al*](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1306572).
 
 ## Method
-This code analyzes the state of the beats with 5, 2 classes (see ###AAMI recomendation form MIT). A window of 160 is centered on *R peak* which is know by the dataset. 
+This code analyzes the state of the beats with 5, 2 classes (see [AAMI recomendation form MIT](### AAMI recomendation form MIT)). A window of 160 is centered on *R peak* which is know by the dataset. 
 The peaks can be detected using the code *third_party/pan_tompkin.m*. 
 
 Feature:
 
 The inputs of the machine learning methods are form by 34 dimensional features:
 
-    30 waves: The signal is decomposed using *wave_decomposition* function using family *db8*  and 4 levels. 
-
-    4 interval RR: information extracted about the rhythm 
-        1. pre_RR
-        2. post_RR
-        3. local_RR
-        4. global_RR
+1. **Wavelets** (34): The signal is decomposed using *wave_decomposition* function using family *db8*  and 4 levels. 
+2. **Interval RR** (4): information extracted about the rhythm 
+    1. pre_RR
+    2. post_RR
+    3. local_RR
+    4. global_RR
 
 Preprocess:
 
@@ -31,94 +30,123 @@ Normalization
 
 ### Accuracy 
 
-*Note: using AAMI recomendation form MIT. Class N also contains some anomalies*
-
+*Note: using **AAMI recomendation form MIT**. Class N also contains some anomalies*.
 To handle the imbalanced data we also prove setting the weights depending on class in the loss step.
 
 |Model|2-Class|5-Class|
 |-----|-------|-------|
-|SVM  | | |
+|SVM  | |  0.89 ( 0.94 , 0.03  ,  0.85 , 0.0)|
 |SVM_weight  | | |
-|NN  | | |
-|NN_weight  | | |
+|NN  | 0.92 | 0.91 ( 0.97 , 0.01 , 0.7, 0.0)|
+|NN_weight  | 0.74 | 0.81 ( 0.76, 0.17, 0.82, 0.07 )|
 
 ### Confussion-matrix
 
+*NOTE: Neural nets varys too much with the same configuration...
 
-NN
+#### NN
 *LEARNING_RATE = 0.001 step = 2000   1. fc(64) 2. fc(32) 3. relu(16)*
-
-Accuracy = 
 
 Classes = 5
 
+Acc = 0.91
+
 | | N | SVEB | VEB | F |
 |--|---|--|--|--|
-|N   |**44175** | 1820 | 2629  | 385 |
-|SVEB|    4 |  **12** |    4  |   0 |
-|VEB |   57 |    3 |  **438**  |   3 |
-|F   |    0 |    0 |    0  |  **0** |
-
-
+|N   |**42968** | 1632 | 881  | 311 |
+|SVEB|    59 |  **27** |    36  |   0 |
+|VEB |   1201 |    178 |  **2274**  |   77 |
+|F   |    0 |    0 |    27  |  **0** |
+|acc|   0.97    |   0.01   |   0.7    |   0.0     |
+ 
 Classes = 2
 
-acc 0: 0.98
-
-acc 1: 0.38
-
-global acc = 0.92
+Acc = 0.92
 
 ||N|A|
 |--|--|--|
 |N|**43544**|  3329|
 |A|693 | **2116**|
+|acc|    0.98   |  0.38   |      
 
-
-NN_weight
+#### NN_weight
 *LEARNING_RATE = 0.001 step = 2000   1. fc(64) 2. fc(32) 3. relu(16)*
 
-Accuracy = 
+Acc = 0.74
 
 | | N | SVEB | VEB | F |
 |--|---|--|--|--|
-|N   | **32477** |545| 175|168 |
-|SVEB| 5318  |**674**|317|41|
-|VEB | 4341  | 607  |**2546**|115
-|F| 2101|11 |181|64|**0**|
-
+|N   | **33832** | 648 |  308 |  185|
+|SVEB| 3998  |**313**  | 114  |   3  |
+|VEB | 4773  |864 |   **2645**|   172 |
+|F   | 1634  |   11 |  153|   **28**  |
+|acc|   0.76    | 0.17     | 0.82      |  0.07      |
 
 Classes = 2
 
-acc 0: 0.81
-
-acc 1: 0.79
-
-global acc = 0.81
+Acc = 0.81
 
 ||N|A|
 |--|--|--|
 |N|**35872**|  1096|
 |A|8365 | **4349**|
+|acc|   0.81    |   0.79   |
 
+#### SVM
+*C = 32, gamma = 0.05*
 
-
-
-
-SVM *C = 32, gamma = 0.05*
-
-Accuracy = 
+acc = 0.6252
 
 | | N | SVEB | VEB | F |
 |--|---|--|--|--|
-|N | **42281** |1313 |463|355|
-|SVEB|196 |**58**| 45|0 |
-|VEB|2067|454|**2936**|33|
-|F|199|12|3|**0**|
+|N   |**34596**|      369  |      2159   |      363|
+|SVEB|9810    |    **1434**   |      796    |      14|
+|VEB |337     |     34    |    **492**     |     11|
+|F   |0       |    0      |     0       |    **0**|
+|acc |  0.77      |   0.78        |     0.14       |     0.0      |
+
+
+*C = 64, gamma = 0.05*
+
+acc = 0.7751
+
+| | N | SVEB | VEB | F |
+|--|---|--|--|--|
+|N   |**42275**   |     1446  |       469  |       355 |
+|SVEB|199     |     **79**    |      49    |       2   |
+|VEB |1569    |     302   |     **2925**   |       30  |
+|F   |700     |     10    |       4    |       **1**   |
+|acc |  0.94      |    0.04       |    0.84        |      0.0     |
+
+#### SVM_weight
+*C = 64, gamma = 0.05*
+
+acc = 0.7014
+
+| | N | SVEB | VEB | F |
+|--|---|--|--|--|
+|N     |    **37420**  |      1109  |       219    |     267|
+|SVEB     |    868    |    **520**    |     113      |     5|
+|VEB     |   2463    |     167    |   **2978**      |    56|
+|F     |   3992    |      41    |     137      |   **60**|
+|acc |  0.83      |    0.28      |    0.86        |      0.15    |
 
 
 
 
-____
+
+
+#### LD [Chazal *et al*](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1306572)
+
+| | N | SVEB | VEB | F |
+|--|---|--|--|--|
+|N     |    **38444**  |      173  |       117    |     33|
+|SVEB     |    1904    |    **1395**    |     321      |     1|
+|VEB     |   303    |     252    |   **2504**      |    7|
+|F     |   3509    |      16    |     176      |   **347**|
+|acc |  0.86      |    0.75      |    0.80        |      0.89    |
+
+___
 
 ## About dataset
 
@@ -192,4 +220,3 @@ DS_2 Test: = 100, 103, 105, 111, 113, 117, 121, 123, 200, 202, 210, 212, 213, 21
 |------|-|-|-|-|-|
 | instances| 44743|1837|3447|388|8005|    
  
-

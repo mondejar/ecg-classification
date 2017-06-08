@@ -27,12 +27,14 @@ def compute_accuracy(m):
   acc = np.zeros(classes)
   acc_global = 0
   for c in range(0, classes):
-    acc[c] = float(m[c,c]) / float(sum(m[:,c]))
+    if sum(m[:,c]) > 0:
+      acc[c] = float(m[c,c]) / float(sum(m[:,c]))
     acc_global = acc_global + m[c,c]
-    print ('acc ' + str(c) + ': ' + str(acc[c]))
+    #print ('acc ' + str(c) + ': ' + str(acc[c]))
   
   acc_global = float(acc_global) / float(sum(sum(m)))
-  print ('global acc = ' + str(acc_global))
+  #print ('global acc = ' + str(acc_global))
+  return acc, acc_global
 
 def load_data(output_path, window_size, compute_RR_interval_feature, compute_wavelets, binary_problem):
   extension = '_' + str(window_size)
@@ -92,10 +94,10 @@ def my_model_fn(features, targets, mode, params):
   # Connect the first hidden layer to input layer
   # (features) with relu activation
   #first_hidden_layer = tf.contrib.layers.relu(features, 10)
-  first_hidden_layer = tf.contrib.layers.fully_connected(features, 64)
+  first_hidden_layer = tf.contrib.layers.fully_connected(features, params["h1"])
   # tf.nn.conv1d
-  second_hidden_layer = tf.contrib.layers.fully_connected(first_hidden_layer, 32)
-  third_hidden_layer = tf.contrib.layers.relu(second_hidden_layer, 16)
+  second_hidden_layer = tf.contrib.layers.fully_connected(first_hidden_layer, params["h2"])
+  third_hidden_layer = tf.contrib.layers.relu(second_hidden_layer, params["h3"])
 
   # Connect the output layer to second hidden layer (no activation fn)
   output_layer = tf.contrib.layers.linear(third_hidden_layer, params["num_classes"])
@@ -137,7 +139,7 @@ def main():
   dataset = '/home/mondejar/dataset/ECG/mitdb/'
   output_path = dataset + 'm_learning/'
 
-  binary_problem = True
+  binary_problem = False
   weight_imbalanced = True
 
 
@@ -181,35 +183,55 @@ def main():
   for i in range(0,len(train_labels)):
     weights[i] = class_weight[train_labels[i]]
 
-  model_params = {"learning_rate": LEARNING_RATE, "num_classes": num_classes, "weights": weights, "weight_imbalanced": weight_imbalanced}
+  hn_1 = [128, 64, 32]
+  hn_2 = [64, 32, 16]
+  hn_3 = [32, 16, 8]
+  steps = [500, 1000, 2000, 8000]
+ 
 
-  nn = tf.contrib.learn.Estimator(model_fn=my_model_fn, params=model_params)
-  def get_train_inputs():
-    x = tf.constant(train_data)
-    y = tf.constant(train_labels)
-    return x, y
-  
-  # Fit
-  nn.fit(input_fn=get_train_inputs, steps=2000)
+  for h1 in hn_1:
+    for h2 in hn_2:
+      for h3 in hn_3:
+        for s in steps:
+          model_params = {
+            "learning_rate": LEARNING_RATE, 
+            "num_classes": num_classes, 
+            "weights": weights, 
+            "weight_imbalanced": weight_imbalanced, 
+            "h1": h1,
+            "h2": h2, 
+            "h3": h3}
 
-  # Score accuracy
-  def get_test_inputs():
-    x = tf.constant(eval_data)
-    y = tf.constant(eval_labels)
-    return x, y
-  
-  ev = nn.evaluate(input_fn=get_test_inputs, steps=1)["accuracy"]
+          nn = tf.contrib.learn.Estimator(model_fn=my_model_fn, params=model_params)
+          
+          def get_train_inputs():
+            x = tf.constant(train_data)
+            y = tf.constant(train_labels)
+            return x, y
+          
+          # Fit
+          nn.fit(input_fn=get_train_inputs, steps=s)
 
-  # Compute the matrix confussion
-  predictions = list(nn.predict(input_fn=get_test_inputs))
+          # Score accuracy
+          def get_test_inputs():
+            x = tf.constant(eval_data)
+            y = tf.constant(eval_labels)
+            return x, y
+          
+          ev = nn.evaluate(input_fn=get_test_inputs, steps=1)["accuracy"]
 
-  confusion_matrix = np.zeros((num_classes,num_classes), dtype='int')
-  for p in range(0, len(predictions), 1):
-    ind_p = np.argmax(predictions[p])
-    confusion_matrix[ind_p][eval_labels[p]] = confusion_matrix[ind_p][eval_labels[p]] + 1
+          # Compute the matrix confussion
+          predictions = list(nn.predict(input_fn=get_test_inputs))
 
-  print confusion_matrix
-  compute_accuracy(confusion_matrix)
+          confusion_matrix = np.zeros((num_classes,num_classes), dtype='int')
+          for p in range(0, len(predictions), 1):
+            ind_p = np.argmax(predictions[p])
+            confusion_matrix[ind_p][eval_labels[p]] = confusion_matrix[ind_p][eval_labels[p]] + 1
+
+          acc, acc_g = compute_accuracy(confusion_matrix)
+          np.savetxt('nn_' + str(h1) + '_' + str(h2) + '_' + str(h3) + '_' + str(s) + '_cm.txt', confusion_matrix, fmt='%-7.0f')    
+          np.savetxt('nn_' + str(h1) + '_' + str(h2) + '_' + str(h3) + '_' + str(s) + '_acc.txt', acc, fmt='%-7.2f')    
+
 
 if __name__ == "__main__":
   main()
