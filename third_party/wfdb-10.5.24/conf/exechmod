@@ -1,0 +1,14 @@
+#!/bin/sh
+
+MODE=$1
+shift
+
+for FILE in $*
+do
+   if [ -s $FILE.exe ]
+   then
+      chmod $MODE $FILE.exe
+   else
+      chmod $MODE $FILE
+   fi
+done

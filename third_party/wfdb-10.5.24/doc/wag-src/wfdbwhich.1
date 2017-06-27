@@ -1,0 +1,29 @@
+.TH WFDBWHICH 1 "1 August 2002" "WFDB 10.2.7" "WFDB Applications Guide"
+.SH NAME
+wfdbwhich \- find a WFDB file and print its pathname
+.SH SYNOPSIS
+\fBwfdbwhich\fR [ \fB-r\fR \fIrecord\fR ] \fIfilename\fR
+.br
+\fBwfdbwhich\fR [ \fB-r\fR \fIrecord\fR ] \fIfile-type record\fR
+.SH DESCRIPTION
+This program searches the WFDB path (as specified by the environment variable
+\fBWFDB\fR, see \fBsetwfdb\fR(1)) for a specified \fIfilename\fR, or for a
+file of a specified \fIfile-type\fR (e.g., `hea' or `atr') that belongs
+to a specified \fIrecord\fR.  If the file can be found, its full pathname is
+written to the standard output, and \fBwfdbwhich\fR exits with an exit status
+of zero (indicating success).  If the file cannot be found, a diagnostic
+message, including the current value of the WFDB path, is written to the
+standard error output, and \fIwfdbwhich\fR exits with a non-zero exit status.
+.PP
+If the WFDB path includes `%r', use the \fB-r\fI record\fR option to specify
+the record name to be substituted for `%r'.
+.SH ENVIRONMENT
+.PP
+It may be necessary to set and export the shell variable \fBWFDB\fR (see
+\fBsetwfdb\fR(1)).
+.SH SEE ALSO
+\fBsetwfdb\fR(1)
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCE
+http://www.physionet.org/physiotools/wfdb/app/wfdbwhich.c

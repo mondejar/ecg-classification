@@ -1,0 +1,6 @@
+# Use this record on a UNIX system to read directly from a 9-track tape with
+# 6144-byte blocks containing 2 signals in 8-bit difference format.
+
+6144d 2 250
+/dev/rmt0 8 0 12 0 0 0 6144
+/dev/rmt0 8 0 12 0 0 0 6144

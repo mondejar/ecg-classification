@@ -1,0 +1,178 @@
+.TH EPICMP 1  "10 July 2003" "WFDB 10.3.8" "WFDB Applications Guide"
+.SH NAME
+epicmp \- ANSI/AAMI-standard episode-by-episode annotation comparator
+.SH SYNOPSIS
+\fBepicmp -r\fR \fIrecord\fR \fB-a\fR \fIreference-annotator test-annotator\fR [ \fIoptions ... \fR ]
+.SH DESCRIPTION
+.PP
+This program implements the VF, AF, and ST episode-by-episode
+comparison algorithms specified by the current American National
+Standard for ambulatory ECG analyzers (ANSI/AAMI EC38:2007).  \fBepicmp\fR
+is the reference implementation of these algorithms, and must be used
+to obtain the episode-by-episode performance statistics cited in EC38
+in order to be in compliance with the standard (see EC38, section 5.2.14).
+.PP
+Input to this program consists of two annotation files associated with the same
+\fIrecord\fR.  One of these is designated the \fIreference\fR annotation file,
+the other the \fItest\fR annotation file.
+.PP
+\fIOptions\fR include:
+.TP
+\fB-A\fR \fIfile\fR
+Append atrial fibrillation detection reports to the specified \fIfile\fR.
+.TP
+\fB-f\fR \fItime\fR
+Begin the comparison at the specified \fItime\fR (default: 5 minutes after the
+beginning of the record).
+.TP
+\fB-h\fR
+Print a usage summary.
+.TP
+\fB-i\fR \fItime\fR
+Exclude episodes shorter than \fItime\fR (default: 0 seconds) from
+episode statistics.
+.TP
+\fB-I\fR \fItime\fR
+Exclude episodes shorter than \fItime\fR (default: 0 seconds) from
+episode and duration statistics.
+(At most one of \fB-i\fR and \fB-I\fR may be used.)
+.TP
+\fB-l\fR
+Write reports in line format (default: matrix format).
+.TP
+\fB-L\fR
+Same as \fB-l\fR.
+.TP
+\fB-S\fR \fIfile1 file2\fR
+Append ischemic ST episode detection reports to \fIfile1\fR, and ST deviation
+measurements to \fIfile2\fR.
+.TP
+\fB-S0\fR \fIfile1 file2\fR
+As for \fB-S\fR, but report on signal 0 only.
+.TP
+\fB-S1\fR \fIfile1 file2\fR
+As for \fB-S\fR, but report on signal 1 only.
+.TP
+\fB-t\fR \fItime\fR
+Stop the comparison at the specified \fItime\fR (default: the end of the record
+if it is defined, the end of the reference annotation file otherwise;  if
+\fItime\fR is 0, the comparison ends when the end of either annotation file is
+reached).
+.TP
+\fB-V\fR
+Append ventricular flutter and fibrillation detection reports to the specified
+\fIfile\fR.
+.TP
+\fB-x\fR
+Exclude periods of atrial fibrillation from calculations of atrial fibrillation
+positive predictivity, as required by EC38:1998 (default: include these periods,
+as required by EC38:2007).
+.PP
+The episode and duration statistics gathered by \fBepicmp\fR are based on tallies
+of overlapping episodes in the reference and test annotation files.
+Duration statistics give weight to each episode or detection in
+proportion to its duration.
+Episode statistics give equal weight to each episode or detection,
+irrespective of length;  each test-annotated episode that meets the criteria
+for overlap (see below) with a reference-annotated episode is counted as
+a true positive.  Episodes are defined as follows (see
+\fI<wfdb/ecgcodes.h>\fR for definitions of annotation types):
+.TP
+\fIAtrial fibrillation episodes\fR
+begin with a \fBRHYTHM\fR annotation, with the \fIaux\fR field containing
+the text `\fB(AFIB\fR', and end with any other \fBRHYTHM\fR annotation
+(or at the end of the record).  Reference-marked episodes of atrial flutter
+(begun by \fBRHYTHM\fR annotations with the text `\fB(AFL\fR') are excluded
+from AF comparisons (i.e., the test annotator is neither penalized nor rewarded
+for its treatment of atrial flutter in this context).  Any amount of overlap
+is sufficient to qualify a test episode as a true positive.
+.TP
+\fIVentricular fibrillation or flutter episodes\fR
+begin with a \fBVFON\fR annotation, and end with a \fBVFOFF\fR annotation
+(or at the end of the record).  \fBRHYTHM\fR annotations are ignored in this
+context by \fBepicmp\fR.  Any amount of overlap is sufficient to qualify a test
+episode as a true positive.
+.TP
+\fIIschemic ST episodes\fR
+begin with a \fBSTCH\fR annotation, with the \fIaux\fR field containing the
+text `\fB(ST\fIns\fR', and end with another \fBSTCH\fR annotation, with the
+text `\fBST\fIns\fB)\fR' (or at the end of the record).  Between these
+annotations, the extremum (the time at which the absolute value of the ST
+deviation is greatest) is marked with another \fBSTCH\fR annotation, with
+the text `\fBAST\fInsm\fR';  this annotation may be omitted in the test
+annotation file.  In these annotations, \fIn\fR is `\fB0\fR' or
+`\fB1\fR', and denotes the affected signal; \fIs\fR is `\fB+\fR' for episodes
+of ST elevation, or `\fB-\fR' for episodes of ST depression; and \fIm\fR is
+the ST deviation in microvolts, relative to a reference level established from
+the first 30 seconds of the record.  The values of \fIs\fR and \fIm\fR are not
+significant for the episode comparison made by \fIepicmp\fR.  When using the
+\fB-S0\fR or \fB-S1\fR options, \fIn\fR must be 0 or 1 respectively;  other
+\fBSTCH\fR annotations are ignored.  When using the \fB-S\fR option, the value
+of \fIn\fR is ignored:  each `\fB(ST\fIns\fR' annotation increments a counter,
+and each `\fBST\fIns\fB)\fR' annotation decrements the counter;  in this
+context, ST episodes begin when the counter becomes positive and end when the
+counter reaches zero (or at the end of the record).  To qualify a test episode
+as a true positive for purposes of determining ST episode sensitivity, it must
+overlap at least 50% of the reference episode, or the overlap must include the
+reference-marked extremum.  To qualify a test episode as a true positive for
+purposes of determining ST episode positive predictivity, the reference episode
+must overlap at least 50% of the test episode, or the overlap must include the
+test-marked extremum, if present.
+.PP
+The second file generated when using the `\fB-S\fR', `\fB-S0\fR', or
+`\fB-S1\fR' options contains comparisons of ST deviation measurements wherever
+such measurements are available in the reference annotation files.  In the
+existing databases, these appear only at extrema within each annotated
+ischemic (or non-ischemic) ST episode, as described above.
+For purposes of comparison of ST deviation measurements, test ST measurements
+for each signal are read from the \fIaux\fR field of beat annotations, which
+should contain text of the format `\fIm n\fR' (where \fIm\fR and \fIn\fR
+are the measured ST deviations for signals 0 and 1 respectively).  If these
+measurements are missing from any test beat annotation, \fBepicmp\fR assumes that
+they have not changed since they last appeared.  \fBepicmp\fR ignores
+`\fBAST\fR...' annotations in the test annotation file when making this
+comparison.  In the output file, any test measurements that deviate from the
+reference measurements by more than 100 microvolts are tagged with an asterisk
+(`\fB*\fR').  \fBplotstm\fR(1) can produce a scatter plot of these data using
+this file as input.
+.PP
+At least one of the options `\fB-A\fR', `\fB-S\fR', `\fB-S0\fR', `\fB-S1\fR',
+and `\fB-V\fR' must be used.  If `\fB-\fR' is given as a \fIfile\fR argument,
+reports are written on the standard output.  The output generated by selecting
+\fB-l\fR or \fB-L\fR includes column headings only if a \fIfile\fR other than
+`\fB-\fR' is specified, and only if the specified \fIfile\fR does not already
+exist.  In this way, \fBepicmp\fR can be used repeatedly to build up line-format
+tables for multiple records, for further processing by \fBsumstats\fR(1).
+.SH ENVIRONMENT
+.PP
+It may be necessary to set and export the shell variable \fBWFDB\fR (see
+\fBsetwfdb\fR(1)).
+.SH DIAGNOSTICS
+.TP
+\fInon-standard comparison selected\fR
+The \fB-f\fR, \fB-i\fR, \fB-I\fR, and \fB-t\fR options modify the comparison
+algorithms used by \fBepicmp\fR in ways not permitted by EC38.  These options
+are provided for the use of developers, who may find them useful for obtaining
+a more detailed understanding of algorithm errors.
+.SH BUGS
+.PP
+Since \fBepicmp\fR performs multiple passes over its input files, it cannot be
+used at the end of a pipe.
+.PP
+Between 1992 and 2002, this program was known as \fBepic\fR; the name
+was changed to avoid conflict with a new but widely distributed IRC
+chat client also named \fBepic\fR.  By analogy to \fBbxb\fR, \fBmxm\fR, and
+\fBrxr\fR, this program should have been called \fBexe\fR, which would
+have created interesting possibilities for confusion.
+.SH SEE ALSO
+bxb(1), ecgeval(1), mxm(1), plotstm(1), rxr(1), setwfdb(1), sumstats(1)
+.br
+\fIEvaluating ECG Analyzers\fR (in the \fIWFDB Applications Guide\fR)
+.br
+\fIAmerican National Standard ANSI/AAMI EC38:1998, Ambulatory
+Electrocardiographs\fR;  available from AAMI, 1110 N Glebe Road,
+Suite 220, Arlington, VA 22201 USA (http://www.aami.org/).
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCE
+http://www.physionet.org/physiotools/wfdb/app/epicmp.c

@@ -1,0 +1,70 @@
+file: 00README		G. Moody	10 April 2003
+
+The source files in this directory can be used to compile 'easytest' (a program
+that annotates a batch of ECG records) and 'bxbep' (a program that derives
+performance statistics from the output of 'easytest', based on 'bxb' from the
+WFDB Software Package; note that 'bxbep' has been renamed to avoid confusion
+with the original 'bxb').
+
+These source files are based on those contained in osea20.zip, with minor
+modifications needed to compile them using gcc.  They have been tested under
+GNU/Linux and under MS-Windows with Cygwin; they should work on any other
+platform for which gcc is available, including Mac OS/X (Darwin) and other
+versions of Unix.
+
+To compile these sources and run the programs:
+
+1. Install gcc if you have not already done so.  Under MS-Windows, install
+   the Cygwin software package available freely from http://www.cygwin.com/.
+   Under Mac OS/X, install the Mac OS/X Developer Tools, available freely from
+   http://developer.apple.com/macosx/.
+
+2. Download the sources for the WFDB Software Package, available freely from
+   http://www.physionet.org/physiotools/wfdb.shtml.  Follow the instructions
+   there to compile and install the WFDB software using gcc.
+
+3. Unpack the osea 2.0 software by typing:
+	tar xfvz osea20-gcc.tar.gz
+   This creates a directory called osea20-gcc, containing the sources for
+   'easytest' and 'bxbep'.  Enter this directory by typing:
+	cd osea20-gcc
+
+4. The sources are set up by default so that easytest and bxbep will
+   read the MIT-BIH Arrhythmia Database files directly from PhysioNet
+   (you don't need to have local copies of these files).  If you do
+   have local copies, be sure that they are in the current directory.
+
+   If you want to run 'easytest' and 'bxbep' on a different set of
+   records, edit 'inputs.h' to comment out the definition of PHYSIOBANK
+   near the beginning, and define either MITDB or AHADB as you wish.
+   You can also define your own set of records following the same model.
+   You will need to recompile (next step) before any changes you make
+   in 'inputs.h' are effective.
+
+5. Compile the sources by typing:
+	make
+   There should be no compilation errors or warnings.
+
+   The file named 'Makefile' controls what happens when you run
+   these 'make' commands.  'Makefile' is a text file that you can
+   edit if necessary.
+
+6. Run the osea 2.0 software by typing:
+	./easytest             [or './easytest2']
+	./bxbep
+   There should be no run-time errors or warnings.
+
+   'easytest2' is a version of 'easytest' that includes 'qrsdet2' rather
+   than the original 'qrsdet'.  It is otherwise identical to 'easytest'.
+
+   Note that 'easytest' (or 'easytest2') may take a long time to run if
+   it is reading data directly from PhysioNet and if your connection to
+   the PhysioNet master server at MIT is slow.
+
+   The output of 'easytest' is a set of annotation files with the suffix
+   (annotator name) 'atest', one for each record processed.
+
+   The output of 'bxbep' is a pair of files (adtstat.txt and testrpt.txt)
+   that are described in the osea documentation available from EP Limited.
+
+   All of the output files are written to the current directory.

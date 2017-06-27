@@ -1,0 +1,41 @@
+# file: Makefile	G. Moody	5 September 1990
+#			Last revised:   2 December 2005     Version 10.3.18
+# UNIX 'make' description file for the WFDB software package
+#
+# -----------------------------------------------------------------------------
+# WFDB software for creating & using annotated waveform (time series) databases
+# Copyright (C) 1990-2005 George B. Moody
+#
+# These programs are free software; you can redistribute them and/or modify
+# them under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
+#
+# These programs are distributed in the hope that they will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# these programs; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+# In addition, you can redistribute and/or modify the WFDB library (contained
+# within the 'lib' directory) under the terms of the GNU Library General
+# Public License as published by the Free Software Foundation; either version
+# 2 of the License, or (at your option) any later version.  For details, see
+# 'lib/COPYING.LIB'.
+#
+# You may contact the author by e-mail (george@mit.edu) or postal mail
+# (MIT Room E25-505A, Cambridge, MA 02139 USA).  For updates to this software,
+# please visit PhysioNet (http://www.physionet.org/).
+# _____________________________________________________________________________
+#
+# This file is used with the UNIX `make' command to compile, install, and
+# create archives of the WFDB software package.  Before using it
+# for the first time, check that the site-specific variables below are
+# appropriate for your system.  To compile the package, just type `make' (from
+# within this directory).  To install the package, type `make install'.  To
+# create source archives, type `make tarballs';  or to make a binary archive,
+# type `make bin-tarball'.  (Making archives requires PGP, gzip, and GNU tar).
+# _____________________________________________________________________________

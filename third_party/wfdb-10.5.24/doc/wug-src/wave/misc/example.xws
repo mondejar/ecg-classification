@@ -1,0 +1,10 @@
+# file: example.xws
+#
+# Sample `wavescript' script.  Use this script by the command
+#    wavescript example.xws
+#
+# The first character in each action line in a wavescript script begins with
+# a `-';  any other lines are ignored.  Only one action may appear on any line.
+-r 100s
+-a atr
+-f 0:22

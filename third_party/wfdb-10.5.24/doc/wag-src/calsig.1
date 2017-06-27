@@ -1,0 +1,96 @@
+.TH CALSIG 1 "7 January 2009" "WFDB 10.4.12" "WFDB Applications Guide"
+.SH NAME
+calsig \- calibrate signals of a WFDB record
+.SH SYNOPSIS
+\fBcalsig -r\fR \fIrecord\fR [ \fIoptions\fR ... ]
+.SH DESCRIPTION
+.PP
+\fBcalsig\fR (formerly known as \fBcalibrate\fR) rewrites the header file for a
+WFDB record, setting the gain and baseline fields based on measurements it
+makes, and setting the units fields based on input from the user or from a
+calibration file.  Normally, \fBcalsig\fR is used by specifying a time interval
+for the measurements; best results will be achieved if the specified interval
+is restricted to one or more square-wave calibration pulses in each signal to
+be calibrated, although sine-wave pulses may be usable if the sampling
+frequency and/or ADC resolution is high enough.
+.PP
+The program constructs a smoothed amplitude histogram for each signal and
+identifies its two principal modes.  Initially, each bin of the histogram
+counts the number of samples in the analysis interval for which the amplitude
+has a specified value.  The histogram is smoothed by applying a low-pass filter
+that replaces the contents of each bin by a weighted sum of fifteen bins
+centered on the bin of interest.  The two principal modes in the smoothed
+histogram must be separated by at least one bin with a count that is less than
+one-eighth the count of the larger mode.  If this criterion is not satisfied
+for a given signal, \fBcalsig\fR warns the user and does not adjust the gain
+or baseline for the affected signal.
+.PP
+If a signal list is specified using the \fB-s\fR option (see below), only the
+specified signals are calibrated, and the gain, baseline, and units fields for
+any other signals are left unchanged.  Thus, if calibration pulses are not
+simultaneously available in all signals to be calibrated, \fBcalsig\fR may
+be run repeatedly with different time intervals and signal lists.
+.PP
+.PP
+\fIOptions\fR include:
+.TP
+\fB-c\fI file\fR
+Obtain calibration pulse specifications from the specified \fIfile\fR (see
+\fBwfdbcal\fR(5); default: obtain this information from the file specified by
+the environment variable \fBWFDBCAL\fR, or interactively).
+.TP
+\fB-f\fI time\fR
+Begin at the specified \fItime\fR in \fIrecord\fR (default: the beginning of
+\fIrecord\fR).
+.TP
+\fB-h\fR
+Print a usage summary.
+.TP
+\fB-q\fR
+Instead of using the standard method for calibration, get a
+`quick-and-dirty' estimate by taking the signal amplitudes at the
+starting and ending times (as specified by \fB-f\fR and \fB-t\fR) as
+representative of the low- and high-amplitude phases of the
+calibration pulse.  Use this option only if the standard method fails;
+the standard method is more accurate.
+.TP
+\fB-Q\fR
+Use an alternate `quick-and-dirty' estimate based on the range of signal
+amplitudes over the interval specified by \fB-f\fR and \fB-t\fR.  This
+method may be easier to use than \fB-q\fR for signals with significant
+high-frequency content, since it does not require precise location of signal
+extrema.  As noted above, the standard method is more accurate if it can be
+used.
+.TP
+\fB-s\fR \fIsignal-list\fR
+Calibrate only the signals named in the \fIsignal-list\fR (one or more input
+signal numbers or names, separated by spaces;  default: calibrate all signals).
+.TP
+\fB-t\fI time\fR
+Process until the specified \fItime\fR in \fIrecord\fR (default: 1 second after
+the starting time).
+.TP
+\fB-v\fR
+Ask for calibration pulse limits (default: read limits from the calibration
+file).
+.SH ENVIRONMENT
+.PP
+It may be necessary to set and export the shell variables \fBWFDB\fR
+and \fBWFDBCAL\fR (see \fBsetwfdb\fR(1)).
+.PP
+Calibration files must be located in one of the directories named in
+\fBWFDB\fR, the database path.  If the environment variable
+\fBWFDBCAL\fR is set, it names a calibration file that will be read
+unless the \fB-c\fR option is used to specify a different calibration
+file.  At most one calibration file is read; if more than one \fB-c\fR
+option is given, only the last one is effective.  If the calibration
+file does not contain an entry for the type of signal to be
+calibrated, \fBcalsig\fR obtains the information from the user
+interactively.  If the calibration file contains two or more entries
+for the same signal type, only the first entry is used.
+.SH SEE ALSO
+\fBsetwfdb\fR(1), \fBwfdbcal\fR(5)
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCE
+http://www.physionet.org/physiotools/wfdb/app/calsig.c

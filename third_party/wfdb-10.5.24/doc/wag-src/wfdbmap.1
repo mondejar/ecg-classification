@@ -1,0 +1,45 @@
+.TH WFDBMAP 1 "15 November 2011" "WFDB 10.5.10" "WFDB Applications Guide"
+.SH NAME
+wfdbmap \- make a synoptic map of a WFDB record
+.SH SYNOPSIS
+\fBwfdbmap -r\fR \fIrecord\fR [ \fB-a\fR \fIannotator \fR ...  ]
+.br
+\fBmap-record -r\fR \fIrecord\fR [ \fB-a\fR \fIannotator \fR ...  ]
+.SH DESCRIPTION
+.PP
+\fBwfdbmap\fR generates a shell script containing commands and embedded
+data for creating a synoptic map of a WFDB-compatible \fIrecord\fR, optionally
+including one or more associated sets of annotations (specified by one or more
+\fIannotator\fR names following the \fB-a\fR option).  When the script is run,
+it creates a PostScript-format 'map' of the WFDB record and its annotations,
+using \fBlwplt\fR from the \fBplt\fR(1) package.  The maps displayed by the
+PhysioBank ATM are created in this way, with an additional conversion of the
+PostScript map to browser-compatible PNG format using \fBconvert\fR from
+ImageMagick (http://www.imagemagick.org/).
+.PP
+\fBmap-record\fR is a shell script that illustrates how \fBwfdbmap\fR and
+(indirectly) \fBplt\fR are used to create a map, and how to convert
+the PostScript map into a PNG-format map using \fBconvert\fR.
+.PP
+For example, to make a map of mitdb/200 and its associated 'atr' annotations,
+run the command:
+.IP
+\fBmap-record mitdb/200 -a atr\fR
+.PP
+The outputs of this command are \fB200.ps\fR and \fB200.png\fR.  If other
+annotation files are available, their annotator names can be given as
+additional command-line arguments:
+.IP
+\fBmap-record \fIrecord\fB -a \fIann1 ann2 ann3 ...
+.SH ENVIRONMENT
+.PP
+It may be necessary to set and export the shell variable \fBWFDB\fR (see
+\fBsetwfdb\fR(1)).
+.SH SEE ALSO
+\fBplt\fR(1), \fBsetwfdb\fR(1)
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCE
+http://www.physionet.org/physiotools/wfdb/app/wfdbmap.c
+http://www.physionet.org/physiotools/wfdb/app/signal-colors.h
+http://www.physionet.org/physiotools/wfdb/app/map-record

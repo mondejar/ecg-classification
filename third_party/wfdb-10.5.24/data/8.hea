@@ -1,0 +1,6 @@
+# file: header.8
+#  Use this record to read or write 2 signals via standard I/O.
+
+8 2
+- 8
+- 8

@@ -1,0 +1,57 @@
+.TH COHERENCE 1  "24 July 2002" "WFDB 10.2.7" "WFDB Applications Guide"
+.SH NAME
+coherence \- estimate coherence and cross-spectrum of two time series
+.SH SYNOPSIS
+\fBcoherence -i\fR \fIfile\fR [ \fIoptions ...\fR ]
+.SH DESCRIPTION
+.PP
+\fBcoherence\fR estimates the coherence and cross-spectrum of a pair
+of real-valued time series;  as a byproduct of its calculation of
+coherence, it also estimates the autospectra of each of its input time
+series.  The \fIfile\fR argument specifies the name of a text file
+containing the samples of the series in two columns.  The standard
+output contains five columns of numbers (optionally preceded by column
+headings), which are frequency (Hz), coherence, cross-spectral power
+(dB), autospectral power (dB) of the first time series, and
+autospectral power (dB) of the second time series.
+.PP
+This program is based on a Fortran program by C.R. Arnold, G.C. Carter, and
+J.F. Ferrie, as described in `A coherence and cross-spectral estimation
+program', by G.C. Carter and J.F. Ferrie, in \fIPrograms for Digital Signal
+Processing\fP, edited by the Digital Signal Processing Committee of the IEEE
+ASSP Society (New York: IEEE Press, 1979).  The functions fft842() and its
+auxiliary functions r2tx(), r4tx(), and r8tx(), are based on Fortran
+subroutines by G.D. Bergland and M.T. Dolan, as described by them in `Fast
+Fourier transform algorithms', also included in \fIPrograms for Digital Signal
+Processing\fP.
+.PP
+\fIOptions\fR are:
+.TP
+\fB-f\fR \fIfrequency\fR
+Specify the sampling frequency in Hz (default: 250).
+.TP
+\fB-n\fR \fIn\fR
+Process the input in overlapping chunks of \fIn\fR samples (default: 1024).
+For best results, \fIn\fR should be a power of two.
+.TP
+\fB-v\fR
+Print column headings.
+.TP
+\fB-x\fR \fIsx sy\fR
+Specify multiplicative scale factors for the two time series
+(defaults: 1).  A reasonable choice is to use the reciprocals of the
+standard deviations of the respective time series if these differ
+significantly.
+.PP
+Note that the scale factors generally have little or no visible effect
+on the coherence or on the shape of the spectra.  The choice of chunk
+size (using the \fB-n\fR option) will have a significant effect;  some
+experimentation may be needed to determine an appropriate chunk size
+in each case.
+.SH SEE ALSO
+.PP
+\fBfft\fR(1)
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCE
+http://www.physionet.org/physiotools/wfdb/psd/coherence.c

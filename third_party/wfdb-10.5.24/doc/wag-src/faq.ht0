@@ -1,0 +1,168 @@
+<html>
+<head>
+<title>WFDB Applications Guide: FAQ</title>
+</head>
+<body bgcolor="#ffffff">
+<b>Next:</b> NEXTPAGE <b>Up:</b> <a href="wag.htm">WFDB Applications Guide</a> <b>Previous:</b> <a href="intro.htm">Introduction</a>
+
+<h1 align=center>Frequently Asked Questions</h1>
+<h2 align=center>(and Frequently Exclaimed Exclamations)</h2>
+
+<p>
+<a name="text-mode"><h2>I double-clicked on the program icon, and nothing happens!<br>
+I typed the program name in the 'Run...' dialog, and nothing happens!</h2></a>
+
+<p> Don't do this!
+
+<p> With few exceptions, PhysioToolkit applications run in <em>text mode</em>
+(i.e., they do not include a graphical user interface).  These programs are
+intended to be run within a terminal emulator using a command-line interface.
+In most cases, if you attempt to run them by clicking on their icons or names,
+or by entering the program name in the MS-Windows <b>Run...</b> dialog box,
+these programs will open a DOS box, print a usage summary, and exit, usually
+much too fast for you to read anything.
+
+<p> By far the best way to use these programs under MS-Windows is to install a
+Unix-compatible terminal emulator and shell in which to run them.  The best of
+these is also free; if you have not already done so, download and install the
+<a href="http://www.cygwin.com/" target="other">Cygwin</a> software package.
+This package includes <tt>bash</tt> (the GNU Bourne Again Shell), and a
+terminal emulator in which to run it.  After a standard installation of Cygwin,
+you can launch a terminal emulator and <tt>bash</tt> by clicking on the Cygwin
+icon that will have been installed on your desktop.
+
+<p> If you do not wish to use Cygwin, it is possible to run text-mode
+applications under MS-Windows within a DOS box, but there are many limitations
+of <tt>command.com</tt> that may prove frustrating.  In particular,
+<tt>command.com</tt> supports a relatively small space for environment
+variables that is not secure against buffer overruns, and has idiosyncratic
+filename globbing behavior.
+
+<a name="header-error"><h2>What does the message "init: can't open header for ..." mean?</h2></a>
+
+<p> This message can be produced by any application linked to the WFDB
+library, including <a href="rdsamp-1.htm"><b>rdsamp</b>(1)</a> and <a
+href="rdann-1.htm"><b>rdann</b>(1)</a>.  In order to read data files,
+these applications need to find a header (<b>.hea</b>) file for the
+input record you specify.  The message indicates that the header file
+was not found in any of the expected places, or that it was
+unreadable.  There are three common reasons why this can happen:
+
+<ul>
+<li> The <a href="intro.htm#record">record name</a> supplied to the
+     application is not correct.  Record names are <em>not</em> file names (if
+     this doesn't sound familiar yet, go back and read the
+     <a href="intro.htm">introduction</a> again).  If you wish to read, for
+     example, a signal file named <tt>slp60.dat</tt> using <b>rdsamp</b>, you
+     must specify the name of the record to which this file belongs
+     (<b>slp60</b>) after the <b>-r</b> option, and not the name of the file
+     itself.  Whatever follows "init: can't open header for ..." is what the
+     application thinks is the name of the record you wish to read.  Also, be
+     aware that case matters in record names, even under operating systems that
+     ignore case in file names.  Thus "<b>SLP60</b>" is not a valid record
+     name; "<b>slp60</b>" is.
+
+<li> The header file is missing.  If you download signal (<b>.dat</b>) or
+     annotation (<b>.atr</b>, <b>.qrs</b>, etc.) files, be sure to download
+     the corresponding <b>.hea</b> files from the same locations.
+
+<li> The list of locations to be searched does not include the location of
+     the header file.  WFDB applications find their input files by searching
+     a list of locations specified by the WFDB path (the environment variable
+     <b>WFDB</b>, or a default list of locations if WFDB has not been set). The
+     WFDB path normally includes the current directory, but this may not be
+     true if the WFDB path has been modified;  the current directory must
+     appear explicitly (either as a "." or as an empty component in the path)
+     in order to be included in the list of locations to be searched.  For
+     further information, see <a href="../wpg/database-path.htm">"The
+     Database Path and Other Environment Variables"</a> in the
+     <a href="../wpg/">WFDB Programmer's Guide</a>.
+</ul>
+
+<a name="pipes"><h2>How can I save the output of ... in a file?<br>
+How can one program read another's output?</h2></a>
+
+<p>
+If you are running programs from a command prompt (by typing commands
+into a terminal emulator window or an MS-DOS box), these things can
+be done easily.
+
+<p>
+If you have ever used GNU/Linux, Unix, or MS-DOS, you may have captured the
+output of a program by <em>redirecting</em> it to a file, like this:
+
+<pre>
+    foo &gt;bar
+</pre>
+
+The <tt>&gt;</tt> operator redirects <tt>foo</tt>'s standard output (which
+would normally appear on-screen) into a file named <tt>bar</tt>.  If
+<tt>bar</tt> exists already, its contents are replaced.  If you wish to
+append <tt>foo</tt>'s output to whatever is already contained in <tt>bar</tt>,
+use a command such as this instead:
+
+<pre>
+    foo &gt;&gt;bar
+</pre>
+
+<p>
+There is an analogous operator that arranges for a program's standard input
+(which would normally be read from whatever you type on the keyboard) to
+be read from a file instead:
+
+<pre>
+    baz &lt;bar
+</pre>
+
+Here, the <tt>&lt;</tt> operator arranges for <tt>baz</tt> to read its
+input from a file named <tt>bar</tt>.  If <tt>bar</tt> was created by
+<tt>foo</tt>, then this command allows <tt>baz</tt> to read <tt>foo</tt>'s
+output.  
+
+<p>
+You can combine input and output redirection in a single command using the
+pipe (<tt>|</tt>) operator:
+
+<pre>
+    foo | baz
+</pre>
+
+This command runs <tt>foo</tt> and sends its standard output directly to
+<tt>baz</tt>, without requiring an intermediate file.  True multitasking
+operating systems such as Unix and GNU/Linux allow both programs to run
+(apparently) simultaneously;  under MS-DOS or MS-Windows, the first program
+runs to completion before the second one begins execution.
+
+<p>
+You can use these techniques whenever you run programs from a command
+prompt, whether those programs are among those available here or obtained
+from some other source.  You can use the same techniques with programs
+you write yourself;  the only requirement is that your programs must read from
+the standard input and write to the standard output (i.e., they must not
+attempt to bypass the standard input/output mechanism by reading directly from
+the keyboard or writing directly to the screen).
+
+<p>
+These operators (<tt>&gt;</tt>, <tt>&gt;&gt;</tt>, <tt>&lt;</tt>, and
+<tt>|</tt>) are supported by all <em>shells</em> (command interpreters)
+under Unix, GNU/Linux, and MS-DOS (including those that run within MS-DOS
+boxes or other types of terminal emulators under MS-Windows).  For further
+information, please refer to the documentation for your shell or command
+interpreter.
+
+<h2>Where else can I find answers to my questions about this software?</h2>
+
+<p>
+If you haven't read the <a href="intro.htm">introduction</a> to this guide
+yet, do so now.  It answers many frequently asked questions by describing the
+common behavior of many of the WFDB applications.  It also describes the
+typographic and organizational conventions used in the remainder of this guide.
+
+<p>
+Many more questions are asked and answered in the <a
+href="/faq.shtml">PhysioNet FAQ</a>.
+
+<p>
+LONGDATE
+</body>
+</html>

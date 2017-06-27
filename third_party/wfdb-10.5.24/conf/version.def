@@ -1,0 +1,22 @@
+# file: version.def		G. Moody	24 May 2000
+#				Last revised:	12 July 2010
+# Each release of the WFDB Software Package is identified by a three-part
+# version number, defined below.  Be sure to leave a single space before
+# and after the "=" in each of the next three lines!
+MAJOR = VMAJ
+MINOR = VMIN
+RELEASE = VREL
+VERSION = $(MAJOR).$(MINOR).$(RELEASE)
+
+# RPMRELEASE can be incremented if changes are made between official
+# releases.  It should be reset to 1 whenever the VERSION is changed.
+RPMRELEASE = 1
+
+# VDEFS is the set of C compiler options needed to set version number variables
+# while compiling the WFDB Software Package.
+VDEFS = -DWFDB_MAJOR=$(MAJOR) -DWFDB_MINOR=$(MINOR) -DWFDB_RELEASE=$(RELEASE)
+
+# WAVEVERSION is the WAVE version number.
+WAVEVERSION = 6.11
+# _____________________________________________________________________________
+

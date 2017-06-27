@@ -1,0 +1,40 @@
+#!/bin/sh
+# file: check-manifest		G. Moody	14 December 2001
+#				Last revised:    26 August 2014
+# Verify tarball contents
+
+PACKAGE=$1
+sort -f <MANIFEST | grep . | grep -v ${PACKAGE} >../expected-MANIFEST
+sed 's+/$++' <../${PACKAGE}-MANIFEST | sort -f | grep . | \
+ grep -v ${PACKAGE} >../sort.$$
+mv ../sort.$$ ../${PACKAGE}-MANIFEST
+if diff ../expected-MANIFEST ../${PACKAGE}-MANIFEST
+then
+  rm -f ../expected-MANIFEST ../${PACKAGE}-MANIFEST
+  cat <<EOF
+
+The contents of ${PACKAGE} match the MANIFEST -- no errors were detected.
+EOF
+
+else
+  cat <<EOF
+
+Oops! The MANIFEST does not match the contents of ${PACKAGE}!
+The 'diff' output above indicates which file(s) do not match.
+There are four possible reasons for this problem:
+  1. A file belonging to the package is missing;  find it!
+     Look in previous versions of the package for the missing file.
+  2. A file that does not belong to the package is present within this
+     directory or one of its subdirectories;  remove it!
+  3. A new file in the package is not mentioned in the MANIFEST;  in this
+     case, replace MANIFEST with ../${PACKAGE}-MANIFEST.
+  4. A file formerly belonging to the package has been removed;  in this
+     case, replace MANIFEST with ../${PACKAGE}-MANIFEST.
+Read the 'diff' output above to identify which reason(s) apply.  Be careful
+not to replace MANIFEST unless all errors related to reasons 1 and 2 have
+been corrected.  In any case, rerun 'make tarballs' after correcting the
+problem(s).
+
+EOF
+
+fi

@@ -1,0 +1,728 @@
+.TH WAVE 1 "28 October 2009" "WFDB 10.4.24" "WFDB Applications Guide"
+.SH NAME
+wave \- waveform analyzer, viewer, and editor
+.SH SYNOPSIS
+\fBwave -r\fR \fIrecord\fR[\fB+\fIrecord\fR ...] [ \fIoptions\fR ... ]
+.SH DESCRIPTION
+.PP
+\fBwave\fR can be used to view the specified WFDB \fIrecord\fR or
+records on any display controlled by an X11 server.  It includes
+facilities for interactive annotation editing.
+The keyboard and mouse are used to control the display interactively.
+First-time users should read the \fIWAVE User's Guide\fR, available at
+\fBhttp://physionet.org/physiotools/wug/\fR (or, while \fBwave\fR is running,
+choose \fIUser's Guide\fR from the \fIHelp\fR panel).
+.PP
+If you specify more than one \fIrecord\fR, a separate \fBwave\fR process is
+started for each record.  Note that all records to be opened must be listed in
+a single command-line argument following \fB-r\fR, with \fB+\fR characters (not
+spaces) between the record names.  See `Running two or more WAVE processes'
+below.
+.PP
+Use the left mouse button to make selections, and the right mouse button to
+open menus (indicated by triangular glyphs at the right end of some buttons).
+See the \fIGuide\fR or choose \fIAnnotation Editing\fR from the \fIHelp\fR
+panel).
+.PP
+\fIOptions\fR are:
+.TP
+\fB-a\fR \fIannotator\fR
+Open the specified annotation file for the previously specified \fIrecord\fR
+or records.
+.TP
+\fB-dpi\fR \fIxx\fR[\fBx\fIyy\fR]
+Calibrate \fBwave\fR for use with a display having a resolution of \fIxx\fR
+(by \fIyy\fR) dots per inch.
+.TP
+\fB-f\fR \fItime\fR
+Open the record(s) beginning at the specified \fItime\fR.
+.TP
+\fB-g\fR
+Use shades of grey only, even on a color monitor.
+.TP
+\fB-H\fR
+Read the signal files in high-resolution mode (default: standard mode).
+These modes are identical for ordinary records.  For multifrequency records,
+the standard decimation of oversampled signals to the frame rate is suppressed
+in high-resolution mode (rather, all other signals are resampled at the highest
+sampling frequency).
+.TP
+\fB-m\fR
+Use monochrome (usually black and white) only, even on a color or greyscale
+monitor.  The line styles selected by the \fB-m\fR option may be easier to
+distinguish on some greyscale monitors than the default shades of grey.
+.TP
+\fB-O\fR
+Use overlay graphics for maximum speed and display quality if possible.  This
+is the usual default if the X server supports a PseudoColor or GrayScale
+visual.  This option exists only to force use of overlay graphics if a
+different mode has been chosen as the default.
+.TP
+\fB-s\fR \fIsignal-list\fR
+Initialize the signal list.  By default, the signal list includes all available
+signals, in numerical order.
+.TP
+\fB-S\fR
+Use the standard (shared) color palette, even if it is possible to modify
+the palette.  Using this option conserves color resources if you have other
+applications that use non-standard colors, at the expense of some speed in
+redrawing the display.  The \fB-S\fR option may be used in combination with
+the \fB-g\fR option if desired.
+.TP
+\fB-V\fR\fIx\fR
+Set display option \fIx\fR.  See `Display Options' below for details.
+.PP
+Note that \fBwave\fR queries the X server to determine the display
+capabilities and resolution;  it is not necessary to use the \fB-g\fR,
+\fB-m\fR, or \fB-S\fR options unless you wish to restrict \fBwave\fR's use of
+the available capabilities.  Use the \fB-dpi\fR option to override the server's
+default resolution if it is incorrect and cannot be changed otherwise (see
+comments below under `Resources').
+.PP
+The system on which \fBwave\fR runs (the ``host'' system) need not be the
+same as the system to which your keyboard, mouse and display are connected
+(the ``local'' system), provided only that the host and local systems are on
+the same network.  If you wish to run \fBwave\fR remotely, simply log in
+to the host using \fBssh\fR, which normally handles display redirection
+automatically.  If you use some other method to log in remotely, such as
+\fBrlogin\fR (not recommended) or \fBtelnet\fR (not recommended), it is usually
+necessary to grant permission for the host system to open windows on the
+local system's display (generally, this is accomplished using \fBxhost\fR on
+the local system;  see the documentation for your X server for details), and
+to set the \fBDISPLAY\fR environment variable on the host system appropriately
+(if the local system runs UNIX, the value of \fBDISPLAY\fR should be
+\fIlocal-hostname\fB:0.0\fR in most cases;  again, consult your X server
+documentation).
+.SH ENVIRONMENT
+\fBwave\fR uses many environment variables;  they are listed in this section
+roughly in order of importance.  Many of them need not be set at all, since
+\fBwave\fR uses reasonable default values in most cases.  Those that are set
+must be set on the host system.
+.TP
+\fBDISPLAY\fR
+The name of the X server and display you are using (see above).  If you are
+using \fBwave\fR locally, or if you are logged in via \fBssh\fR, \fBDISPLAY\fR
+should be set automatically and should not need to be changed.
+.TP
+\fBWFDB\fR
+The database path (see \fBsetwfdb\fR(1)).  If not set, \fBwave\fR can find
+database files only in the builtin WFDB path.  If you edit annotation files
+and wish to reopen them later, be sure that the current directory (in
+which \fBwave\fR writes any edited annotation files) is the first
+directory in your database path.
+.TP
+\fBWFDBCAL\fR
+The WFDB calibration file (see \fBsetwfdb\fR(1) and \fBwfdbcal\fR(5)).  If not
+set, \fBwave\fR reads the builtin default calibration file;  if this is not
+accessible, \fBwave\fR may not scale signals other than ECGs correctly.
+.TP
+\fBWAVEMENU\fR
+The name of the analysis menu file (see below);  if not set,
+\fBwave\fR uses \fBwavemenu\fR if it exists in the current directory, or
+\fB$MENUDIR\fR\fB/wavemenu.def\fR otherwise.
+.TP
+\fBSHELL\fR
+The command interpreter used within the Analysis Commands window;  if not set,
+\fBwave\fR uses \fB/bin/sh\fR (the Bourne shell).  Other shell-related
+variables, such as \fBPATH\fR, are also significant when \fBwave\fR is running
+commands within the Analysis Commands window.
+.TP
+\fBEDITOR\fR
+The name of the text editor to be used for modifying the analysis menu
+file and the log file.  If not set, \fBwave\fR uses \fBtextedit\fR (a
+simple editor included with the XView toolkit).
+.TP
+\fBPRINTER\fR
+The name of a printer to be used for paper output;  if not set,
+\fBwave\fR uses the default printer.
+.TP
+\fBPSPRINT\fR
+The command used to print PostScript data from the standard input;  if not
+set, \fBwave\fR uses `\fBlpr -P$PRINTER\fR'.
+.TP
+\fBTEXTPRINT\fR
+The command used to print text from the standard input;  if not
+set, \fBwave\fR uses `\fBlpr -P$PRINTER\fR'.
+.TP
+\fBANNTAB\fR
+The name of a file that contains custom annotation definitions
+(see `Resources', below, for details).  If not set, \fBwave\fR uses standard
+annotation definitions only.
+.PP
+The environment variables below are not needed unless the \fBwave\fR binary
+distribution, or XView, has been installed in non-standard directories:
+.TP
+\fBHELPPATH\fR
+The path for XView spot help;  if not set, \fBwave\fR initializes it to
+\fB/usr/lib/help\fR.  \fBwave\fR's own spot help is in
+\fB$HELPDIR\fR\fB/wave\fR, which is appended to the end of \fBHELPPATH\fR
+by \fBwave\fR.
+.TP
+\fBHELPDIR\fR
+The directory in which \fBwave\fR's help directory is located;  if not set,
+\fBwave\fR uses \fB/usr/local/help\fR.
+.TP
+\fBMENUDIR\fR
+The name of the directory that contains the default analysis menu
+file;  if not set, \fBwave\fR uses \fB/usr/local/lib\fR.
+.TP
+\fBRESDIR\fR
+The name of the directory in which system-wide default X11 resource files
+are kept;  if not set, \fBwave\fR uses \fB/usr/lib/X11/app-defaults\fR.
+\fBXUSERFILESEARCHPATH\fR, \fBXAPPLRESDIR\fR, and \fBXENVIRONMENT\fR are
+also used, together with \fBHOME\fR and \fBUSER\fR, to locate resource files
+(see \fBX\fR(1)).
+.SH RESOURCES
+.PP
+You can control many aspects of \fBwave\fR's appearance and behavior by
+setting its resources.  If you are not familiar with this concept, refer to an
+introductory book on using the X Window System, such as Darwin, Quercia, and
+O'Reilly's \fIX User's Guide: Open Look Edition\fR (see the link below).
+Since \fBwave\fR is built using the XView
+toolkit, all of the resources listed in \fBxview\fR(7) can be used with
+\fBwave\fR.  In addition, the following \fBwave\fR-specific resources may
+also be set:
+.TP
+\fBWave.AllowDottedLines\fR
+This resource specifies if \fBwave\fR is allowed to render dotted
+lines.  \fBwave\fR normally draws annotation marker bars as dotted
+lines, and may use dotted lines for other display elements on
+black-and-white displays for clarity.  Some X servers do not properly
+render dotted lines, however;  if you observe irregular or missing
+annotation marker bars, change the value of this resource from
+\fBTrue\fR to \fBFalse\fR.
+.TP
+\fBWave.Anntab\fR
+This resource specifies the name of a file that contains a table of
+annotation definitions.  The environment variable \fBANNTAB\fR can also be used
+to specify this filename;  the resource overrides the environment variable
+if both are set.  The file contains one-line entries of the form
+.br
+        15 % Funny looking beat
+.br
+in which the first field specifies the (numeric) annotation code in the
+range between 1 and \fBACMAX\fR inclusive (see
+\fB/usr/include/wfdb/ecgcodes.h\fR for a list of predefined codes and for the
+definition of \fBACMAX\fR);  the second field (`%' in the example) is a
+mnemonic (used in annotation display and entry), and the remainder of the entry
+is a description of the intended use of the annotation code (which appears next
+to the mnemonic in the `Type' field and menu of `Annotation Template' windows).
+Lines in the annotation table that begin with `#' are treated as comments and
+ignored.  It is not necessary to specify an annotation table when editing an
+existing annotation file unless previously undefined annotation types are to be
+added to it during the editing process, although it is generally harmless
+to do so.
+.TP
+\fBWave.Dpi\fR
+This resource specifies the display resolution in dots per inch in the
+form \fIMM\fBx\fINN\fR, where \fIMM\fR is the horizontal resolution and
+\fINN\fR is the vertical resolution.  Normally, the resolution is known to the
+X server, and it is unnecessary to specify this resource.  If your X server is
+misinformed, \fBwave\fR's calibrated display scales will be incorrect;  the
+best solution is to specify the resolution using a server option such as the
+\fB-dpi\fR option supported by MIT's X11 servers, since this will solve
+problems common to any other applications that require calibrated scales as
+well.  Not all X11 servers support such an option, so this resource is
+available as a work-around.  The command-line option \fB-dpi\fR  overrides the
+resource if both are specified.
+(If you don't know the resolution, use \fBxdpyinfo\fR(1) to determine what your
+X server thinks it is.  Then run \fBwave\fR, enable the grid display, and
+measure the grid squares with a ruler.  If they are larger than 5 mm, the
+number of dots per inch returned by \fBxdpyinfo\fR is too large;  adjust the
+\fBWave.Dpi\fR resource proportionally, and repeat the process until the
+grid squares measure 5 mm in each direction.)
+.TP
+\fBWave.GraphicsMode\fR
+This resource specifies the graphics mode used by \fBwave\fR;  it can be
+overridden using the \fB-g\fR, \fB-m\fR, \fB-O\fR, or \fB-S\fR
+options.  The legal values are \fB1\fR (monochrome mode), \fB2\fR
+(overlay greyscale mode), \fB4\fR (shared color mode), \fB6\fR
+(shared grey mode), and \fB8\fR (overlay color mode).
+.TP
+\fBWave.SignalWindow.\fR{\fBGrey\fR|\fBColor\fR}\fB.\fIElement\fR
+These resources specify the colors to be used on greyscale or color
+displays.  The `Color.*' resources are used only if the display is
+color-capable and neither greyscale nor monochrome mode has been
+specified.  The defaults are:
+.br
+.TS
+center;
+l l l.
+\fIElement\fB	Grey	Color\fR
+\fBBackground\fR	white	white
+\fBGrid\fR	grey75	grey90
+\fBCursor\fR	grey50	orange red
+\fBAnnotation\fR	grey25	yellow green
+\fBSignal\fR	black	blue
+.TE
+.TP
+\fBWave.SignalWindow.Mono.Background\fR
+In monochrome mode, the background is normally white, and all other
+display elements are normally black.  The reverse can be obtained by
+setting this resource to \fBblack\fR.  (There is at least one server
+for which this fails.)
+.TP
+\fBWave.Scope.\fR{\fBGrey\fR|\fBColor\fR}\fB.\fR{\fBForeground\fR|\fBBackground}\fR
+These resources specify the colors to be used in the Scope window on greyscale
+or color displays. The Foreground color is used for the waveform and the time
+display; by default, it matches the color used for signals in the signal window
+(see the previous item). Some X servers do not allow the background color of
+the Scope window to be set, because of the color map animation and stippled
+erasing techniques used. 
+.TP
+\fBWave.Scope.Mono.Background\fR
+This resource can be used to invert the foreground and background of the Scope
+window when WAVE is running in monochrome mode. This does not work for all X
+servers. 
+.TP
+\fBWave.SignalWindow.{Height_mm|Width_mm}\fR
+These resources specify the preferred dimensions (in millimeters) for the
+signal window.  The defaults are 120 and 250 respectively.
+.TP
+\fBWave.SignalWindow.Font\fR
+This resource specifies the font used to display annotations and time
+marks in the signal window.  The default is \fBfixed\fR.
+.TP
+\fBWave.TextEditor\fR
+This resource specifies the name of the text editor invoked by
+\fBwave\fR to permit you to edit \fBwave\fR's log and analysis menu
+files.  The default is \fBtextedit\fR (the OpenLook visual editor).
+You may override this resource by using the environment variable
+\fBEDITOR\fR, which is also used by many other UNIX applications that
+invoke editors.
+
+.SS Display options
+Initial values for the settings controlled from \fBwave\fR's View window can
+be specified using either X resources or command-line options.  Once
+suitable settings have been selected, use the `Save as new defaults'
+button in \fBwave\fR's View window to record them in your \fB.Xdefaults\fR
+file.  In this section, the X resource name is specified first, and
+the command-line option follows.
+.PP
+By default, all of the display options in the first group are off
+(\fBFalse\fR); set any of these X resources to \fBTrue\fR to enable
+these options, or use the command-line options to do so.
+.TP
+\fBWave.View.Subtype\fR (\fB-Vs\fR)
+Display annotation \fBsubtyp\fR fields.
+.TP
+\fBWave.View.Chan\fR (\fB-Vc\fR)
+Display annotation \fBchan\fR fields.
+.TP
+\fBWave.View.Num\fR (\fB-Vn\fR)
+Display annotation \fBnum\fR fields.
+.TP
+\fBWave.View.Aux\fR (\fB-Va\fR)
+Display annotation \fBaux\fR fields.
+.TP
+\fBWave.View.Markers\fR (\fB-Vm\fR)
+Display annotation marker bars.
+.TP
+\fBWave.View.SignalNames\fR (\fB-VN\fR)
+Display signal names along the left edge of the signal window.
+.TP
+\fBWave.View.Baselines\fR (\fB-Vb\fR)
+Display baselines for any DC-coupled signals, and label the zero levels and the
+units along the right edge of the signal window.
+.TP
+\fBWave.View.Level\fR (\fB-Vl\fR)
+While the pointer is in the signal window and any mouse button is depressed,
+track the intersections of the marker bar with the signals and draw
+horizontal marker bars across the signal window at the levels of these
+intersections.
+.PP
+The remaining resources and command-line display options correspond to
+the menu buttons in \fBwave\fR's View window.  The value of each
+resource, or the numeric argument that immediately follows the
+command-line option, should match the position of the desired menu
+choice, where the top item on each menu is in position 0, the one
+below it is in position 1, etc.  For example, to set the initial
+amplitude scale to 5 mm/mV (the item at position 2 in the `Amplitude
+scale' menu), add \fB-Vv 2\fR to the command line, or
+\fBWave.View.AmplitudeScale:2\fR to the X11 resource database.
+.TP
+\fBWave.View.TimeScale\fR (\fB-Vt\fR)
+Set the time scale (0: 50 mm/min; 1: 125 mm/min; 2: 250 mm/min; 3: 500 mm/min;
+4: 12.5 mm/sec; 5: 25 mm/sec (default); 6: 50 mm/sec; 7: 125 mm/sec;
+8: 250 mm/sec).
+.TP
+\fBWave.View.AmplitudeScale\fR (\fB-Vv\fR)
+Set the amplitude scale (0: 1 mm/mV; 1: 2.5 mm/mV; 2: 5 mm/mV; 3: 10 mm/mV
+(default); 4: 20 mm/mV; 5: 40 mm/mV; 6: 100 mm/mV).
+.TP
+\fBWave.View.SignalMode\fR (\fB-VS\fR)
+Set the choice on the `Draw' menu (0: all signals (default); 1: listed signals
+only).
+.TP
+\fBWave.View.AnnotationMode\fR (\fB-VA\fR)
+Set the choice on the `Show annotations' menu (0: centered (default); 1:
+attached to signals; 2: as a signal).
+.TP
+\fBWave.View.TimeMode\fR (\fB-VT\fR)
+Set the choice on the `Time display' menu (0: elapsed (default); 1: absolute;
+2: in sample intervals).
+.TP
+\fBWave.View.GridMode\fR (\fB-VG\fR)
+Set the choice on the `Grid' menu (0: none; 1: 0.2 s; 2: 0.5 mV; 3: 0.2s x 0.5 mV (default)).
+
+.PP 
+In addition to the usual ways of setting X resources, it is possible to set any
+of those listed above, as well as any of the generic XView resources, by using
+the \fB-xrm\fR or \fB-default\fR options on the command line when starting
+\fBwave\fR. For example, you can set the background color of the signal window
+using a command such as
+.br
+	\fBwave -r 100s -xrm Wave.SignalWindow.Color.Background:lightblue\fR
+
+.SH RUNNING TWO OR MORE WAVE PROCESSES
+.PP
+By specifying two or more record names, separated by `\fB+\fR'
+characters, in the command-line argument that follows `\fB-r\fR' (see
+above), you may open separate WAVE signal windows (processes) for each
+record.  These processes are almost completely independent: from any
+signal window, you may navigate within the record, change display
+settings, edit annotations, run external analysis programs, quit the
+process, etc., without affecting any other signal windows.
+.PP
+For example, you may open two signal windows for the same record by:
+.br
+	\fBwave -r 100+100 -a atr\fR
+.br
+You can now move about the record freely in either window.  This facility
+makes it easy to compare different segments of the record.
+Note that whenever two or more windows are displaying the same set of
+annotations, as in this case, only one should be editing the
+annotations at any given time.
+.PP
+The window associated with the \fIlast\fR record named on the command
+line has a special status: it is designated the master signal window,
+and an extra button (labelled `Sync') appears at the top of this
+window.  Clicking on this button causes all of the other signal
+windows to be redrawn so that the times shown in their lower left
+corners match that in the master signal window.  (Note, however, that
+if you have quit a signal window from the middle of the list, any
+signal windows from earlier in the list will no longer respond to sync
+requests.)
+.PP
+By default, all command-line arguments apply to all signal windows.
+You may specify an argument that is to apply to only one signal
+window, however, by prefixing the argument with `\fB+\fIn\fB/\fR', where
+\fIn\fR is the signal window number.  (The first signal window,
+corresponding to the first record named on the command line, is signal
+window number 0; the next is number 1, etc.)
+.PP
+This facility has many applications.  For example, you may wish to open two
+copies of the same record, with two different annotators:
+.br
+	\fBwave -r 100+100 -a +0/atr +1/qrs\fR
+.br
+In this case, record 100 is opened in two windows, with annotator
+`atr' in window 0 and annotator `qrs' in window 1.  (The `\fB-a\fR'
+option applies to both windows since it does not have a
+`\fB+\fIn\fB/\fR' prefix.)
+.PP
+As another example, you may wish to discuss a record with colleagues
+at other locations:
+.br
+	\fBwave -r 200+200+200 -a qrs +0/-display +0/atlantic.bigu.edu:0 \\\fR
+.br
+		\fB+1/-display +1/pacific.widget.com:0\fR
+.br
+Here, record 200 is opened in three windows.  Window 0 is opened on
+display 0 of atlantic.bigu.edu, window 1 on display 0 of
+pacific.widget.com, and window 2 (the master window) on the local
+display.  (For this to work, your colleagues must first allow your
+computer to open windows on their displays, typically using
+\fBxhost\fR.  See \fBxview\fR(7) for information about the \fB-display\fR
+option.  Notice that the `\fB+\fIn\fB/\fR' prefix must be attached to
+both the `\fB-display\fR' option and to its argument in order to
+apply both of these arguments to the same signal window.)
+Your colleagues can freely move about the record, but you can direct
+the discussion at any time by using the Sync button in your signal
+window.  In a case such as this one, anyone can enable editing; you
+should do so only after making sure that no one else has.  Once you
+have saved your work (by selecting `Save' from the File menu), your
+changes become visible to your colleagues if they reload the
+annotations (by clicking on `Reload' from the Load window).
+.PP
+As a final example, the MIMIC Database includes both high-resolution
+waveform records and medium-resolution (roughly 1 sample per second)
+computed measurement records.  You may view both of these at the same
+time using a command such as:
+.br
+	\fBwave -r 237+237n -a all\fR
+.br
+Typically, you will wish to view the high-resolution and low-resolution
+data at different time scales.  Although \fBwave\fR attempts to choose
+reasonable defaults, you can adjust the scales independently if you wish:
+.br
+	\fBwave -r 237+237n -a all +1/-Vt +1/2\fR
+.PP
+If you use \fBwavescript\fR or \fBwave-remote\fR to control the master
+signal window (this happens by default unless you use the \fB-pid\fR option
+of these programs to control a different signal window), the other signal
+windows are kept synchronized with the master window.
+.PP
+Note that you cannot \fIincrease\fR the number of signal windows in a group
+once you have started a \fBwave\fR process group, although you can run more
+than one process group at a time if you wish.
+
+.SH MENU FILE
+.PP
+\fBwave\fR uses a simple menu file to allow you to set up analysis
+options.  Each line in the file corresponds to a button in the Analyze window
+(except for empty lines and lines that begin with `#', which are ignored).
+Within each line, the syntax is \fIlabel\fR<tab>\fIaction\fR, where <tab> is
+one or more tab characters.  The \fIlabel\fR field is used to identify a
+command button in the Analyze window, and the \fIaction\fR field is any command
+acceptable to your shell.  \fIbutton-label\fR and \fIaction\fR may include
+spaces if needed; if necessary, a `\\' may be used at the end of a line to
+indicate that it is continued on the next line.  Before the command is
+executed, \fBwave\fR replaces certain tokens with appropriate strings;  these
+include:
+.TP
+\fB$RECORD\fR
+The name of the current record.
+.TP
+\fB$ANNOTATOR\fR
+The name of the current input annotator.
+.TP
+\fB$START\fR
+The currently selected `start analysis' time.
+.TP
+\fB$END\fR
+The currently selected `end analysis' time.
+.TP
+\fB$DURATION\fR
+The time interval between \fB$END\fR and \fB$START\fR.
+.TP
+\fB$LEFT\fR
+The time corresponding to the left edge of the signal window.
+.TP
+\fB$RIGHT\fR
+The time corresponding to the right edge of the signal window.
+.TP
+\fB$WIDTH\fR
+The time interval between \fB$RIGHT\fR and \fBLEFT\fR.
+.TP
+\fB$SIGNAL\fR
+The currently selected signal number (as shown in the Analyze window).
+.TP
+\fB$SIGNALS\fR
+The current signal list (as shown in the Analyze window).
+.TP
+\fB$LOG\fR
+The name of the current log file (as shown in the Log window).
+.TP
+\fB$WFDB\fR
+The WFDB path (from the Load window).
+.TP
+\fB$WFDBCAL\fR
+The name of the WFDB calibration file (from the Load window).
+.TP
+\fB$TSCALE\fR
+The time scale, in mm/sec.
+.TP
+\fB$VSCALE\fR
+The amplitude scale, in mm/mV.
+.TP
+\fB$DISPMODE\fR
+The annotation display mode (0: annotations displayed in center, no marker
+bars; 1: annotations displayed in center, long marker bars; 2: annotations
+attached to signals, no bars; 3: annotations attached to signals, short bars;
+4: annotations displayed as a signal, no bars; 5: annotations displayed as a
+signal, long bars)
+.TP
+\fB$PSPRINT\fR
+The command for printing PostScript data from the standard input, as specified
+in the Print Setup window.
+.TP
+\fB$TEXTPRINT\fR
+The command for printing text from the standard input, as specified in the
+Print Setup window.
+.TP
+\fB$URL\fR
+The URL specified by the most recently selected link.
+.PP
+Other tokens that begin with `$' are passed to the shell unchanged.
+.SS Example
+The default menu file includes the following lines (among others):
+.br
+.TS
+center;
+l l.
+ \fIMark QRS complexes\fR	sqrs -r $RECORD -f $START -t $END -s $SIGNAL
+ \fICalibrate\fR	calsig -r $RECORD -f $START -t $END -s $SIGNALS
+ \fIExtract segment\fR	snip -i $RECORD -f $START -t $END -n n\_$RECORD \\ 
+	 -a $ANNOTATOR
+ \fIList annotations\fR	rdann -r $RECORD -a $ANNOTATOR -f $START -t $END
+ \fIList samples\fR	rdsamp -r $RECORD -f $START -t $END -s $SIGNALS
+ \fIPrint chart\fR	echo $RECORD $START-$END | \\ 
+	 pschart -a $ANNOTATOR -g -l -R -s $SIGNALS - | $PSPRINT
+ \fIPrint full disclosure\fR	echo $RECORD $START-$END | \\ 
+	 psfd -a $ANNOTATOR -g -l -R -s $SIGNALS - | $PSPRINT
+.TE
+
+.SH KEYBOARD COMMANDS
+.PP
+Whenever the pointer is in the signal window, the normal arrow pointer is
+replaced by a crosshair pointer.  At these times, the numeric keypad and
+several of the function keys may be used for many annotation editing and
+display operations, and the normal alphanumeric and punctuation keys can be
+used to select single-character annotation mnemonics (displayed in the
+Annotation Template window).  `Num Lock' must be off if you wish to use the
+keypad for editing operations.  Some of the function and numeric keypad
+commands work on Sun keyboards only;  in these cases, alternate keyboard
+commands for use with PC and other keyboards are shown in parentheses.  Most
+of these alternate commands also work on Sun keyboards.
+.TP
+\fI<Help>\fR (\fI<F1>\fR)
+Open XView spot help for the item under the pointer.  (Unlike most of the
+other keyboard commands, this command is available at any time, not only when
+the pointer is in the signal window.)
+.TP
+\fI<left arrow>\fR
+Select the annotation to the left of the pointer.  (Click left to do this
+using the mouse.  These actions also work when the pointer is in the scope
+window.)
+.TP
+\fI<right arrow>\fR
+Select the annotation to the right of the pointer.  (Click right to do this
+using the mouse.  These actions also work when the pointer is in the scope
+window.)
+.TP
+\fI<up arrow>\fR Move the selected annotation up one signal (i.e.,
+decrement its \fBchan\fR field).  This command works in multi-edit
+mode only (enter multi-edit mode by choosing `attached to signals'
+from the `Show annotations' menu in \fBwave\fR's View window).
+.TP
+\fI<down arrow>\fR
+Move the selected annotation down one signal (i.e., increment its \fBchan\fR
+field).  This command works in multi-edit mode only.
+.TP
+\fIkeypad <5>\fR (\fI<F2>\fR)
+Insert an annotation at the current position of the pointer.  (Click the middle
+button to do this using the mouse.  Annotation editing must be enabled for this
+action to be successful.)
+.TP
+\fIkeypad <=>\fR (\fI<F3>\fR)
+Move the pointer toward the left.
+.TP
+\fIkeypad <*>\fR (\fI<F4>\fR)
+Move the pointer toward the right.
+.TP
+\fI<Copy>\fR (\fI<F6>\fR)
+Copy the selected annotation to the Annotation Template.
+.TP
+\fI<Find>\fR (\fI<F9>\fR)
+Search forward.
+.TP
+\fI<ctrl><Find>\fR (\fI<ctrl><F9>\fR)
+Search backward.
+.TP
+\fI<End>\fR (\fI<shift><F9>\fR)
+Advance to the end of the record.
+.TP
+\fI<Home>\fR (\fI<ctrl><shift><F9>\fR)
+Move to the beginning of the record.
+.TP
+\fI<PgDn>\fR (\fI<F10>\fR)
+Advance half a screen.
+.TP
+\fI<ctrl><PgDn>\fR (\fI<ctrl><F10>\fR)
+Advance a full screen.
+.TP
+\fI<PgUp>\fR (\fI<shift><F10>\fR)
+Move back half a screen.
+.TP
+\fI<ctrl><PgUp>\fR (\fI<ctrl><shift><F10>\fR)
+Move back a full screen.
+.TP
+\fI<Enter>\fR (\fI<Return>\fR)
+(Only if a link annotation has been selected.)  Show the external data
+specified by the link using a Web browser;  start the Web browser first if
+necessary.
+
+.SH BUGS
+.PP
+Under SunOS, once you have opened the Analyze window or have selected
+Print from the File menu, do not attempt to suspend \fBwave\fR (for
+example, by typing control-Z in the controlling terminal window).
+Under these circumstances, \fBwave\fR may exit immediately (without
+quit confirmation) and any unsaved edits may be lost.  This problem is
+the result of a bug in the XView \fItermsw\fR package used for the
+Analysis Commands window.  To avoid this bug, always run \fBwave\fR in
+the background under SunOS.  The Linux, Mac OS X, MS Windows, and
+Solaris 2.x versions of the XView library do not have this bug.
+.PP
+If \fBwave\fR opens with an empty signal window, this may mean that
+the X server's backing store is disabled.  \fBwave\fR versions 6.8 and
+later incorporate a workaround that avoids this problem.  If you must
+use an earlier version of \fBwave\fR, enable backing store and restart
+the X server.  (Using the X servers from the x.org or XFree86
+projects, backing store can be enabled by inserting the line `Option
+"backingstore"' in the `Device' section(s) of the \fBxorg.conf\fR or
+\fBXF86Config-4\fR file.  If your X server is normally started by a
+display manager such as \fBxdm\fR, close all windows and restart the
+server with \fI<ctrl><alt><backspace>\fR.  Otherwise, log out, log in,
+and restart the X server manually if necessary.)
+.PP
+If this doesn't solve the problem, use any of \fBwave\fR's navigation
+controls, or resize the signal window, to make the signals visible.  On
+some 24-bit displays, this problem may be the result of an X server bug,
+and these methods will work around the problem.  On some of these displays,
+text in the signal window may be invisible using overlay graphics mode;
+if this happens, use the \fB-S\fR option.
+.PP
+No more than one piped record (see the \fIWFDB Programmer's Guide\fR)
+can be viewed in a single invocation of \fBwave\fR.  If the signal file
+is a pipe, it is possible only to search forward through it (although
+\fBwave\fR caches several of the most recently displayed windows, which
+can be reviewed in any case).  Using the `>' button to move by half a frame
+does not work properly with piped input, nor does changing the display scales,
+since these actions require rereading the signals.
+.PP
+There appears to be a subtle incompatibility between XView-based applications
+such as \fBwave\fR and at least some X servers.  The symptom of this problem
+is that \fBwave\fR's View panel may be blank, and many warning messages from
+the notifier may appear in the controlling terminal window.  This problem
+appears to occur only when all of the following are true: the X server is
+running on a multi-head display with Xinerama enabled, the user does not have
+root privileges, a \fB.Xdefaults\fR file exists, and \fBwave\fR or another
+XView application has run at least once since the X server was started.
+.PP
+A more serious incompatibility (which may be related to the subtle
+incompatibility noted above) appeared with the release in 2009 of the X.org
+version 1.6.3 X server, which freezes when any application that uses the XView
+library (such as \fBwave\fR) 'grabs' the mouse pointer.  By default, XView
+applications do so in response to a left button click on any XView
+control. 'Grabs' can be disabled, and this behavior avoided, by using
+the \fB-Wfsdb\fR option available in \fBwave\fR and in other XView applications.
+In \fBwave\fR version 6.10 and later versions, the default behavior of XView
+has been changed to disable 'grabs', and this problem does not occur.
+.SH SEE ALSO
+\fBpschart\fR(1), \fBxview\fR(7)
+.br
+\fIWAVE User's Guide\fR (http://www.physionet.org/physiotools/wug/)
+.br
+\fIX Window System User's Guide: Open Look Edition\fR
+(http://www.oreilly.com/openbook/openlook/)
+.SH AVAILABILITY
+.PP
+\fBwave\fR currently runs under FreeBSD, GNU/Linux, Mac OS X, MS-Windows with
+Cygwin/X, Solaris, and SunOS.  It should be
+easily portable to any POSIX-compliant OS that can support X11 and XView.
+If you would like to use \fBwave\fR on a system other than those listed above,
+you will need to port XView to your system first (or purchase a
+commercial port if one is available).  Sources for XView are available from
+PhysioNet (\fBwww.physionet.org\fR, where the sources for \fBwave\fR itself
+are also available), \fBwww.ibiblio.org\fR, and their
+mirrors.  \fIWe cannot offer assistance in porting XView; if you wish to try
+this, you are on your own.\fR If you successfully port the \fBcmdtool\fR
+terminal emulator application included in the XView sources, we will
+assist you in porting \fBwave\fR (this is much simpler than the XView
+port).
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCES
+http://www.physionet.org/physiotools/wfdb/wave/

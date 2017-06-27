@@ -1,0 +1,72 @@
+.TH HRSTATS 1 "6 April 2012" "WFDB 10.5.11" "WFDB Applications Guide"
+.SH NAME
+hrstats \- collect and summarize heart rate statistics from an annotation file
+.SH SYNOPSIS
+\fBhrstats -r\fR \fIrecord\fR \fB-a\fR \fIannotator\fR [ \fIoptions\fR ... ]
+.SH DESCRIPTION
+\fBhrstats\fR reads the annotation file specified by \fIrecord\fR and
+\fIannotator\fR  and produces a uniformly sampled and
+smoothed instantaneous heart rate signal, using the IPFM model as originally
+implemented in tach.c.  In this context, heart rate (HR) is defined as ten
+times the number of beat-to-beat (RR) intervals (and fractional intervals)
+within a 6-second HR measurement window, including intervals beginning and/or
+ending with ectopic beats, and RR intervals are defined by the locations of
+consecutive beat annotations in the annotation file.
+.PP
+The first HR window starts at the beginning of the first RR interval in the
+record and ends 6 seconds later. Subsequent HR windows begin at 1-second
+intervals following the first, i.e, they overlap by 5/6 (83.33%).  HR windows
+that contain part or all of a very long (>3 sec) or very short (<0.2 sec)
+interval are discarded.  All others are used to generate HR measurements that
+are accumulated in a histogram with 1 bpm bins.
+.PP
+When all intervals have been processed, summary statistics calculated from the
+histogram are written to the standard output and to a WFDB '.info' file,
+in this format:
+.IP
+ <HR>: 71|73/75/81|86 +-1.8 bpm [atr]
+.PP
+This example is the output of 'hrstats -r mitdb/100 -a atr'.  From left to
+right, it shows:
+.IP
+ the characteristic that is summarized [HR]
+.br
+ extreme low value [in the example, 71]
+.br
+ 5th percentile [73]
+.br
+ mean (trimmed, excluding outliers below 5th or above 95th percentiles) [75]
+.br
+ 95th percentile [81]
+.br
+ extreme high value [86]
+.br
+ sample deviation (of values included in the trimmed mean) [1.8]
+.br
+ units of all statistics [bpm]
+.br
+ source of data [atr annotations]
+.PP
+Optionally, the HR histogram can also be written to a file containing two
+columns separated by a tab.  The second column contains the number of
+measurements of heart rate falling within 0.5 bpm of the heart rate in the
+first column.  The histogram includes only heart rates between the extreme
+low and extreme high heart rates inclusive.
+.PP
+\fIOptions\fR include:
+.TP
+\fB-h\fR
+Print a usage summary.
+.TP
+\fB-o\fR \fIfile\fR
+Write the HR histogram to the specified \fIfile\fR.
+.SH ENVIRONMENT
+.PP
+It may be necessary to set and export the shell variable \fBWFDB\fR (see
+\fBsetwfdb\fR(1)).
+.SH SEE ALSO
+\fBihr\fR(1), \fBtach\fR(1)
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCE
+http://www.physionet.org/physiotools/wfdb/app/hrstats.c

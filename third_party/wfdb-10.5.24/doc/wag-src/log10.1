@@ -1,0 +1,20 @@
+.TH LOG10 1 "30 July 2002" "WFDB 10.2.7" "WFDB Applications Guide"
+.SH NAME
+log10 \- calculate common logarithms of two-column data
+.SH SYNOPSIS
+\fBlog10\fR
+.SH DESCRIPTION
+.PP
+\fBlog10\fR reads its standard input, which should be in text form and
+should contain two positive numbers (\fIx\fR and \fIy\fR) on each
+line, separated by spaces or tabs.  The standard output of \fBlog10\fR
+contains four columns of numbers, separated by spaces: the common
+(base 10) logarithms of \fIx\fR and \fIy\fR, and the \fIx\fR and
+\fIy\fR values.  To avoid underflow, if any input is less than
+\fBMINDOUBLE\fR (defined in \fI<values.h>\fR as the smallest positive
+value that can be represented as a double-precision floating point
+quantity), it is replaced by that value.
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCE
+http://www.physionet.org/physiotools/wfdb/psd/log10.c

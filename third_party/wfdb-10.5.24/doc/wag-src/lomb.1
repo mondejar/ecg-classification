@@ -1,0 +1,68 @@
+.TH LOMB 1 "16 June 2003" "WFDB 10.3.8" "WFDB Applications Guide"
+.SH NAME
+lomb \- estimate power spectrum using the Lomb periodogram method
+.SH SYNOPSIS
+\fBlomb\fR [ \fIoptions ...\fR ] \fIinput-file\fR
+.SH DESCRIPTION
+.PP
+\fBlomb\fR transforms a real-valued time series (from the specified
+\fIinput-file\fR, or from the standard input if \fIinput-file\fR is
+specified as "-"; \fIinput-file\fR must be in text form) into a
+power spectrum (on the standard output), using a technique known as
+the Lomb periodogram.
+.PP
+The input is a text file containing a sampled time series, presented
+as two columns of numbers (the sample times and the sample values).
+The intervals between consecutive samples need not be uniform (in
+fact, this is the most significant advantage of the Lomb periodogram
+over other methods of power spectral density estimation).  \fBlomb\fR
+writes the Lomb periodogram (the power spectral density estimate
+derived from the input time series) on the standard output, in two
+columns (frequency and power).  If the units of the sample times in the
+input file are seconds, the units of the frequencies in the output are Hz.
+.PP
+\fIOptions\fR are:
+.TP
+\fB-h\fR
+Print a usage summary.
+.TP
+\fB-P\fR
+Generate a power spectrum (print squared magnitudes).
+.TP
+\fB-s\fR
+Smooth the output.
+.TP
+\fB-z\fR
+Add a constant to each input sample, chosen such that the mean value of the
+entire series is zero.
+.PP
+Among many other applications, this program can be used to estimate
+heart rate power spectra, in combination with \fBihr\fR(1).  The Lomb
+method is ideal for analysis of any time series with missing or noisy
+data (the noisy data may be removed from the time series and need not
+be replaced, as would be necessary if conventional PSD estimation
+algorithms were employed).
+.SH SEE ALSO
+\fBfft\fR(1), \fBhrfft\fR(1), \fBmemse\fR(1)
+.HP
+Lomb, N.R.
+Least-squares frequency analysis of unequally spaced data.
+\fIAstrophysics and Space Science\fR \fB39\fR:447-462 (1976).
+.HP
+Press, W.H, and Rybicki, G.B.
+Fast algorithm for spectral analysis of unevenly sampled data.
+\fIAstrophysical J.\fR \fB338\fR:277-280 (1989).
+.HP
+Press, W.H. Teukolsky, S.A., Vetterling, W.T., and Flannery, B.P.
+\fINumerical Recipes in C: the Art of Scientific Computing\fR, pp. 575-584
+(Cambridge Univ. Press, 1992).
+.HP
+Moody, G.B.
+Spectral analysis of heart rate without resampling.
+\fIComputers in Cardiology 1993\fR, pp. 715-718
+(IEEE Computer Society Press, 1993).
+http://www.physionet.org/physiotools/lomb/lomb.html .
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCE
+http://www.physionet.org/physiotools/wfdb/psd/lomb.c

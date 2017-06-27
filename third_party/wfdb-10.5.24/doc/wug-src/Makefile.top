@@ -1,0 +1,56 @@
+# file: Makefile	G. Moody	24 June 1989
+#			Last revised: 20 December 2001
+# `make' description file for the WAVE User's Guide
+#
+# -----------------------------------------------------------------------------
+# WFDB applications: programs for working with annotated signals
+# Copyright (C) 2001 George B. Moody
+#
+# These programs are free software; you can redistribute them and/or modify
+# them under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
+#
+# These programs are distributed in the hope that they will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# these programs; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+# You may contact the author by e-mail (george@mit.edu) or postal mail
+# (MIT Room E25-505A, Cambridge, MA 02139 USA).  For updates to this software,
+# please visit PhysioNet (http://www.physionet.org/).
+# _____________________________________________________________________________
+#
+# This file is used with the UNIX `make' command to create and install on-line
+# versions of the WAVE User's Guide, and also to print it.  Before using this
+# file for the first time, check that the site-specific variables below are
+# appropriate for your system.
+
+# The WAVE User's Guide includes a comprehensive tutorial, with reference
+# material, for WAVE, an interactive waveform browser with facilities for
+# annotation editing and control of external analysis programs.  The WAVE
+# User's Guide documents the original version of WAVE, which has an XView
+# (Open Look) GUI and runs on PCs under Linux, and on SPARC-based systems
+# under SunOS or Solaris.  A beta version of WAVE with a GTK+ GUI runs under
+# Linux and under MS-Windows and is similar enough to the original WAVE that
+# the WAVE User's Guide can be used for reference;  for further information,
+# search for GTKWave on PhysioNet.
+
+# The most recent version of this guide is always available on PhysioNet
+# (follow the links from http://www.physionet.org/physiotools/manuals.shtml).
+# Use any web browser to read it.
+
+# If you have the necessary formatting software, the WAVE User's Guide can be
+# produced in a wide variety of formats from the sources in in this directory.
+# Here is a brief list of available formats and the commands needed to produce
+# them:
+
+# printed copy	'make wug-book' (requires troff, latex, dvips, and a printer)
+# HTML		'make wug.html' (requires latex2html and perl)
+# PDF		'make wug.pdf'  (requires pdflatex)
+# PostScript	'make wug.ps'   (requires latex and dvips)
+# _____________________________________________________________________________

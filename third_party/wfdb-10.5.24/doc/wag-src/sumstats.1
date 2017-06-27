@@ -1,0 +1,38 @@
+.TH SUMSTATS 1 "22 November 2002" "WFDB 10.3.0" "WFDB Applications Guide"
+.SH NAME
+sumstats \- derive aggregate statistics from bxb, rxr, etc., line-format output
+.SH SYNOPSIS
+\fBsumstats\fR \fIfile\fR
+.SH DESCRIPTION
+.PP
+This program derives the aggregate statistics described in sections 3.5.2 and
+3.5.3 of the American National Standard, \fITesting and reporting performance
+results of cardiac rhythm and ST segment measurement algorithms\fR (ANSI/AAMI
+EC57:1998, based on the earlier AAMI ECAR:1987), and in sections 4.2.14.4.1
+and 4.2.14.4.2 of the American National Standard, \fIAmbulatory
+electrocardiographs\fR (ANSI/AAMI EC38:1998).
+.PP
+To use this program, first generate a line-format report \fIfile\fR using the
+\fB-l\fR or \fB-L\fR options of \fBbxb\fR(1), \fBepicmp\fR(1), \fBmxm\fR(1), or
+\fBrxr\fR(1).  This file must include column headings so that \fBsumstats\fR
+can recognize the file type.  Output is written to the standard output;  it
+includes a copy of the input file, with aggregate statistics appended at the
+end.
+.SH SEE ALSO
+\fBbxb\fR(1), \fBecgeval\fR(1), \fBepicmp\fR(1), \fBmxm\fR(1),
+\fBplotstm\fR(1), \fBrxr\fR(1)
+.HP
+\fIEvaluating ECG Analyzers\fR (in the \fIWFDB Applications Guide\fR)
+.HP
+\fIAmerican National Standard ANSI/AAMI EC38:1998, Ambulatory
+Electrocardiographs\fR
+.HP
+\fITesting and Reporting Performance Results of Cardiac Rhythm and ST Segment
+Measurement Algorithms\fR (publication AAMI EC57:1998)
+.PP
+The last two publications are available from AAMI, 1110 N Glebe Road,
+Suite 220, Arlington, VA 22201 USA (http://www.aami.org/).
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCE
+http://www.physionet.org/physiotools/wfdb/app/sumstats.c

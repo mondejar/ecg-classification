@@ -1,0 +1,39 @@
+#! /bin/sh
+# file: checkfile		G. Moody	11 December 2001
+#				Last revised:	 10 April 2008
+#
+# This script compares FILE with the identically-named file in the 'expected'
+# directory.  It returns 0 if the files match, and 1 if there is a difference.
+# If the -v option is used, 'checkfile' prints the differences if any were
+# found; otherwise it prints a message indicating that the files match.
+
+case `uname` in
+  HP-UX*)   DIFF=diff ;;
+  Solaris*) DIFF=diff ;;
+  SunOS*)   DIFF=diff ;;
+  *)        DIFF="diff --strip-trailing-cr" ;;
+esac
+
+case $# in
+ 1) ( $DIFF $1 expected/$1 >/dev/null 2>&1 ) && exit 0
+    echo " Files $1 and expected/$1 differ: test failed"
+    exit 1 ;;
+ 2) if [ "$1" = "-v" ]
+    then
+        if ( $DIFF $2 expected/$2 >/dev/null 2>&1 )
+	then
+	    echo " Files $2 and expected/$2 match: test succeeded"
+	    exit 0
+	else
+	    echo " Files $2 and expected/$2 differ: test failed"
+	    $DIFF $2 expected/$2
+	    exit 1
+	fi
+    else
+	echo "usage: $0 [-v] FILE"
+	exit 1
+    fi ;;
+ *) echo "usage: $0 [-v] FILE"
+    exit 1 ;;
+esac
+

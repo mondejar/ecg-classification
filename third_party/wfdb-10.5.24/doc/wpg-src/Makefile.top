@@ -1,0 +1,66 @@
+# file: Makefile	G. Moody	24 June 1989
+#			Last revised: 20 December 2001
+# `make' description file for the WFDB Programmer's Guide
+#
+# -----------------------------------------------------------------------------
+# WFDB applications: programs for working with annotated signals
+# Copyright (C) 2001 George B. Moody
+#
+# These programs are free software; you can redistribute them and/or modify
+# them under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
+#
+# These programs are distributed in the hope that they will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# these programs; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+# You may contact the author by e-mail (george@mit.edu) or postal mail
+# (MIT Room E25-505A, Cambridge, MA 02139 USA).  For updates to this software,
+# please visit PhysioNet (http://www.physionet.org/).
+# _____________________________________________________________________________
+#
+# This file is used with the UNIX `make' command to create and install on-line
+# versions of the WFDB Programmer's Guide, and also to print it. Before using
+# this file for the first time, check that the site-specific variables below
+# are appropriate for your system.
+
+# The WFDB Programmer's Guide guide documents the WFDB library.  It contains
+# both tutorial and reference material, with many examples, that will be useful
+# if you wish to develop your own application programs for reading, analyzing,
+# or creating digitized, optionally annotated, recordings of signals.
+
+# The most recent version of this guide is always available on PhysioNet
+# (follow the links from http://www.physionet.org/physiotools/manuals.shtml).
+# Use any web browser to read it.
+
+# If you have the necessary formatting software, the WFDB Programmer's Guide
+# can be produced in a wide variety of formats from the sources in in this
+# directory.  Here is a brief list of available formats and the commands needed
+# to produce them:
+
+# printed copy	'make wpg-book' (requires troff, texi2dvi, dvips, & a printer)
+# Windows help	'make wpg.hlp'  (requires makertf and hcrtf) [1]
+# HTML		'make wpg.html' (requires texi2html and perl)
+# info		'make wpg.info' (requires makeinfo or GNU emacs) [2]
+# PDF		'make wpg.pdf'  (requires texi2dvi)
+# PostScript	'make wpg.ps'   (requires texi2dvi and dvips)
+
+# [1] 'makertf' is open-source, from http://makertf.sourceforge.net/; see this
+# page for links to 'hcrtf'.  Since these programs run only under MS-Windows,
+# it is not possible to generate 'wpg.hlp' except under MS-Windows (but it's
+# not useful to do so except under MS-Windows, either).
+
+# [2] The info files get installed into INFODIR (see below), which must be in
+# your INFOPATH.  Once they have been installed, browse the guide from info (or
+# from emacs after typing C-h i to enter the info system), by selecting `WFDB
+# library' from the top-level menu.  Note that `make wpg.info' adds an entry
+# for the Guide to the top-level `info' file ($INFODIR/dir).  If you install a
+# GNU emacs update, this entry may disappear; to restore it, simply `make
+# wpg.info' again.
+# _____________________________________________________________________________

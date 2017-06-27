@@ -1,0 +1,94 @@
+.TH PLOTxD 1 "30 July 2002" "WFDB 10.2.7" "WFDB Applications Guide"
+.SH NAME
+plot2d, plot3d \- make 2-D or 3-D plots from text files of data, using \fBgnuplot\fR
+.SH SYNOPSIS
+\fBplot2d\fR [ \fIinput-file\fR ] [ [ \fIxcol\fR ] \fIycol\fR ] [ \fIoptions ...\fR ]
+.br
+\fBplot3d\fR [ \fIinput-file\fR ] [ [ \fIxcol ycol\fR ] \fIzcol\fR ] [ \fIoptions ...\fR ]
+.SH DESCRIPTION
+.PP
+These UNIX shell scripts can be used to produce simple 2-D and 3-D
+plots using \fBgnuplot\fR(1) in batch (non-interactive) mode.
+\fBplot2d\fR was designed as a quick-and-dirty replacement for
+\fBplt\fR(1) (see http://www.physionet.org/physiotools/plt/ ). \fBplot2d\fR
+accepts a few of the most commonly-used \fBplt\fR options and produces
+similar plots.  \fBplot3d\fR uses the same syntax as \fBplot2d\fR, but
+it produces simple 3-D plots (a capability not yet offered by \fBplt\fR).
+.PP
+The \fIinput-file\fR should contain one or more space- or tab-separated columns
+of data per line, with each point on a line.  Omit the \fIinput-file\fR
+argument to read data from the standard input.  (Note: since \fBgnuplot\fR
+cannot read data from a pipe, \fBplot2d\fR and \fBplot3d\fR save piped input
+in a temporary file before invoking \fBgnuplot\fR.)
+.PP
+\fIxcol\fR, \fIycol\fR, and \fIzcol\fR specify the column numbers within the
+input file for the x, y, and z coordinates of the points to be plotted.  The
+leftmost column is column 0 (this convention follows that used by \fBplt\fR,
+rather than that used by \fBgnuplot\fR).  Omit the \fIxcol\fR argument to
+\fBplot2d\fR to use row numbers as abscissas;  if \fIycol\fR is also omitted,
+\fBplot2d\fR plots column 1 vs. column 0.  When using \fBplot3d\fR, omit
+both \fIxcol\fR and \fIycol\fR to generate x and y coordinates sequentially
+based on row numbers;  a blank line in the input resets x and increments y
+in this case.
+.PP
+\fIOptions\fR include:
+.TP
+\fB-h\fR
+Print help and exit (no plot is made).
+.TP
+\fB-t\fR \fItitle\fR
+Use \fItitle\fR as the title for the plot.
+.TP
+\fB-x\fR \fIlabel\fR
+Use \fIlabel\fR as the X-axis label.
+.TP
+\fB-y\fR \fIlabel\fR
+Use \fIlabel\fR as the Y-axis label.
+.TP
+\fB-z\fR \fIlabel\fR
+Use \fIlabel\fR as the Z-axis label (\fIplot3d\fR only).
+.TP
+\fB-X \fIxmin xmax\fR
+Plot x-coordinates between \fIxmin\fR and \fIxmax\fR only.
+.TP
+\fB-Y\fR \fIymin ymax\fR
+Plot y-coordinates between \fIymin\fR and \fIymax\fR only.
+.TP
+\fB-Z\fR \fIzmin zmax\fR
+Plot z-coordinates between \fIzmin\fR and \fIzmax\fR only (\fIplot3d\fR only).
+.TP
+\fB-T\fR \fIprinter\fR
+Produce output on the specified PostScript \fIprinter\fR (default: plot
+on-screen).  Use \fB-T eps\fR to generate encapsulated PostScript on the
+standard output.
+.SH EXAMPLES
+.PP
+Create a text file with the following contents:
+.br
+    0  0  0
+.br
+    1  1  1
+.br
+    2  4  8
+.br
+    3  9 27
+.br
+    4 16 64
+.br
+and call the file \fIpowers\fR.  Plot the first column vs. the second by:
+.br
+    \fBplot2d powers 0 1 -t "Squares of small integers" -x "Integer" -y "Square"\fR
+.br
+The same file can be used to generate a number of different plots, by
+choosing different columns.  To plot the third column vs. the first, try:
+    \fBplot2d powers 2 0 -t "Marshmallows" -x "Mass (kg)" -y "Height (m)"\fR
+.SH SEE ALSO
+\fBgnuplot\fR(1), \fBplt\fR(1)
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCES
+http://www.physionet.org/physiotools/wfdb/psd/plot2d
+.br
+http://www.physionet.org/physiotools/wfdb/psd/plot3d
+.br
+\fIgnuplot\fR: http://www.gnuplot.info/

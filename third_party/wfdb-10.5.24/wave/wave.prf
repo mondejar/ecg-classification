@@ -1,0 +1,55 @@
+                 WAVE: Waveform Analyzer, Viewer, and Editor
+
+	                       George B. Moody
+                    Massachusetts Institute of Technology
+
+	WAVE version WAVEVERSION was installed WHEN
+
+-------------------------------------------------------------------------------
+WAVE: Waveform analyzer, viewer, and editor
+Copyright (C) 1990-2010 George B. Moody
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+Place - Suite 330, Boston, MA 02111-1307, USA.
+
+You may contact the author by e-mail (george@mit.edu) or postal mail
+(MIT Room E25-505A, Cambridge, MA 02139 USA).  If you are submitting a bug
+report, please include your name and address, and the version number and date
+shown above.  Thanks!
+
+For updates to this software, please visit PhysioNet
+(http://www.physionet.org/).
+
+_______________________________________________________________________________
+
+For a copy of this document, print `HELPDIR/wave/news.hlp' (or click
+`Print' at the top of the window if you are viewing this from within WAVE).
+For a copy of the on-line help for WAVE, print `HELPDIR/wave/wave.hlp'.
+
+For a copy of the WAVE User's Guide (a tutorial introduction and reference
+manual for WAVE), use your web browser to open HELPDIR/html/wug/wug.htm
+(or http://www.physionet.org/physiotools/wug/wug.htm), or print
+HELPDIR/html/wug/wug.ps on a PostScript printer.
+
+Summary of changes since version 6.0:
+
+- Resize signals by selecting them and using <ctrl>-<+> or <ctrl>-<->
+- Change time scale using <ctrl>-<(> and <ctrl>-<)>
+- Search for the next valid sample of a specified signal
+- XView full-screen pointer grab disabled for compatibility with recent X
+  servers
+- View option to display valid signals only
+- More reliable operation on X servers that don't implement backing store
+- Updated hardware recommendations
+- Ports to Mac OS X and MS-Windows with Cygwin
+- Wider range of time scales

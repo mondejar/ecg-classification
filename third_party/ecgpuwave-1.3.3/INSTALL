@@ -1,0 +1,42 @@
+file: INSTALL		G. Moody		25 February 2006
+      			Last revised:		 21 July 2013
+
+Installing ecgpuwave under GNU/Linux, Mac OS/X, MS-Windows, or Unix
+
+1. Install the GNU Fortran compiler, gfortran.  (See ecgpuwave-1.3.1 if you
+   have the older g77 compiler.)
+
+2. Install the WFDB Software Package (freely available from PhysioNet,
+   see http://www.physionet.org/physiotools/wfdb.shtml), if you have not
+   already done so.
+
+3. Create a working directory for compiling ecgpuwave, copy the files
+   from this directory into it, and enter that directory.
+
+4. Compile and install ecgpuwave using the command:
+	make install
+   You may need root (admin) privileges to complete this step successfully.
+
+   If you don't have root privileges, you can still compile ecgpuwave without
+   installing it by typing 'make';  you will then need to move the executable
+   file (ecgpuwave.exe on MS-Windows, ecgpuwave on all other platforms) into
+   a directory in your PATH before running it.
+
+5. Test ecgpuwave using the command:
+	make check
+   In this two-part test, ecgpuwave analyzes the one-minute WFDB sample
+   record 100s, and its output is compared with the output expected for
+   ecgpuwave when running on an x86 CPU.  Test 1 succeeds if there are no
+   differences at all, and test 2 succeeds if all discrepancies are one
+   sample interval or less.
+
+   Since ecgpuwave makes heavy use of floating point arithmetic, the waveform
+   boundaries it determines when running on another CPU type may occasionally
+   vary by one sample interval from the expected output for an x86 CPU.  On the
+   PPC-Mac OS X platform, it is normal for test 1 to fail, but test 2 should
+   succeed.  If test 2 fails, this observation should be reported.
+
+For additional information about using ecgpuwave, visit:
+	http://www.physionet.org/physiotools/ecgpuwave/
+
+This information is also included here as 'ecgpuwave.1' (in Unix 'man' format).

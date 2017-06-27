@@ -1,0 +1,1853 @@
+.TH xview 7  "24 December 1991"
+.SH NAME
+xview \- xview toolkit information
+.SH SYNOPSIS
+There is no
+.B xview 
+command per se, but this manual page will briefly describe XView features and
+functions.
+.SH AVAILABILITY
+XView is available with the OpenWindows distribution.
+.SH DESCRIPTION
+.B XView
+(X Window-System-based Visual/Integrated Environment for Workstations)
+is an Open Look user-interface toolkit which supports development of
+interactive, graphics-based 
+applications running under the X Window System.
+For detailed information 
+see the
+.I XView Programming Manual
+and the 
+.I XView Reference Manual.
+.SH USAGE
+.sp
+.SS Compiling XView Programs
+XView programs are compiled with the following command line:
+.sp
+.B cc
+.I sourcefile.c
+.B -o
+.I outputfile
+.B -lxview
+.B -lolgx
+.B -lX11
+.sp
+.SS Generic XView Functions
+.sp
+.TP 15
+.B xv_init()
+Establishes the connection to the server, initializes the Notifier and
+the Defaults/Resource-Manager database, loads the Server
+Resource-Manager database, reads any
+passed attributes, and installs a default X11 Errorhandler.
+.nf
+.sp
+\fLXv_Server
+xv_init(\f(LBattrs\fP)
+    <\fIattribute-value list\fP> \f(LBattrs;\fP
+.fi
+.sp
+\fPNote:
+.B attrs
+is a NULL terminated attribute-value list.
+.TP
+.B xv_create()
+Creates an object.
+.nf
+.sp
+\fLXv_object
+xv_create(owner, package, \f(LBattrs\fP)
+    Xv_object      owner;
+    Xv_pkg         package;
+    <\fIattribute-value list\fP> \f(LBattrs;\fP
+.fi
+.TP
+.B xv_destroy()
+Destroys an object.
+.nf
+.sp
+\fLint
+xv_destroy(object)
+    Xv_opaque object;\fP
+.fi
+.sp
+.TP
+.B xv_find()
+Finds an object that meets certain criteria; or if the object doesn't
+exist, creates it (default behavior which can be defeated using
+XV_AUTO_CREATE, FALSE).
+.nf
+.sp
+\fLXv_opaque
+xv_find(owner, package, \f(LBattrs\fP)
+    Xv_object      owner;
+    Xv_pkg         package;
+    <\fIattribute-value list\fP> \f(LBattrs;\fP
+.fi
+.TP
+.B xv_get()
+Gets the value of a single attribute.
+.nf
+.sp
+\fLXv_opaque
+xv_get(object, \f(LBattrs\fP)
+    Xv_object     object;\fP
+    <\fIattribute-value list\fP> \f(LBattrs;\fP
+.fi
+.TP
+.B xv_set()
+Sets the value of one or more attributes.
+.nf
+.sp
+\fLXv_opaque
+xv_set(object, \f(LBattrs\fP)
+    Xv_object     object;\fP
+    <\fIattribute-value list\fP> \f(LBattrs;\fP
+.fi
+.SS Internationalized Support
+XView now has support for internationalization. This includes locale
+setting, localized text handling, and dynamic object layout. See the 
+.I XView Programming Manual
+for details. 
+.SS Command Line Resource Arguments
+XView-based applications display characteristics can be
+controlled by supplying command line 
+arguments to the applications at start-up.  
+The usage is as follows:
+.sp
+.I % program -argument1 value1 -argument2 value2...
+.sp
+In the tables below, 
+.B Argument(s)
+shows the short argument followed by the long argument\(emeither can be used.  
+.B Type
+describes the type of value the arguments can receive.  
+.B Resource
+describes the X resource name modified by the arguments.
+.B Default
+is the default value.
+.B Description
+describes what the arguments do.
+.B Example
+shows an example of a command using the argument.
+.sp
+.if t .ta +1.00i +1.25i +1.25i
+.if n .ta +1.5i +1.77i +1.5i
+.TP 15
+.B Argument(s):
+-Wx, or -scale 
+.TP
+.B Type:
+string ("small", "medium", "large", "extra_large")
+.TP
+.B Resource:
+Window.Scale
+.TP
+.B Default:
+medium
+.TP
+.B Description:
+Sets the initial scale of the application (larger or smaller).
+.B small 
+is 10 pixels, 
+.B medium
+is 12 pixels, 
+.B large 
+is 14 pixels and 
+.B extra_Large 
+is 19 pixels.  The font.name resource will override the scale.  
+.TP
+.B Example:
+cmdtool -scale extra_large
+.sp
+.TP
+.B Argument(s):
+-Wt, -fn, or -font
+.TP
+.B Type:
+string
+.TP
+.B Resource:
+Font.Name
+.TP
+.B Default:
+lucidasans-12
+.TP
+.B Description:
+Sets the name of the font used for the application. 
+Does not set the font for frame header and frame menu header.
+These are controlled by the window manager.
+To find out what fonts are available, use the 
+.BR xlsfonts (1)
+command.
+If the
+font you specify cannot be found, you will see an error message such as:
+.sp
+.nf
+.I "XView warning: Cannot load font 'galant-24' (Font package)"
+.fi
+.I "XView warning: Attempting to load font '-b&h-lucida-medium-r-normal-sans-*-120-*-*-*-*-*-*' instead (Font package)"
+.sp
+.TP
+.B Example:
+cmdtool -fn fixed
+.sp
+.TP
+.B Argument(s):
+-Ws, or -size
+.TP
+.B Type:
+integer integer
+.TP
+.B Resource:
+Window.Width and Window.Height
+.TP
+.B Default:
+depends on application
+.TP
+.B Description:
+Sets the width and height of the application's base frame.  
+The values are in pixels.
+.TP
+.B Example:
+cmdtool -Ws 400 500
+.sp
+.TP
+.B Argument(s):
+-Ww, or -width
+.TP
+.B Type:
+int (number of columns)
+.TP
+.B Resource:
+window.columns
+.TP
+.B Default:
+None
+.TP
+.B Description:
+Specifies the width, in columns, of the application.
+.TP
+.B Example:
+cmdtool -width 40
+.br
+(starts a command tool 40 columns wide)
+.sp
+.TP
+.B Argument(s):
+-Wh, or -height
+.TP
+.B Type:
+int (number of columns)
+.TP
+.B Resource:
+window.rows
+.TP
+.B Default:
+None
+.TP
+.B Description:
+Specifies the height, in rows, of the application.
+.TP
+.B Example:
+cmdtool -height 40
+.br
+(starts a command tool 40 rows high)
+.sp
+.TP
+.B Argument(s):
+-Wp, or -position
+.TP
+.B Type:
+integer integer
+.TP
+.B Resource:
+Window.X and Window.Y
+.TP
+.B Default:
+depends on window manager
+.TP
+.B Description:
+Sets the initial position of the application's base frame in pixels.  The
+upper left corner of the screen is at position (0,0), with the
+x-axis increasing to the left, and the y-axis increasing
+downward.
+These values will also be generated 
+by the "Save Workspace" option on the root menu into the 
+\fB$HOME/.openwin-init\fP file when using the Open Look Window Manager.
+.TP
+.B Example:
+cmdtool -Wp 100 200
+.sp
+.TP
+.B Argument(s):
+-WG, or -geometry
+.TP
+.B Type:
+string of the format <width>x<height>{+-}<xoffset>{+-}<yoffset>
+.TP
+.B Resource:
+Window.Geometry
+.TP
+.B Default:
+depends on application and window manager
+.TP
+.B Description:
+This sets both the size and the placement of the application's
+base frame. This option has priority over the 
+.B -size 
+and 
+.B -position
+arguments. The size and placement parts of the value are optional.
+You can set just the size, just the position, or both.
+The size values are measured in pixels, and the position values
+use the same semantics as
+.B -position.
+However, if you use the '-'
+in front of an X value, it will be taken as relative to the right
+hand side of the screen, instead of the left.  Likewise, if you
+use the '-' with the Y value, it will be taken relative to the
+bottom of the screen instead of the top.
+.TP
+.B Examples:
+.nf
+.B "cmdtool -geometry 500x600"
+.fi
+(will make the base frame 500x600 pixels, with the
+position set by the window manager)
+.IP
+.nf
+.B "cmdtool -WG +10+20"
+.fi
+(will make the base frame of default size with the
+left hand side of the frame 10 pixels from the left
+hand side of the screen, and the top of the frame
+20 pixels from the top of the screen)
+.IP
+.nf
+.B "cmdtool -WG -10+20"
+.fi
+(will make the base frame of default size with the
+right hand side of the frame 10 pixels from the right
+hand side of the screen, and the top of the frame
+20 pixels from the top of the screen)
+.IP
+.nf
+.B "cmdtool -geometry 400x300-0-0"
+.fi
+(will make the base frame 400x300 pixels with the
+right hand side of the frame flush against the right
+hand side of the screen, and the bottom of the frame
+flush with the bottom of the screen)
+.sp
+.TP
+.B Argument(s):
+-WP, -icon_position
+.TP
+.B Type:
+integer integer
+.TP
+.B Resource:
+Icon.X Icon.Y
+.TP
+.B Default:
+depends on window manager
+.TP
+.B Description:
+Sets the position of the application's icon in pixels.  Uses the 
+same semantics as 
+.B -position 
+for base frames.
+.TP
+.B Example:
+cmdtool -WP 400 20
+.sp
+.TP
+.B Argument(s):
+-Wl, -label, or -title
+.TP
+.B Type:
+string
+.TP
+.B Resource:
+Window.Header
+.TP
+.B Default:
+N/A
+.TP
+.B Description:
+Sets a default label for the base frame's header.  However, the
+application can overwrite this setting and display its own
+header.  
+.TP
+.B Example:
+cmdtool -Wl "Header Text"
+.sp
+.TP
+.B Argument(s):
+-Wi, and +Wi
+.TP
+.B Type:
+boolean
+.TP
+.B Resource:
+Window.Iconic
+.TP
+.B Default:
++Wi
+.TP
+.B Description:
+Controls how an application will come up, open or
+closed (iconified).
+.TP
+.B Examples:
+cmdtool +Wi      (will make the cmdtool come up open)
+.br
+cmdtool -Wi      (will make the cmdtool come up closed)
+.sp
+.TP
+.B Argument(s):
+-depth
+.TP
+.B Type:
+integer
+.TP
+.B Resource:
+Window.Depth
+.TP
+.B Default:
+Depth of server's default visual
+.TP
+.B Description:
+Specifies the depth of base frame.
+If this depth is not supported by the server,
+the default depth will be used instead.
+If this is specified in conjunction with -visual,
+then the exact visual will be used.
+.TP
+.B Example:
+cmdtool -depth 4
+.sp
+.TP
+.B Argument(s):
+-visual
+.TP
+.B Type:
+string (one of the values: StaticGray, GrayScale,
+StaticColor, PseudoColor, TrueColor, or DirectColor).
+.TP
+.B Resource:
+Window.Visual
+.TP
+.B Default:
+Server's default visual
+.TP
+.B Description:
+Specifies the visual class of the base frame.
+If this visual class is not supported by the server,
+the default visual class will be used instead.
+If this is specified in conjunction with -depth,
+then the exact visual will be used.
+.TP
+.B Example:
+cmdtool -visual StaticGray
+.sp
+.TP
+.B Argument(s):
+-Wf, or -foreground_color
+.TP
+.B Type:
+integer integer integer
+.TP
+.B Resource:
+Window.Color.Foreground
+.TP
+.B Default:
+0 0 0
+.TP
+.B Description
+See Description in -Wb below.
+.sp
+.TP
+.B Argument(s):
+-Wb, or -background
+.TP
+.B Type:
+integer integer integer
+.TP
+.B Resource:
+Window.Color.Background
+.TP
+.B Default:
+255 255 255
+.TP
+.B Description:
+These options allow the user to specify the foreground color (e.g.,
+the color of the text in a textsw), or the background color (e.g.,
+the color that the text is painted on) of an application.  The
+three values should be integers between 0 and 255.  They specify
+the amount of red, green and blue that is in the color.   See 
+.B -fg
+and
+.B -bg
+below for information on similar functions.
+.TP
+.B Example:
+cmdtool -Wf 0 0 255 -Wb 100 100 100 
+.br
+(would come up with a blue foreground, with a gray background)
+.sp
+.TP
+.B Argument(s):
+-fg, or -foreground
+.TP
+.B Type:
+string (color name, or hexadecimal color specification)
+.TP
+.B Resource:
+Window.Color.Foreground
+.TP
+.B Default:
+black
+.TP
+.B Description:
+See Description in -bg below.
+.sp
+.TP
+.B Argument(s):
+-bg, or -background
+.TP
+.B Type:
+string (color name, or hexadecimal color specification)
+.TP
+.B Resource:
+Window.Color.Background
+.TP
+.B Default:
+white
+.TP
+.B Description:
+These options are similar to the -Wf and -Wb options, except
+that they take a color
+argument in the form of a predefined color
+name (lavender, grey, goldenrod, etc.)
+from \fB$OPENWINHOME/lib/rbg.txt\fP, or a hexadecimal representation.
+The hexadecimal representation is of the form pound sign (#)
+followed by the hexadecimal representation of the red, green and
+blue aspects of the color.
+.TP
+.B Examples:
+cmdtool -fg blue -bg gray
+.br
+(comes up with a blue foreground, with a gray background)
+.IP
+cmdtool -fg #d800ff -bg white
+.br
+(comes up with a purple foreground, with a white background)
+.sp
+.TP
+.B Argument(s):
+-WI, or -icon_image
+.TP
+.B Type:
+string
+.TP
+.B Resource:
+Icon.Pixmap
+.TP
+.B Default:
+depends on application
+.TP
+.B Description:
+Sets the default filename for the icon's image.  However, the
+application can overwrite this setting and display its own icon
+image.  The file must be in XView icon format.
+The program
+.BR iconedit (1)
+will allow one to create an image in the
+icon format.  Several icons have been provided in the directory
+\fB$OPENWINHOME/include/images\fP.  By convention, icon format files end
+with the suffix \fB.icon\fP.
+.TP
+.B Example:
+cmdtool -WI \fB/usr/include/images/stop.icon\fP
+.sp
+.TP
+.B Argument(s):
+-WL, or -icon_label
+.TP
+.B Type:
+string
+.TP
+.B Resource:
+Icon.Footer
+.TP
+.B Default:
+depends on application
+.TP
+.B Description:
+Sets a default label for the base frame's icon.  However, the
+application can overwrite this setting and display its own
+icon label.
+.TP
+.B Example:
+cmdtool -WL "Icon Label"
+.sp
+.TP
+.B Argument(s):
+-WT, or -icon_font
+.TP
+.B Type:
+string
+.TP
+.B Resource:
+Icon.Font.Name
+.TP
+.B Default:
+depends
+.TP
+.B Description:
+Sets the name of the font used for the application's icon.
+.TP
+.B Example:
+cmdtool -WT '*century schoolbook*'
+.sp
+.TP
+.B Argument(s):
+-Wd, or -default
+.TP
+.B Type:
+string string
+.TP
+.B Resource:
+given by the first string
+.TP
+.B Default:
+none
+.TP
+.B Description:
+This option allows the user to set resources that don't have command
+line equivalents.  The format is 
+.B "-default resource-name value" .
+The XView resources without specific command line arguments are 
+discussed in the following section.
+.TP
+.B Example:
+cmdtool -default OpenWindows.ScrollbarPlacement left
+.sp
+.TP
+.B Argument(s):
+-xrm
+.TP
+.B Type:
+string
+.TP
+.B Resource:
+given in the string
+.TP
+.B Default:
+none
+.TP
+.B Description:
+This option allows the user to set resources that don't have
+command line equivalents.  This is similar to the -default
+option, but it takes only one argument, a string in the form of
+resource-name:value.
+.TP
+.B Example:
+cmdtool -xrm OpenWindows.ScrollbarPlacement:right
+.sp
+.TP
+.B 
+Argument(s):
+-WH, or -help
+.TP
+.B Type:
+none
+.TP
+.B Resource:
+none
+.TP
+.B Default:
+none
+.TP
+.B Description:
+Prints a description of the valid xview command line arguments for the
+application.
+.sp
+.TP
+.B Argument(s):
+-sync or -synchronous, and +sync or +synchronous
+.TP
+.B Type:
+boolean
+.TP
+.B Resource:
+Window.Synchronous
+.TP
+.B Default:
++synchronous
+.TP
+.B Description:
+These options allow you to make the connection that the
+application has with the X11 server either synchronous (-sync) or
+asynchronous (+sync).
+.sp
+.TP
+.B Argument(s):
+-Wr, or -display
+.TP
+.B Type:
+string (host:display{.screen})
+.TP
+.B Resource:
+Server.Name
+.TP
+.B Default:
+taken from the \fBDISPLAY\fP environment variable
+.TP
+.B Description:
+Sets the name of the X11 server on which to connect.  
+.B host 
+is the name or address of the machine on whose server you have permission
+to display.
+.B display 
+is a number corresponding to the 
+server on which to display for that machine, and 
+.B  screen 
+corresponds to which
+screen for the server.  See reference manual page on 
+.BR xhost (1)
+for more details on adding to permissions list.
+.TP
+.B Examples:
+cmdtool -display foobar:0
+.br
+(will bring up a cmdtool on the default screen of the 
+display #0 of host foobar)
+.IP
+cmdtool -display foobar:0.1
+.br
+(will bring up a cmdtool on screen #1 of display #0 of host foobar)
+.sp
+.TP
+.B Argument(s):
+-Wdxio, or -disable_xio_error_handler
+.TP
+.B Type:
+boolean
+.TP
+.B Resource:
+none
+.TP
+.B Default:
+enable xio handler\(emthis option disables it
+.TP
+.B Description:
+This option is useful for debugging an application.  Whenever
+there is a fatal XIO error, the server will print an error
+message before exiting.  XView installs a error handler to keep
+those messages from appearing.  If you would like to see these
+messages, use this option.
+.sp
+.TP
+.B Argument(s)
+-rv (or -reverse), and +rv (or +reverse)
+.TP
+.B Type:
+boolean
+.TP
+.B Resource:
+Window.ReverseVideo
+.TP
+.B Default:
+False
+.TP
+.B Description:
+These options control whether the foreground and background
+colors of the application will be reversed.  If True, the
+foreground and background colors will be swapped.  The -rv 
+flag will set this to True, while the +rv will set it to
+False.  This is really only useful on monochrome displays.
+.sp
+.TP
+.B Argument(s):
+-name
+.TP
+.B Type:
+string
+.TP
+.B Resource:
+None
+.TP 
+.B Default:
+argv[0]
+.TP
+.B Description:
+Specifies the instance name of the application. This name is 
+used to construct the resource name used to perform lookups 
+in the X11 Resource Manager to look for the values of 
+customizable attributes.
+.sp
+.SS Internationalized Command Line Resource Arguments
+The following command line arguments are relevant to internationalization.
+Locale refers to the language and cultural conventions used in a program.
+Locale setting is the method by which the language and cultural
+environment of a system is set. Locale setting affects the display
+and manipulation of language-dependent features.
+.sp 
+The internationalization features that XView now supports include
+locale setting. One of the ways locale can be set is with command line 
+options. See the
+.I XView Programming Manual
+for details on other methods.
+.sp
+.TP 15
+.B Argument(s):
+-lc_basiclocale
+.TP
+.B Type:
+string
+.TP
+.B Resource:
+basicLocale
+.TP
+.B Default:
+"C"
+.TP
+.B Description:
+Specifies the basic locale category, which sets the 
+country of the user interface.
+.sp
+.TP
+.B Argument(s):
+-lc_displaylang
+.TP
+.B Type:
+string
+.TP
+.B Resource:
+displayLang
+.TP
+.B Default:
+"C"
+.TP
+.B Description:
+Specifies the display language locale category, sets 
+the language in which labels, messages, menu items,  
+and help text are displayed.
+.sp
+.TP
+.B Argument(s):
+-lc_inputlang
+.TP
+.B Type:
+string
+.TP
+.B Resource:
+inputLang
+.TP
+.B Default:
+"C"
+.TP
+.B Description:
+Specifies the input language locale category, sets  
+the language used for keyboard input.
+.sp
+.TP
+.B Argument(s):
+-lc_numeric
+.TP
+.B Type:
+string
+.TP
+.B Resource:
+numeric
+.TP
+.B Default:
+"C"
+.TP
+.B Description:
+Specifies the numeric locale category, which defines  
+the language used to format numeric quantities.
+.sp
+.TP
+.B Argument(s):
+-lc_timeformat
+.TP
+.B Type:
+string
+.TP
+.B Resource:
+timeFormat
+.TP
+.B Default:
+"C"
+.TP
+.B Description:
+Specifies the time format locale category, which defines  
+the language used to format time and date.
+.sp
+.SS Command Line Options/X Resources for Debugging
+The following switches/resources can be used during development to
+avoid the locking up of screens or other effects of X grabs that are
+done by XView.
+.sp
+It should be noted that these options/resources should only be used by 
+developers and are not for normal usage.
+The X grabs are done for a specific reason, and are not
+meant to be customizable.
+Without the X grabs, certain features in XView
+(those that depend on X grabs) might not function properly.
+.sp
+.TP 15
+.B Argument(s):
+-Wfsdb, or -fullscreendebug 
+.TP
+.B Type:
+boolean
+.TP
+.B Resource:
+Fullscreen.Debug
+.TP
+.B Default:
+FALSE
+.TP
+.B Description:
+Enables/disables fullscreen debugging mode during which X grabs
+(XGrabServer(), XGrabKeyboard(), XGrabPointer()) are not done.
+When using the fullscreen pkg, the X11 server will
+be grabbed which prevents other windows on the server from responding
+until
+the grab has been released by the one window which initiated the grab.
+Refer to Appendix F in the
+.I XView Manual: Converting SunView Applications 
+for further details.
+.sp
+.TP
+.B Argument(s):
+-Wfsdbs, or -fullscreendebugserver
+.TP
+.B Type:
+boolean
+.TP
+.B Resource:
+Fullscreen.Debugserver
+.TP
+.B Default:
+FALSE
+.TP
+.B Description:
+Enables/disables server grabbing (XGrabServer()) that is done via
+the fullscreen pkg.  Refer to the Appendix F in the
+.I XView Manual: Converting SunView Applications 
+for further details.
+.sp
+.TP
+.B Argument(s):
+-Wfsdbk, or -fullscreendebugkbd
+.TP
+.B Type:
+boolean
+.TP
+.B Resource:
+Fullscreen.Debugkbd
+.TP
+.B Default:
+FALSE
+.TP
+.B Description:
+Enables/disables keyboard grabbing (XGrabKeyboard()) that is done
+via the fullscreen pkg.
+Refer to the Appendix F in the
+.I XView Manual: Converting SunView Applications
+for further details.
+.sp
+.TP
+.B Argument(s):
+-Wfsdbp, or -fullscreendebugptr
+.TP
+.B Type:
+boolean
+.TP
+.B Resource:
+Fullscreen.Debugptr
+.TP
+.B Default:
+FALSE
+.TP
+.B Description:
+Enables/disables pointer grabbing (XGrabPointer()) that is done
+via the fullscreen pkg.
+Refer to the Appendix F in the
+.I XView Manual: Converting SunView Applications
+for further details.
+.sp
+.TP 15
+.B Argument(s):
+-Wdpgs, or -disable_pass_grab_select
+.TP
+.B Type:
+boolean
+.TP
+.B Resource:
+Window.PassiveGrab.Select
+.TP
+.B Default:
+TRUE
+.TP
+.B Description:
+Disables the passive grab that is done on the 
+SELECT button.
+XView does a passive grab on the
+SELECT button to avoid input focus race conditions.
+When this passive grab is disabled, input focus race
+conditions may be seen.
+.TP
+.B Example:
+% cmdtool -disable_pass_grab_select
+.br
+This executes a cmdtool that does not perform any 
+passive grabs on the SELECT button.
+To do the same thing using X resources, add the following entry
+to the X resource database:
+.br
+Window.PassiveGrab.Select:False
+.sp
+.SS .Xdefaults File
+The \fB.Xdefaults\fP file is used to store and retrieve resource settings.
+We recommend, however, that you use the
+command line arguments described above in order to change display
+characteristics. Changing the resources in the \fB.Xdefaults\fP file will modify
+the behaviour of the user's session.  Novice users should not
+casually hand modify these settings. Before attempting edits to
+this file please read the appropriate sections of the
+.I Xlib Programming Manual
+on the file
+format and the specific properties you intend to change.
+.sp
+Note that resources documented below do not have command line arguments.
+It is still possible, however, to change them without altering the \fB.Xdefaults\fP
+file.  Refer to the command line arguments 
+.B -xrm 
+and 
+.B -defaults 
+for instructions on how to to this.  Additional resources that have 
+command line arguments are documented in the previous section. For mouseless
+resources refer to the
+.I XView Programming Manual.
+.sp
+The resources are documented in the following format:
+.sp
+.TP 15
+.B Resource:
+.I "Resource Name (
+.I "If the resource can be modified by the OpenWindows Property Sheet,
+.I the word 
+.B Props
+.I will be present.)
+.TP
+.B Values:
+.I "Possible Values, and/or Format of Values to be Assigned to Resource 
+.B (Default Value)
+.TP
+.B Description
+.I "Description of Resource.
+.sp
+.TP 15
+.B Resource:
+window.synchronous, +sync -sync
+.TP
+.B Values:
+True, False (False)
+.TP
+.B Description
+Useful when debugging or tracking down a problem since the error
+codes emitted from Xlib will correspond to the immediate request
+made.  Running in a synchronous mode will cause the application 
+to run significantly slower.
+.sp
+.TP
+.B Resource:
+mouse.modifier.button2
+.TP
+.B Values:
+Shift, Ctrl, any valid modifier keysym (Shift)
+.TP
+.B Description
+When using a mouse with less than three buttons, this resource gets 
+an equivalent 
+mapping for the second button which is the ADJUST button on a three 
+button mouse.  For more information on keysyms, see the 
+.BR xmodmap (1)
+reference manual page, Xlib documentation, and the include file 
+\fB$OPENWINHOME/include/X11/Xkeymap.h\fP.
+.sp
+.TP
+.B Resource:
+mouse.modifier.button3
+.TP
+.B Values:
+Shift, Ctrl, any valid modifier keysym (Ctrl)
+.TP
+.B Description
+When using a mouse with less than three buttons, this resource gets 
+an equivalent 
+mapping for the third button which is the MENU button on a three
+button mouse. For more information on keysyms, see the \fBxmodmap\fP
+reference manual page, Xlib documentation, and the include file 
+\fB$OPENWINHOME/include/X11/Xkeymap.h\fP.
+.sp
+.TP
+.B Resource:
+OpenWindows.beep (Props) 
+.TP
+.B Values:
+never, notices, always (always)
+.TP
+.B Description
+When the value is 
+.B notices, 
+the audible bell will ring only 
+when a notice pops up.  When the value is 
+.B never, 
+the audible bell will never ring.  When the value is 
+.B always, 
+the audible bell will always ring when the bell function is called by a
+program.
+.sp
+.TP
+.B Resource:
+alarm.visible
+.TP
+.B Values:
+True, False (True)
+.TP
+.B Description
+When ringing the bell in an XView program, flash the window as 
+well to alert the user.
+.sp
+.TP
+.B 
+OpenWindows.windowColor (Props)
+.TP
+.B Values:
+any valid X11 color specification (#cccccc\(em80% grey)
+.TP
+.B Description
+Specify the base color for control areas for 3-D look.  Takes hexadecimal 
+representation.  Three other
+colors used for shading and highlighting are calculated based upon
+the value of the specified control color.  The actual
+calculated values are done by the OLGX library to provide a consistent
+color calculation between XView and OLWM.  The desktop properties
+program allows a full range of customization and previews what the
+chosen 3-D look will look like.  Does not apply to monochrome displays.
+.sp
+.TP
+.B Resource:
+OpenWindows.workspaceColor (Props)
+.TP
+.B Values:
+any valid X11 color specification (#cccccc\(em80% grey)
+.TP
+.B Description
+Specifies the color for the root window and the background color
+for icons that blend into the desktop.
+.sp
+.TP
+.B Resource:
+xview.icccmcompliant
+.TP
+.B Values:
+True, False (True)
+.TP
+.B Description
+When False, tells XView to set window manager hints in a way that was
+used before the ICCCM was adopted.  Useful for window managers that
+were released before X11R4.  Not needed with the Open Look Window Manager
+provided with Open Windows. 
+.sp
+.TP
+.B Resource:
+OpenWindows.3DLook.Color
+.TP
+.B Values:
+True, False (True on all but monochrome screens)
+.TP
+.B Description
+When False, do not use the 3-D look on a color or greyscale screen.
+.sp
+.TP
+.B Resource:
+OpenWindows.dragRightDistance (Props)
+.TP
+.B Values:
+N (100)
+.TP
+.B Description
+Used by menus to determine when a pullright submenu would display when
+dragging over the menu item near a submenu.  
+.B N 
+is an integer greater than 0.  A reasonable value might start
+at 20 and go to 200 or so.  May need to try different
+values to see what feels best to each person.
+.sp
+.TP
+.B Resource:
+Selection.Timeout
+.TP
+.B Values:
+N (3)
+.TP
+.B Description:
+Selection timeout value. 
+.B N
+indicates the number of seconds that a requestor or a selection owner waits for a 
+response.
+.sp
+.TP
+.B Resource:
+OpenWindows.GotoMenu.RecentCount
+.TP
+.B Values:
+integer between 0 and 15 (8)
+.TP
+.B Description:
+Specifies the number of recently visited
+directories shown in the Go To Menu of a
+File Chooser.
+.sp
+.TP
+.B Resource:
+OpenWindows.GotoMenu.UserDirs
+.TP
+.B Values:
+string-list (NULL)
+.TP
+.B Description:
+new-line (\n) separated list of full-path names to
+directories that is added to the top of the Go To Menu
+of a File Chooser.
+.sp
+.TP
+.B Resource:
+OpenWindows.KeyboardCommand.*
+.TP
+.B Description:
+These resources determine mouseless semantic action and its corresponding key 
+binding. Refer to the
+.I XView Reference Manual
+for a complete listing and explanation of the OpenWindows.KeyboardCommand.*
+resources. Refer to  the
+.I XView Programming Manual
+for information on the mouseless model.
+.sp
+.TP
+.B Resource:
+OpenWindows.KeyboardCommands
+.TP
+.B Values:
+SunView1, Basic, or Full
+.TP
+.B Description:
+Controls the level of mouseless operation. All of the 
+OpenWindows.KeyboardCommand resource mappings may be modified by users,
+or by specifying one the the three values for OpenWindows.KeyboardCommands.
+For detailed information see the
+.I XView Programming Manual
+.sp
+.TP
+.B Resource:
+OpenWindows.MenuAccelerators
+.TP
+.B Values:
+True or False (True)
+.TP
+.B Description:
+Specifies whether or not to activate all keyboard 
+menu acceleration defined by applications. Menu 
+accelerators are keystrokes that can be used to 
+invoke menu commands directly. They can be seen on 
+the right side of frequently used menu items as a 
+set of keyboard qualifiers (with a graphical diamond 
+mark representing the meta key) and an accelerator 
+key. 
+.sp
+.TP
+.B Resource:
+OpenWindows.MouseChordMenu
+.TP
+.B Values:
+True, False (False)
+.TP
+.B Description:
+Turns on the mouse chording mechanism.
+Mouse chording was implemented to allow XView to work with two-button
+mice. Pressing the SELECT and the ADJUST buttons
+at the same time
+will act as MENU button.
+.sp
+.TP
+.B Resource:
+OpenWindows.MouseChordTimeout
+.TP
+.B Values:
+N (100)
+.TP
+.B Description:
+Mouse chording time-out value. 
+.B N
+is in micro-seconds.
+.sp
+.TP
+.B Resource:
+OpenWindows.SelectDisplaysMenu (Props)
+.TP
+.B Values:
+True, False (False)
+.TP
+.B Description
+When True, the SELECT button (usually left mouse) will display the 
+menu as well as the MENU button (usually right mouse).
+.sp
+.TP
+.B Resource:
+OpenWindows.popupJumpCursor (Props)
+.TP
+.B Values:
+True, False (False)
+.TP
+.B Description
+When False, do not warp the mouse to the notice when it appears.
+.sp
+.TP
+.B Resource:
+notice.beepCount
+.TP
+.B Values:
+N (1)
+.TP
+.B Description
+Where N is an integer to specify how many times to ring the bell
+when a notice appears.
+.sp
+.TP
+.B Resource:
+OpenWindows.scrollbarPlacement (Props) 
+.TP
+.B Values:
+Left, Right (Right)
+.TP
+.B Description
+When set to 
+.B Left, 
+put all scrollbars on the lefthand side of the window or object.
+.sp
+.TP
+.B Resource:
+OpenWindows.multiClickTimeout (Props) 
+.TP
+.B Values:
+N (4)
+.TP
+.B Description
+Where N is an integer greater than 2.
+Set the number of tenths of a second between clicks for a multi-click.
+A click is button-down, button-up pair.
+.sp
+.TP
+.B Resource:
+text.delimiterChars
+.TP
+.B Values:
+string (' \\011!\\"#$%&\\'()*+,-./:;<=>?@[\\\\]^_`{|}~')
+.TP
+.B Description
+This resource allows the user to select the delimiter characters that
+are used when doing word level selections in the XView package.  It was
+added because of the needs of the international marketplace, and it 
+allows the user to define the local delimiters for the character set
+that is being used with the current keyboard and Sun workstation.
+.sp
+Note that the octal characters can be scrambled by 
+.B Xrm 
+during a rewrite of the value of text.delimiter.Chars. 
+.B Xrm 
+interprets the text.delimiterChar string when it is loaded.  
+Specifically it will
+decode the backslashed portions of the string and convert them to
+octal representations.  When this is passed to the client application,
+the logic will function correctly.  However, this misbehavior of 
+.B Xrm
+causes the string to be stored incorrectly if the user saves the \fB.Xdefaults\fP
+file using the \fBXrm\fP content of the string. The specific
+problem(s) that occur are the stripping of the backslash characters
+and the expansion of the tab character (\e011).
+.sp
+To correct this problem, one can put the text.delimiterChar entry into an 
+.B .Xdefaults 
+file that will not be overwritten when saving the
+workspace properties (for example, a system wide defaults file).  Or a
+copy of the text.delimiterChar entry can be inserted after \fB.Xdefaults\fP
+file saves.
+.sp
+.TP
+.B Resource:
+scrollbar.jumpCursor (Props)
+.TP
+.B Values:
+True, False (True)
+.TP
+.B Description
+When False, the scrollbar will not move the mouse pointer when
+scrolling.
+.sp
+.TP
+.B Resource:
+scrollbar.repeatDelay
+.TP
+.B Values:
+N (100)
+.TP
+.B Description
+Where N is some integer greater than 2.
+Specifies the time in milliseconds when a click becomes a repeated
+action.
+.sp
+.TP
+.B Resource:
+scrollbar.pageInterval
+.TP
+.B Values:
+N (100)
+.TP
+.B Description
+Where N is some integer greater than 2.
+Specifies the time in milliseconds between repeats of a single page
+scroll.
+.sp
+.TP
+.B Resource:
+scrollbar.lineInterval
+.TP
+.B Values:
+N (1)
+.TP
+.B Description
+Where N is some integer greater than 0.
+Specifies the time in milliseconds between repeats of a single line 
+scroll.  How long to pause scrolling when holding down the SELECT
+button on the scrollbar elevator.  Scrollbar sets up a timer routine
+for repeats.
+.sp
+.TP
+.B Resource:
+text.maxDocumentSize
+.TP
+.B Values:
+N (2000)
+.TP
+.B Description
+Where N specifies the bytes used in memory before a text file is
+saved to a file on disk.  Once this
+limit is exceeded, the text package will send a notice to the user
+to tell them that no more insertions are possible.  If the file
+being edited is saved to a file, or it is a disk file being edited, 
+then the limit does not apply.
+.sp
+.TP
+.B Resource:
+text.retained
+.TP
+.B Values:
+True, False (False)
+.TP
+.B Description
+If True, retain text windows with server backing store.
+.sp
+.TP
+.B Resource:
+text.extrasMenuFilename
+.TP
+.B Values:
+filename (\fB/usr/lib/.text_extras_menu\fP)
+.TP
+.B Description
+Where filename is an absolute location to a file.  Can also be 
+set via environment variable EXTRASMENU.  This file
+is used for the text package's Extras menu.  The commands specified
+in the extras menu are applied to the contents of the current
+selection in the textsw window and then it inserts the results at
+the current insertion point.
+.sp
+.TP
+.B Resource:
+text.enableScrollbar
+.TP
+.B Values:
+True, False (True)
+.TP
+.B Description
+When False, do not put a scrollbar on textsw objects.
+.sp
+.TP
+.B Resource:
+text.againLimit
+.TP
+.B Values:
+N (1)
+.TP
+.B Description
+Where N is an integer between 0 and 500.
+Number of operations the "again history" remembers for a textsw.
+.sp
+.TP
+.B Resource:
+text.autoIndent
+.TP
+.B Values:
+True, False (False)
+.TP
+.B Description
+When True, begin the next line at the same indentation as the previous
+line as typing in text.
+.sp
+.TP
+.B Resource:
+text.autoScrollBy
+.TP
+.B Values:
+N (1)
+.TP
+.B Description
+Where N is an integer between 0 and 100.
+Specifies the number of lines to scroll when type-in moves insertion
+point below the view.
+.sp
+.TP
+.B Resource:
+text.confirmOverwrite
+.TP
+.B Values:
+True, False (True)
+.TP
+.B Description
+When False, do not give user confirmation if a save will overwrite an
+existing file. 
+.sp
+.TP
+.B Resource:
+text.displayControlChars
+.TP
+.B Values:
+True, False (True)
+.TP
+.B Description
+When False, use an up arrow plus a letter to display the control
+character instead of the character that is available for the current
+font.
+.sp
+.TP
+.B Resource: 
+Text.DeleteReplacesClipboard
+.TP 
+.B Values: 
+True, False (False) 
+.TP 
+.B Description 
+This
+resource controls whether text that has been selected and then deleted
+by the delete key or replaced by any other keystroke will be copied to
+the clipboard.  If the value is True, then the selected text will be
+copied to the clipboard. If the value is False, then the text selected does not replace the
+clipboard.
+.sp
+This resource also applies to the text selected for the filter function.
+If the resource is True, then the text selected for a filter function
+will replace the clipboard when the filter successfully finishes.  If
+the resource is False, then the text selected does not replace the
+clipboard.  
+.sp
+.TP
+.B Resource:
+text.undoLimit
+.TP
+.B Values:
+N  (50 maximum of 500)
+.TP
+.B Description
+Where N is an integer between 0 and 500.
+How many operations to save in the undo history log.  These operations
+will be undone when you press the "Undo" key in the text window.
+.sp
+.TP
+.B Resource:
+text.insertMakesCaretVisible
+.TP
+.B Values:
+If_auto_scroll (Always)
+.TP
+.B Description
+Controls whether insertion causes repositioning to make inserted text
+visible.
+.sp
+.TP
+.B Resource:
+text.lineBreak
+.TP
+.B Values:
+Clip, Wrap_char, Wrap_word (Wrap_word)
+.TP
+.B Description
+Determines how the textsw treats file lines when they are 
+too big to fit on one display line.
+.sp
+.TP
+.B Resource:
+text.margin.bottom
+.TP
+.B Values:
+N (0)
+.TP
+.B Description
+Where N is an integer between -1 and 50.
+Specifies the minimum number of lines to maintain between insertion
+point and bottom of view.  A value of -1 turns auto scrolling off.
+.sp
+.TP
+.B Resource:
+mouse.multiclick.space
+.TP
+.B Values:
+N (4)
+.TP
+.B Description
+Where N is an integer between 2 and 500.
+Specifies the maximum number of pixels between successive mouse clicks
+to still have the clicks considered as a multi-click event.
+.sp
+.TP
+.B Resource:
+text.storeChangesFile
+.TP
+.B Values:
+True, False (True)
+.TP
+.B Description
+When False, do not change the name of the current file being edited
+to the name of the file that is stored.  The name of the current file
+is reflected in the titlebar of the textedit frame.
+.sp
+.TP
+.B Resource:
+text.margin.top
+.TP
+.B Values:
+N (2)
+.TP
+.B Description
+Where N is an integer between -1 and 50.
+Specifies the minimum number of lines to maintain between the start
+of the selection and the top of the view.  A value of -1 means defeat
+normal actions.
+.sp
+.TP
+.B Resource:
+text.margin.left
+.TP
+.B Values:
+N (8)
+.TP
+.B Description
+Where N is an integer between 0 and 2000.
+Specifies the margin in pixels that the text should maintain between
+the left hand border of the window and the first character on each line.
+.sp
+.TP
+.B Resource:
+text.margin.right
+.TP
+.B Values:
+N (0)
+.TP
+.B Description
+Where N is an integer between 0 and 2000.
+Specifies the margin in pixels that the text should maintain between
+the right hand border of the window and the last character on each
+line.
+.sp
+.TP
+.B Resource:
+text.tabWidth
+.TP
+.B Values:
+N (8)
+.TP
+.B Description
+Where N is an integer between 0 and 50.
+Specifies the width in characters of the tab character.
+.sp
+.TP
+.B Resource:
+Text.LineSpacing
+.TP
+.B Values:
+N (0)
+.TP
+.B Description
+Where N is an integer which is the percentage of the 
+maximum height of a character in the Textsw window 
+font to use as interline spacing.
+Setting Text.LineSpacing to a nonzero positive number 
+will increase the size of a Textsw proportionally.  
+xv_set() of WIN_ROWS will still yield the correct
+number of rows.
+However,
+the window will be taller as compared
+to a Textsw with Text.LineSpacing set to 0.
+This resource allows XView to conform to TUV requirements.  
+To meet TUV requirements, set Text.LineSpacing to 15 or 
+greater.
+.sp
+.TP
+.B Resource:
+term.boldStyle
+.TP
+.B Values:
+None, Offset_X, Offset_Y, Offset_X_and_Y, Offset_XY, Offset_X_and_XY, 
+Offset_Y_and_XY, Offset_X_and_Y_and_XY, Invert (Invert)
+.TP
+.B Description
+Specify the text bolding style for a terminal based window.
+.sp
+.TP
+.B Resource:
+term.inverseStyle
+.TP
+.B Values:
+Enable, Disable, Same_as_bold (Enable)
+.TP
+.B Description
+Specify the text inverting style for a terminal based window.
+.sp
+.TP
+.B Resource:
+term.underlineStyle
+.TP
+.B Values:
+Enable, Disable, Same_as_bold (Enable)
+.TP
+.B Description
+Specify the text underlining style for a terminal based window.
+.sp
+.TP
+.B Resource:
+term.useAlternateTtyswrc
+.TP
+.B Values:
+True, False (True)
+.TP
+.B Description
+When True, and a \fB$HOME/.ttyswrc\fP is not found, look for an alternate
+\fBttyswrc\fP file.
+When False, do not look for an alternate file is one is not found
+in the home directory, \fB$HOME/.ttyswrc\fP.
+.sp
+.TP
+.B Resource:
+term.alternateTtyswrc
+.TP
+.B Values:
+filename (\fB$XVIEWHOME/lib/.ttyswrc\fP)
+.TP
+.B Description
+Where filename specifies a complete filename and absolute path of 
+an alternate \fBttyswrc\fP file.  This is only used if a \fB.ttyswrc\fP file is
+not found in \fB$HOME/.ttyswrc\fP and term.useAlternateTtyswrc is True.
+.sp
+.TP
+.B Resource:
+term.enableEdit
+.TP
+.B Values:
+True, False (True)
+.TP
+.B Description
+When False, do not keep an editlog of what has been typed into the
+term window.  This is set to false automatically when switching from a
+scrollable term to one that is not scrollable.
+.sp
+.TP
+.B Resource:
+ttysw.eightBitOutput
+.TP
+.B Values:
+True, False (True)
+.TP
+.B Description
+This
+resource controls whether characters modified by the meta modifier are
+encoded as eight-bit characters when passed to the ttysw's pty or are
+delivered as seven-bit characters.
+.sp
+.TP
+.B Resource:
+ttysw.yieldModifiers
+.TP
+.B Values:
+ Meta, Alt
+(The default is to not remove any semantic meaning from any modifiers)
+.TP
+.B Description
+This resource takes as a value a list of modifier keys.  Any semantic
+meaning (mouseless command or keyboard accelerator) that would normally
+be associated with the listed modifiers when the keyboard focus is in 
+a ttysw or termsw would be removed.
+.sp
+.SH ENVIRONMENT
+.B $OPENWINHOME
+is the directory in which the server's directory hierarchy
+is installed.
+.br
+.B $DISPLAY 
+is the name of the server and screen to which applications should display.
+.br
+.B $LD_LIBRARY_PATH 
+is the SunOS shared library search path.
+.br
+.B $HELPPATH 
+is the path that applications will search for Open Look Help files.
+.sp
+.SH FILES
+.TP 20
+.B $OPENWINHOME/include/images
+XView images
+.sp
+.TP 20
+.B $OPENWINHOME/lib
+XView Libraries
+.sp
+.TP 20
+.B $OPENWINHOME/include
+Include files
+.sp
+.TP 20
+.B $OPENWINHOME/bin
+Binaries
+.sp
+.TP 20
+.B $OPENWINHOME/share/src/xview/demos
+XView demo programs
+.sp
+.TP 20
+.B $OPENWINHOME/share/src/xview/examples
+XView example programs
+.sp
+.SH SEE ALSO
+.BR openwin (1),
+.BR xnews (1),
+.BR xlsfonts (1),
+.BR xmodmap (1),
+.BR iconedit (1)
+

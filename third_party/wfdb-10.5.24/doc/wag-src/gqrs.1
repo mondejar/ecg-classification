@@ -1,0 +1,109 @@
+.TH GQRS 1 "21 July 2013" "WFDB 10.5.19" "WFDB Applications Guide"
+.SH NAME
+gqrs, gqpost \- QRS detector and post-processor
+.SH SYNOPSIS
+\fBgqrs -r\fR \fIrecord\fR [ \fIoptions\fR ... ]
+.br
+\fBgqpost -r\fR \fIrecord\fR [ \fIoptions\fR ... ]
+.SH DESCRIPTION
+.PP
+\fBgqrs\fR attempts to locate QRS complexes in an ECG signal in the specified
+\fIrecord\fR.  The detector algorithm is new and as yet unpublished.  The
+output of \fBgqrs\fR is an annotation file (with annotator name \fBqrs\fR) in
+which all detected beats are labelled normal ("N").  The \fIsubtyp\fR,
+\fIchan\fR, and \fInum\fR fields of each annotation respectively indicate the
+detection pass (0 or 1) during which the QRS complex was detected, the signal
+number on which it was detected, and the peak amplitude of the detector's
+matched filter during the QRS complex.
+.PP
+As a QRS detector for research, \fBgqrs\fR has been optimized for sensitivity.
+\fBgqpost\fR can post-process \fBgqrs\fR's output annotation file to improve
+positive predictivity, generally at a cost of reduced sensitivity.  It does
+this by copying its input annotation file, changing N annotations into artifact
+("|") annotations if they are likely to be erroneous.
+.PP
+A configuration file shared by \fBgqrs\fR and \fBgqpost\fR can be used to
+describe some of the expected characteristics of the ECG signal.  This is
+unnecessary when processing adult human ECGs, but an appropriately constructed
+configuration file allows \fBgqrs\fR to analyze fetal, pediatric, and animal ECGs.  A sample configuration file is available (see SOURCES, below);  it contains
+details about all configurable parameters.
+.PP
+\fIOptions\fR include:
+.TP
+\fB-a\fR \fIannotator\fR
+[gqpost only] Read annotations from the specified \fIannotator\fR (default:
+qrs).
+.TP
+\fB-c\fR \fIfile\fR
+Initialize parameters based on the specified (text) configuration
+\fIfile\fR.  See the example configuration file, \fIgqrs.conf\fR, for details.
+.TP
+\fB-f\fR \fItime\fR
+Begin at the specified \fItime\fR in \fIrecord\fR (default: the beginning of
+\fIrecord\fR).
+.TP
+\fB-h\fR
+Print a usage summary.
+.TP
+\fB-H\fR
+Read the signal files in high-resolution mode (default: standard mode).
+.TP
+\fB-m\fR \fIthreshold\fR
+Specify the \fIthreshold\fR (default: 1.0) for detection [qqrs] or
+acceptance [gqpost].  Use higher values to reduce false detections, or lower
+values to reduce the number of missed beats.
+.TP
+\fB-n\fR \fIname\fR
+[gqrs only] Save the filtered signals in a new record with the specified record
+\fIname\fR.
+.TP
+\fB-o\fR \fIname\fR
+[gqpost only] write annotations to an annotation file with the specified
+annotator \fIname\fR.
+.TP
+\fB-s\fR \fIsignal\fR
+[gqrs only] Specify the \fIsignal\fR to be used for QRS detection (default: 0).  Note that signals may be specified by number or name.
+.TP
+\fB-t\fR \fItime\fR
+Process until the specified \fItime\fR in \fIrecord\fR (default: the end of the
+\fIrecord\fR).
+.PP
+Note that \fBgqpost\fR always copies its entire input annotation file.  The
+\fB-f\fR and \fB-t\fR options, if present, only define the interval during which
+\fBgqpost\fR may change annotations.  Since \fBgqpost\fR can reprocess its own
+output, this feature allows multiple passes using different threshold values
+and processing intervals, if necessary.
+.SH ENVIRONMENT
+.PP
+It may be necessary to set and export the shell variable \fBWFDB\fR (see
+\fBsetwfdb\fR(1)).
+.SH EXAMPLES
+.PP
+To mark QRS complexes in record 100 beginning 5 minutes from the start, ending
+10 minutes and 35 seconds from the start, and using signal 1, use the command:
+.br
+	\fBgqrs -r 100 -f 5:0 -t 10:35 -s 1\fR
+.br
+The output annotations may be read using (for example):
+.br
+	\fBrdann -a qrs -r 100\fR
+.PP
+To evaluate the performance of this program, run it on the entire record, by:
+.br
+	\fBgqrs -r 100\fR
+.br
+and then compare its output with the reference annotations by:
+.br
+	\fBbxb -r 100 -a atr qrs\fR
+.SH SEE ALSO
+\fBbxb\fR(1), \fBecgpuwave\fR(1), \fBrdann\fR(1), \fBsetwfdb\fR(1),
+\fBsqrs\fR(1), \fBwqrs\fR(1), \fBxform\fR(1)
+.SH AUTHORS
+George B. Moody (george@mit.edu).
+.SH SOURCES
+http://www.physionet.org/physiotools/wfdb/app/gqrs.c
+.br
+http://www.physionet.org/physiotools/wfdb/app/gqpost.c
+.br
+http://www.physionet.org/physiotools/wfdb/app/gqrs.conf (sample configuration
+file)

@@ -1,0 +1,68 @@
+#! /bin/sh
+# file: savewin		G. Moody	27 November 2001
+#			Last revised:    3 December 2001
+
+# This program captures a window (optionally, the entire screen) to a ppm file.
+# It then opens the ppm file in the Gimp so that it can be cropped if
+# necessary.  The ppm file is then compressed and saved.
+
+# Hint: to capture WAVE's exit confirmation box, run WAVE with the -Wfsdb
+# option (see xview(7)) to disable the full-screen grab.
+
+CROP="no"
+F=''
+HELP="no"
+XWDFLAGS="-frame"
+
+for i in $*
+do
+  case $i in
+    -c*) CROP="yes" ;;
+    -h*) HELP="yes" ;;
+    -r*) XWDFLAGS="-root" ;;
+    *) F=$i ;;
+  esac
+done
+
+if [ "x$F" = "x" ]
+then
+  HELP="yes"
+fi
+
+if [ "$HELP" = "yes" ]
+then
+  echo "usage: $0 [-crop] [-root] NAME"
+  echo
+  echo "Click left within the window you wish to save after starting $0."
+  echo "Use -crop if you want to crop or otherwise edit the image in the Gimp"
+  echo " before saving the output files."
+  echo "Use -root if you want a screen capture after a 10-second pause."
+  echo "Output is saved as NAME.ppm.gz ."
+  exit
+fi
+
+if [ "$XWDFLAGS" = "-root" ]
+then
+  sleep 1; echo -n 10 ...
+  sleep 1; echo -n 9 ...
+  sleep 1; echo -n 8 ...
+  sleep 1; echo -n 7 ...
+  sleep 1; echo -n 6 ...
+  sleep 1; echo -n 5 ...
+  sleep 1; echo -n 4 ...
+  sleep 1; echo -n 3 ...
+  sleep 1; echo -n 2 ...
+  sleep 1; echo -n 1 ...
+  sleep 1; echo
+fi
+
+xwd $XWDFLAGS | xwdtopnm >$F.ppm
+
+if [ "$CROP" = "yes" ]
+then
+  echo $F.ppm written.  Starting the Gimp ...
+  echo Crop and save $F.ppm, then exit from the Gimp to finish saving image.
+  gimp $F.ppm
+fi
+
+gzip $F.ppm

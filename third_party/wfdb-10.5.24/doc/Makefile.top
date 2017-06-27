@@ -1,0 +1,135 @@
+# file: Makefile	G. Moody	24 June 1989
+#			Last revised:  11 March 2002
+# `make' description file for WFDB software documentation
+#
+# -----------------------------------------------------------------------------
+# WFDB applications: programs for working with annotated signals
+# Copyright (C) 2002 George B. Moody
+#
+# These programs are free software; you can redistribute them and/or modify
+# them under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
+#
+# These programs are distributed in the hope that they will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# these programs; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+# You may contact the author by e-mail (george@mit.edu) or postal mail
+# (MIT Room E25-505A, Cambridge, MA 02139 USA).  For updates to this software,
+# please visit PhysioNet (http://www.physionet.org/).
+# _____________________________________________________________________________
+#
+# This file is used with the UNIX `make' command to install on-line
+# documentation for the WFDB Software Package, and also to format and print it.
+# Before using this file for the first time, check that the site-specific
+# variables below are appropriate for your system.
+
+# The primary documentation for the WFDB Software Package consists of 3 guides:
+#  * The WFDB Applications Guide.  This guide documents the application
+#    programs provided in the app, convert, psd, wave (briefly), and wview
+#    subdirectories of wfdb, as well as the file formats supported by the WFDB
+#    Software Package. It also includes a tutorial on evaluation of arrhythmia
+#    and ischemia detectors using this software and standard databases.
+#  * The WFDB Programmer's Guide.  This guide documents the WFDB library.
+#    It contains both tutorial and reference material, with many examples, that
+#    will be useful if you wish to develop your own application programs for
+#    reading, analyzing, or creating digitized, optionally annotated,
+#    recordings of signals.
+#  * The WAVE User's Guide.  This guide includes a comprehensive tutorial, with
+#    reference material, for WAVE, an interactive waveform browser with
+#    facilities for annotation editing and control of external analysis
+#    programs. WAVE runs on PCs under Linux, and on SPARC-based systems under
+#    SunOS or Solaris.
+# The files in this directory can be used to prepare printed or on-line
+# versions of these guides.
+
+# On-line documentation
+# =====================
+
+# The most recent versions of these guides are always available on PhysioNet
+# (follow the links from http://www.physionet.org/physiotools/manuals.shtml).
+# Use any web browser to read them.
+
+# If you follow the instructions for a standard installation of the WFDB
+# Software Package, the man pages from this directory will be installed so they
+# can be read using 'man', 'xman', etc.  The individual pages will be
+# accessible to the UNIX `man' command, and to similar commands such as `xman',
+# provided that MANDIR (see below) is in your MANPATH (type `man man' for
+# further information).
+
+# If you have the necessary formatting software, these man pages and a large
+# amount of other documentation can be produced in a wide variety of formats
+# from the sources in in this directory (see 'Makefile').  Here is a brief list
+# of available formats and the commands needed to produce them:
+
+# WFDB Applications Guide
+# printed copy	'make wag-book' (requires troff, tbl, latex, dvips, a printer)
+# HTML		'make wag.html' (requires rman, latex2html, and perl)
+# man pages	'make wag.man'
+# PDF		'make wag.pdf'  (requires troff, tbl, latex, dvips, and ps2pdf)
+# PostScript	'make wag.ps'   (requires troff, tbl, latex, dvips, ps2pdf, and
+#				 pdftops *)
+# WFDB Programmer's Guide
+# printed copy	'make wpg-book' (requires troff, texi2dvi, dvips, & a printer)
+# Windows help	'make wpg.hlp'  (requires makertf and hcrtf)
+# HTML		'make wpg.html' (requires texi2html and perl)
+# info		'make wpg.info' (requires makeinfo or GNU emacs)
+# PDF		'make wpg.pdf'  (requires texi2dvi)
+# PostScript	'make wpg.ps'   (requires texi2dvi and dvips)
+#
+# WAVE User's Guide
+# printed copy	'make wug-book' (requires troff, latex, dvips, and a printer)
+# HTML		'make wug.html' (requires latex2html and perl)
+# PDF		'make wug.pdf'  (requires pdflatex)
+#  PostScript	'make wug.ps'   (requires latex and dvips)
+
+# * See 'wag-src/Makefile' for information about making a PostScript version
+#   of the WFDB Applications Guide without the use of ps2pdf or pdftops.
+
+# If GNU emacs or GNU info has been installed on your system, a hypertext
+# version of the WFDB Programmer's Guide may be installed by typing `make
+# pg.info'.  Once the info files have been installed, provided that INFODIR is
+# in your INFOPATH (see below), you can browse the guide from within emacs by
+# typing C-h i to enter the info system, and selecting `WFDB library' from the
+# top-level menu.  Note that `make info' adds an entry for the Guide to the
+# top-level `info' file ($INFODIR/dir).  If you install a GNU emacs update,
+# this entry may disappear; to restore it, simply `make pg.info' again.
+
+# The WFDB Programmer's Guide can also be formatted as an MS-Windows help file,
+# using 'makertf' and 'hcrtf'.  This requires 'makertf' (open-source, from
+# http://makertf.sourceforge.net/) and 'hcrtf' (see the 'makertf' page above
+# for further information).  Install both of these programs in your PATH before
+# trying to generate pg.hlp.
+
+
+# Printed documentation
+# =====================
+
+# Individual man pages or info nodes can be printed using the facilities of
+# man and emacs respectively, or (from the HTML versions) using your web
+# browser's print facilities.  Complete printed copies of the guides can be
+# obtained in one of these ways:
+#  - The PostScript versions can be downloaded from PhysioNet for printing on
+#    a PostScript printer.  If you don't have a PostScript printer, you may
+#    still be able to use Ghostscript (available freely from 
+#    http://www.ghostscript.com/) to print these versions on your printer
+#    (most popular laser, inkjet, and dot matrix printers are supported by
+#    Ghostscript).
+#  - The PDF versions can be downloaded from PhysioNet for printing using
+#    Acrobat reader (available freely from http://www.adobe.com/).  These
+#    can also be read and printed using GhostScript (see above), but there
+#    is no advantage in doing so; use the PostScript versions with GhostScript.
+#  - The sources for these guides are provided in this directory;  you should
+#    use these if you have made additions to the guides or wish to customize
+#    them in any other way.  To format the sources, you will need groff or
+#    troff, gtbl or tbl, TeX, LaTeX, texi2dvi, and dvips.  To format and print
+#    the WFDB Applications Guide, type `make ag' (but read `tmac.dif'
+#    first, unless you are using groff).  To print the WAVE User's Guide, type
+#    `make ug'.  To print the WFDB Programmer's Guide, type `make pg'.
+# _____________________________________________________________________________

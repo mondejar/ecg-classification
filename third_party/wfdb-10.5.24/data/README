@@ -1,0 +1,41 @@
+file: README		G. Moody	9 August 1989
+			Last revised:	 21 July 1999
+
+This directory contains a "micro-database" which can be used to test programs
+compiled with the WFDB library, as well as header files for piped and local
+records, and for direct input from 9-track tapes, as described in the WFDB
+Programmer's Guide.  Note that these files are readable by both UNIX and MS-DOS
+versions of the WFDB software.  To make the files in this directory accessible
+to such programs, add the name of this directory to the database path, or copy
+them into a directory which is already in the database path (for more
+information, see the WFDB Programmer's Guide).
+	
+Most of the *.hea files in this directory duplicate those in the `udb'
+directory of the MIT-BIH Arrhythmia Database CD-ROM.  The other files in this
+directory are:
+
+Makefile	`make' description file for installing these files
+Makefile.top	Used by ../configure to construct Makefile (comments only)
+Makefile.tpl	Used by ../configure to construct Makefile (portable section)
+README		this file
+
+100s.hea	header file for record `100s'
+100s.dat	signal file for record `100s'
+100s.atr	reference annotation file for record `100s'
+
+multi.hea	header file for record `multi'
+null.hea	header file for record `null'
+
+wfdbcal		sample WFDB calibration file
+
+dblist		list of databases (see ../doc/ecgeval.1)
+ahalist		list of records in the AHA DB
+ahaxlist	as above, excluding paced records
+culist		list of records in the CU DB
+esclist		list of records in the European ST-T DB
+mitlist		list of records in the MIT-BIH Arrhythmia DB
+mitxlist	as above, excluding paced records
+nstlist		list of records in the NST DB
+
+Note that there are no signal or annotation files associated with `multi.hea'
+and `null.hea';  see the comments in these files for details.

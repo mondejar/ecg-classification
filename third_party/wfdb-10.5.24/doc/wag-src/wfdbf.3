@@ -1,0 +1,231 @@
+.TH WFDBF 3 "25 February 2006" "WFDB 10.4.0" "WFDB Applications Guide"
+.SH NAME
+wfdbf \- Waveform Database library wrappers for Fortran
+.SH SYNOPSIS
+implicit integer(a-z)
+.br
+real aduphys, getbasecount, getcfreq, getifreq, sampfreq
+.br
+character aux(256), desc(80), filetype(32), fname(40), name(20), pathname(80), record(16), string(32), units(20)
+.br
+integer a, adcres, adczero, ampl, anntyp, baseline, bsize, caltype, chan, cksum, date, dummy, fmt, group, initval, microvolts, mode, nann, nsamp, nsig, num, s, spf, stat, subtyp, time, v(32), value
+.br
+real gain, frequency, high, low, scale
+.PP
+setanninfo(a, name, stat)
+.br
+getsiginfo(s, fname, desc, units, gain, initval, group, fmt, spf, bsize, adcres, adczero, baseline, nsamp, cksum)
+.br
+setsiginfo(s, fname, desc, units, gain, initval, group, fmt, spf, bsize, adcres, adczero, baseline, nsamp, cksum)
+.br
+annopen(record, nann)
+.br
+isigopen(record, nsig)
+.br
+osigopen(record, nsig)
+.br
+osigfopen(nsig)
+.br
+wfdbinit(record, nann, nsig)
+.br
+setgvmode(mode)
+.br
+getspf(dummy)
+.br
+getvec(v)
+.br
+getframe(v)
+.br
+putvec(v)
+.br
+getann(a, time, anntyp, subtyp, chan, num, aux)
+.br
+ungetann(a, time, anntyp, subtyp, chan, num, aux)
+.br
+putann(a, time, anntyp, subtyp, chan, num, aux)
+.br
+isigsettime(time)
+.br
+isgsettime(group, time)
+.br
+iannsettime(time)
+.br
+ecgstr(code, string)
+.br
+strecg(string)
+.br
+setecgstr(code, string)
+.br
+annstr(code, string)
+.br
+strann(string)
+.br
+setannstr(code, string)
+.br
+anndesc(code, string)
+.br
+setanndesc(code, string)
+.br
+iannclose(a)
+.br
+oannclose(a)
+.br
+timstr(time, string)
+.br
+mstimstr(time, string)
+.br
+strtim(string)
+.br
+datstr(date, string)
+.br
+strdat(string)
+.br
+adumuv(s, ampl)
+.br
+muvadu(s, microvolts)
+.br
+aduphys(s, ampl)
+.br
+physadu(s, value)
+.br
+calopen(fname)
+.br
+getcal(desc, units, low, high, scale, caltype)
+.br
+putcal(desc, units, low, high, scale, caltype)
+.br
+newcal(fname)
+.br
+flushcal(dummy)
+.br
+getinfo(record, string)
+.br
+putinfo(string)
+.br
+newheader(record)
+.br
+setheader(record, nsig)
+.br
+wfdbgetskew(s)
+.br
+wfdbsetskew(s, value)
+.br
+wfdbgetstart(s)
+.br
+wfdbsetstart(s, value)
+.br
+wfdbquit(dummy)
+.br
+sampfreq(record)
+.br
+setsampfreq(frequency)
+.br
+getcfreq(dummy)
+.br
+setcfreq(frequency)
+.br
+getifreq(dummy)
+.br
+setifreq(frequency)
+.br
+getbasecount(dummy)
+.br
+setbasecount(frequency)
+.br
+setbasetime(string)
+.br
+wfdbquiet(dummy)
+.br
+wfdbverbose(dummy)
+.br
+wfdberror(string)
+.br
+setwfdb(string)
+.br
+getwfdb(string)
+.br
+setibsize(value)
+.br
+setobsize(value)
+.br
+wfdbfile(filetype, record, pathname)
+.br
+wfdbflush(dummy)
+.br
+isann(anntyp)
+.br
+isqrs(anntyp)
+.br
+setisqrs(anntyp, value)
+.br
+map1(anntyp)
+.br
+setmap1(anntyp, value)
+.br
+map2(anntyp)
+.br
+setmap2(anntyp, value)
+.br
+ammap(anntyp)
+.br
+mamap(anntyp, subtyp)
+.br
+annpos(anntyp)
+.br
+setannpos(anntyp, value)
+.br
+
+.SH DESCRIPTION
+Fortran programs can use the WFDB library to read and write waveform database
+files.  Differences in argument-passing conventions between Fortran and C
+(the language of the WFDB library) require the use of a set of wrappers
+as an interface between the library and Fortran code that invokes its
+functions.  These wrappers are contained within 'wfdbf.c', provided in
+the 'fortran' directory of the WFDB software package.  When the WFDB Software
+Package is installed, a copy of 'wfdbf.c' is placed in the same directory
+as 'wfdb.h' (normally, /usr/include/wfdb).
+
+.PP
+Most of these wrapper subroutines behave like their similarly-named
+counterparts in the WFDB library.  The functions setanninfo, setsiginfo, and
+getsiginfo do not have direct equivalents in the WFDB library; they are
+provided in order to permit Fortran programs to read and write data structures
+passed to and from several of the WFDB library functions.  Since the contents
+of these structures are directly accessible by C programs, these functions are
+not needed in the C library.
+
+.PP
+Before using annopen, set up the annotation information structures
+using setanninfo.  After using isigopen or osigopen, use getsiginfo to
+obtain the contents of the signal information structures if necessary.
+Before using osigfopen or setheader, use setsiginfo to set the
+contents of the signal information structures.  Before using wfdbinit,
+use setanninfo and setsiginfo to set the contents of the annotation
+and signal information structures.
+
+.PP
+To use these wrappers, call them as shown above, then compile your
+code together with wfdbf.c and link to the WFDB library.  If you are
+using the GNU g77 compiler (recommended), do so using a command such as:
+.br
+	\fBg77 -o foo foo.f -DFIXSTRINGS /usr/include/wfdb/wfdbf.c -lwfdb\fR
+.br
+The wrappers include optionally compiled code that converts traditional
+space-terminated Fortran strings to null-terminated C strings and vice versa.
+This code is compiled if the symbol FIXSTRINGS is defined, as in the g77
+command above.  If you use a different Fortran compiler, this code may not be
+necessary.  See 'fortran/README' for further information about using the
+WFDB Fortran wrappers.
+
+.SH SEE ALSO
+.TP
+\fIWFDB Programmer's Guide\fR
+On systems that support GNU emacs, the \fIGuide\fR may be available on-line
+using emacs \fIinfo\fR;  from within \fBemacs\fR, type control-H followed by
+\fIi\fR to find out.  An HTML version may be installed on your system (in
+\fI/usr/help/html/wpg\fP);  the most recent version can be viewed on-line at
+\fBhttp://www.physionet.org/physiotools/wpg/\fP.
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCES
+http://www.physionet.org/physiotools/wfdb/fortran/wfdbf.c

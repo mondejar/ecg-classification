@@ -1,0 +1,212 @@
+file: README		G. Moody	28 July 1995
+			Last revised: 24 February 2006
+______________________________________________________________________________
+Fortran wrappers for the WFDB library
+Copyright (C) 1995-2006 George B. Moody
+
+These wrappers are free software; you can redistribute them and/or modify them
+under the terms of the GNU Library General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your option)
+any later version.
+
+These wrappers are distributed in the hope that they will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public License
+for more details.
+
+You should have received a copy of the GNU Library General Public License
+along with these wrappers; if not, write to the Free Software Foundation,
+Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+You may contact the author by e-mail (george@mit.edu) or postal mail
+(MIT Room E25-505A, Cambridge, MA 02139 USA).  For updates to this software,
+please visit PhysioNet (http://www.physionet.org/).
+______________________________________________________________________________
+
+A set of 'wrapper functions' is provided in this directory for those who wish
+to use the WFDB library together with applications written in Fortran.  In
+order to use them, you will still need a C or C++ compiler to compile the WFDB
+library and the wrapper functions themselves; in addition, if you are
+cross-compiling, you will need a version of the standard C library for your
+target system.  If you do not have a C compiler or the standard C library, the
+freely available GNU C/C++ compiler and the GNU C library are highly
+recommended; these can be used with several commercial Fortran compilers, or
+with either 'f2c' (a Fortran-to-C translator) or 'g77' (the original GNU
+Fortran compiler).  The (currently) experimental GNU Fortran 9x compiler,
+'gfortran', is able to compile the wrappers and some simple programs but is
+not sufficiently complete to be useful for larger programs, though this should
+change as 'gfortran' matures.  'f2c', 'g77', and 'gfortran' are all freely
+available from the same sources as the GNU C/C++ compiler.
+
+In most cases, the WFDB library functions cannot be called directly from
+Fortran programs, for one or more of the following reasons:
+
+ * Function arguments are usually passed by value to C functions.  Fortran
+   passes function arguments by reference (i.e., as pointers).
+ * Fortran does not support all of the basic data types supported by C and
+   used for argument passing and returned values by the WFDB library.
+ * Fortran 77 (the most widely used dialect at present) does not support
+   any form of composite data type analogous to C structures.
+ * Depending on the compilers and linker used, it may be necessary to give
+   special names to C functions to be called from Fortran programs.
+
+The wrappers work around these problems by accepting Fortran-compatible
+arguments passed by reference, by returning Fortran-compatible data types, and
+by using function names that can be referenced within Fortran programs.
+
+The following files will be found in this directory:
+
+README		this file
+wfdbf.c		the wrappers (written in C for use with Fortran programs)
+example.f	a sample Fortran program that illustrates use of the wrappers
+Makefile	UNIX 'make' description file for compiling the sample program
+
+General notes on using the wrapper functions
+--------------------------------------------
+
+Wrappers are provided in 'wfdbf.c' for all of the WFDB library functions except
+setmsheader.  See the sample program ('example.f', in this directory)
+to see how the wrappers are used, and see 'Makefile' to see how to compile
+and link a Fortran program with the wrappers and the WFDB library.
+
+Include the statements
+	implicit integer(a-z)
+	real aduphys, getbasecount, getcfreq, sampfreq
+(or the equivalent for your dialect of Fortran) in your Fortran program to
+ensure that these functions (except for the four listed in the second
+statement) will be understood to return integer*4 values (equivalent to C
+'long' values).
+
+Note that Fortran arrays are 1-based, and C arrays are 0-based.  Signal and
+annotator numbers passed to these functions must be 0-based.  Thus, for
+example, to read an annotation from the first input annotation file, use
+	getann(0, time, anntyp, subtyp, chan, num, aux)
+in your Fortran program, rather than
+	getann(1, time, anntyp, subtyp, chan, num, aux)
+(which would read an annotation from the second input annotation file).  On
+the other hand, when referencing data within a Fortran array, use 1-based
+indexing.  Thus, if you have read a vector of samples via
+	getvec(v)
+the first element of v, namely v(1), contains a sample of the first signal
+(signal 0).  An attempt to reference v(0) in your Fortran program is illegal.
+If this discussion is not clear, refer to the WFDB Programmer's Guide,
+especially to the Glossary entries for Annotator number and Signal number.
+
+Certain parameters are defined in 'wfdb.h' (in the 'lib' directory at the same
+level as this one;  a copy of this file is referenced by the C statement
+	#include <wfdb/wfdb.h>
+near the top of most of the *.c files in the 'app' directory).
+
+If you are using a UNIX Fortran compiler, or a Fortran-to-C translator, note
+that the trailing '_' in the names of the functions defined in wfdbf.c should
+*not* appear in your Fortran program; thus, for example, 'annopen1_' should be
+invoked as 'annopen1'.  UNIX Fortran compilers and translators append a '_' to
+the names of all external symbols referenced in Fortran source files when
+generating object files.  Thus the linker can recognize that annopen1_ (defined
+in wfdbf.c) is the function required by a Fortran program that invokes
+'annopen1'; if the Fortran program were to invoke 'annopen1_', the linker would
+search (unsuccessfully) for a function named 'annopen1__'.
+
+If you are using a Fortran compiler that does not follow this convention,
+you are on your own.
+
+Since Fortran does not support composite data types (such as the WFDB_Siginfo
+and WFDB_Anninfo types used by WFDB library functions such as isigopen), the
+wrappers for functions that use such types have argument lists that differ
+significantly from those of the corresponding WFDB library functions.  For
+example, the WFDB library function isigopen requires three arguments:  the
+record name (a string), a pointer to an array of WFDB_Siginfo structures to be
+filled in by isigopen, and the number of signals desired (an integer).  The
+wrapper function isigopen_ omits the second of these arguments, since Fortran
+provides no standard syntax for operations involving structures or arrays of
+structures.  To allow the Fortran program access to the data returned in the
+array of WFDB_Siginfo structures by isigopen, the function getsiginfo_ is
+provided with the wrappers.
+
+The functions setanninfo_, setsiginfo_, and getsiginfo_ do not have direct
+equivalents in the WFDB library;  they are provided in order to permit Fortran
+programs to read and write data structures passed to and from several of the
+WFDB library functions.  Since the contents of these structures are directly
+accessible by C programs, these functions are not needed in the C library.
+
+Since reading or writing annotations almost invariably involves manipulation
+of the elements of WFDB_Annotation structures, these elements are listed
+explicitly in the argument lists of the wrapper functions getann_, putann_,
+and ungetann_, and set/query functions similar to setanninfo_ are not provided
+for WFDB_Annotation structures.  Similarly, the wrapper functions getcal_ and
+putcal_ use argument lists that include all of the elements of the WFDB_Calinfo
+structures used by the corresponding WFDB library functions.
+
+No wrapper is provided for setmsheader, since this function is rarely used, and
+implementing a wrapper would seem to require either setting an arbitrary limit
+on the number of segments (a limit that does not exist in the WFDB library) or
+risking portability problems related to use of dynamic memory allocation.  (I
+don't know of a portable way to pass an array of variable-length strings in an
+argument list in Fortran; if you do, please let me in on the secret!)  If you
+really need this function in a Fortran program, write a Fortran version of it
+using the C version as a model; this is left as an exercise for the reader.
+
+Note to users of gfortran (the experimental GNU Fortran compiler)
+-----------------------------------------------------------------
+
+As of February 2006, I have not been successful in compiling anything other
+than trivial programs with gfortran, which (according to its documentation) is
+a work in progress.  This situation will change (I hope), but if you encounter
+problems with gfortran I recommend g77.
+
+Note to users of f77 or g77 (the original GNU Fortran compiler)
+---------------------------------------------------------------
+
+The original UNIX Fortran 77 compiler was called f77.  The GNU Fortran 77
+compiler is compatible with the original f77, and it is frequently installed
+under both names on modern platforms.
+
+To install g77 on Fedora Core 4 (which provides only gfortran by default), make
+sure that yum is working and (as root) do this:
+	yum install compat-gcc-32-g77
+
+When compiling the wrappers, use the option -DFIXSTRINGS, as in:
+	g77 -c -DFIXSTRINGS wfdbf.c
+and then link wfdbf.o and the WFDB library to your Fortran code by:
+	g77 -o myprogram myprogram.f wfdbf.o -lwfdb
+
+If you prefer, you can compile the wrappers at the same time as your Fortran
+code.  For example:
+	g77 -o myprogram myprogram.f -DFIXSTRINGS wfdbf.c -lwfdb
+
+If you use the older 'f2c' (Fortran-to-C translator), do not use -DFIXSTRINGS
+when compiling wfdbf.c.
+
+It is no longer necessary to use the deprecated '-fwritable-strings' option
+when compiling the wrappers.
+
+If you compile and run the example program, its output should be:
+
+	Number of signals in record 100s =  2
+	Sampling frequency = 360.00
+	v(1) =  995    v(2) = 1011
+	v(1) =  995    v(2) = 1011
+	v(1) =  995    v(2) = 1011
+	v(1) =  995    v(2) = 1011
+	v(1) =  995    v(2) = 1011
+	v(1) =  995    v(2) = 1011
+	v(1) =  995    v(2) = 1011
+	v(1) =  995    v(2) = 1011
+	v(1) = 1000    v(2) = 1008
+	v(1) =  997    v(2) = 1008
+
+Please note that these wrappers have not been extensively tested;  although
+they are (mostly) very simple functions, errors may have crept in.  Please
+report any bugs you find, so that they may be corrected in future releases.
+I am interested to hear about successful uses of the WFDB library with Fortran
+programs;  please let me know what compilers (Fortran and C) and operating
+system you are using.  I would also be grateful for contributions of a few
+more interesting example programs, especially if they exercise more features
+of the WFDB library.  Your comments and suggestions are welcome.  Please write
+to the author:
+
+	George B. Moody
+	MIT Room E25-505A
+	Cambridge, MA 02139 USA
+
+	george@mit.edu

@@ -1,0 +1,151 @@
+ File		Press the right mouse button to bring up the File menu, which
+		includes:
+	Load...		Select this item to bring up the Load window;  change
+			the `Record' or `Annotator' fields in the Load window
+			in order to load a different record or annotation file.
+			The initial values of these fields are obtained from
+			the -r and -a options on the command line.  If the
+			`Annotator' field is empty, no annotations are loaded.
+	Save		Select this item to force your edits to be written to
+			disk files.  (This is done automatically after every
+			20 edits, any time the record or annotator is changed,
+			and upon exiting WAVE.)
+	Print		Select this item to print the contents of the ECG
+			window in chart recorder format (after saving any
+			edits).  This is accomplished by spawning a `pschart'
+			process, so you need not wait for the output before
+			continuing.  Output from multiple print requests
+			appears in the order in which the requests were made.
+ 	Analyze...	Select this item to bring up the Analyze panel and the
+			Analysis commands window; use the buttons in the panel
+			to analyze the record, or type a command directly into
+			the Analysis commands window.  The names of most of the
+			buttons and their assigned actions are read from a menu
+			file (by default, /usr/local/lib/wavemenu.def; 	this
+			may be overridden by setting the environment variable
+			WAVEMENU to the name of a different file).  The buttons
+			are usually configured to perform various analysis
+			functions on the current record; read the default menu
+			file for details.
+	Log...		Select this item to bring up the Log window.  Change
+			the `Log file name' field to load a log file;  enter
+			text to be recorded in the log file in the
+			`Description' field.  Record an entry by pressing the
+			`Save' button, or dismiss the window without logging
+			the entry by pressing `Cancel'.  Review the entries
+			by pressing `Review log';  each entry will be displayed
+			for 5 seconds unless you press `Pause' (disabled except
+			while reviewing the log).  Each entry contains the
+			record name, the times shown at the lower left and
+			right corners of the ECG window, and the contents of
+			the `Description' field.  Log files may be used as
+			command scripts for `pschart'.  You may write to as
+			many log files in a single session as you choose, and
+			you may accumulate entries from multiple sessions in a
+			single log file.
+
+ View...	Press the left mouse button to bring up the View window, which
+		includes:
+	Show:		Select one or more of these items in order to enable
+			or disable optional elements of the ECG display.
+	Time scale:	Press the right mouse button to view the list of
+			available time scales;  drag the pointer to the
+			desired scale and release the right mouse button.
+	Amplitude scale:
+			Press the right mouse button to view the list of
+			available amplitude scales;  drag the pointer to the
+			desired scale and release the right mouse button.
+	Draw:		Press the right mouse button to select either `all
+			signals' or `listed signals only'.  If you choose
+			`listed signals only', signals are displayed in the
+			order specified in the signal list on the `Analyze'
+			panel, and any signals not included in the list are
+			not displayed.
+	Grid:		Press the right mouse button to view the list of
+			available grid types;  drag the pointer to the
+			desired type and release the right mouse button.
+	Undo changes	Select this item to restore the View window indicators
+			to match the current state of the ECG window.
+	Redraw		Select this item to apply any changes you have made
+			and to dismiss the View window.
+
+ Edit		Press the right mouse button to bring up the Edit menu, which
+		includes:
+	Allow editing	Select this item if you wish to make changes in the
+			annotation file.
+	View only	Select this item if you do not wish to edit the
+			annotation file any longer.  By default, editing is
+			disabled when WAVE is started up.
+
+ Properties	Press the right mouse button to bring up the Properties menu,
+		which includes:
+	Signals...	Select this item to view information about the ECG
+			signals in the current record.
+	Annotations...	Select this item to view a summary of the contents of
+			the current annotation file.
+	About WAVE...	Select this item to view information about the version
+			number and installation date of this version of WAVE.
+
+ < Search	Search backwards, beginning with the annotation that
+		immediately precedes the earliest annotation currently
+		displayed, for an annotation that matches the entry in the
+		"Search for" field of the Find window (see below).  The display
+		is redrawn, roughly centered on the matching annotation.
+
+ <<		Skip backwards by an amount equal to the duration of the
+		signals currently displayed (i.e., a full screen).
+
+ <		Skip backwards by one-half screen.
+
+ Find...	Press the left mouse button to bring up the Find window, which
+		includes:
+	Start time:	The value of this item is the time shown in the lower
+			left corner of the ECG window.  Change it in order to
+			view another part of the record.  (Time can be entered
+			in h:m:s format, with hours or hours and minutes
+			omitted, or in sNNNNN format, in which NNNNN is a
+			number of sample intervals from the beginning of the
+			record.  Time is always rounded down to an even
+			multiple of one second, and is displayed in m:s or
+			h:m:s format irrespective of the input format once the
+			display is refreshed.)
+	End time:	Similarly, this item's value is the time shown in the
+			lower right corner of the ECG window.  Change it in
+			order to view another part of the record.  If you
+			change both the Start time and the End time fields
+			without pressing RETURN in between, only the last
+			change is effective.  To change the duration of the
+			ECG window, select the View window (see above) and
+			change the time scale.
+	Search for:	This entry is initially empty.  Enter a string to
+			specify a search target for the "< Search" and
+			"Search >" buttons.  The string should match an
+			annotation or marker mnemonic, signal quality code,
+			rhythm, comment, or other text string, or one of:
+			  *v	to match any ventricular ectopic beat
+			  *s	to match any supraventricular ectopic beat
+			  *n	to match any other beat type
+			  *	to match any annotation or marker
+			  .	to match a deletion made during this edit
+
+ >		Skip forwards by one-half screen.
+
+ >>		Skip forwards by a full screen.
+
+ Search >	Search forwards, beginning with the annotation that
+		immediately follows the last annotation currently displayed,
+		for an annotation that matches the entry in the "Search for"
+		field of the Find window (see above).  The display is redrawn,
+		roughly centered on the matching annotation.
+
+ Help		This button pops up a panel containing buttons that name
+		several topics for which extensive on-line help is available.
+		Choosing a topic allows you to browse through the associated
+		help file in a scrollable text window.
+
+ Quit		WAVE exits when you press this button, after saving your edits
+		if any.  If your input file would be overwritten as a result of
+		saving your edits, it is first renamed by appending a `~' to
+		the annotator name.  If you have entered annotations but have
+		not specified an annotator, the name by which you invoked this
+		program (normally, `wave') is used for the annotator name.

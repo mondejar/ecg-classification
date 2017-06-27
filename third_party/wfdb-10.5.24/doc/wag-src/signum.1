@@ -1,0 +1,32 @@
+.TH SIGNUM 1 "9 April 2008" "WFDB 10.4.6" "WFDB Applications Guide"
+.SH NAME
+signum \- print signal numbers of a WFDB record having specified names
+.SH SYNOPSIS
+\fBsignum -r\fR \fIrecord\fR [ \fIoptions\fR ... ]
+.SH DESCRIPTION
+.PP
+\fBsignum\fR prints the signal numbers in the specified \fIrecord\fR
+(one per line) corresponding to the specified signal names.
+.PP
+\fIOptions\fR include:
+.TP
+\fB-h\fR
+Print a usage summary.
+.TP
+\fB-s\fR \fIname\fR [ \fIname\fR ... ]
+Print signal numbers of signals that have the specified \fIname\fRs. Signals
+are numbered 0, 1, 2 .... If the specified signal does not exist in
+\fIrecord\fR, \fBsigname\fR outputs "X".
+.PP
+If two or more signals in a record match a specified \fIname\fR, \fBsignum\fR
+outputs the numbers of all the matching signals on a single line.
+.SH ENVIRONMENT
+.PP
+It may be necessary to set and export the shell variable \fBWFDB\fR (see
+\fBsetwfdb\fR(1)).
+.SH SEE ALSO
+\fBsigname\fR(1)
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCE
+http://www.physionet.org/physiotools/wfdb/app/signum.c

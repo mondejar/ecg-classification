@@ -1,0 +1,6 @@
+#  Use this record to read or write 3 signals via standard I/O.
+
+8x3 3
+- 8
+- 8
+- 8

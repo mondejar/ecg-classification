@@ -1,0 +1,118 @@
+file: README		G. Moody	28 July 1989
+			Last revised:   23 July 2008
+
+This directory contains sources for WFDB applications that convert signal and
+annotation files in various unsupported formats to and from WFDB format (also
+known as PhysioBank or MIT format), including EDF/EDF+, WAV (audio), and AHA DB
+formats.  (Note that EDF input is supported by recent versions of the WFDB
+library, however.)
+
+Note that many commonly used formats are supported by the WFDB library.  The
+program `xform' (in the `app' directory) is a flexible application for
+converting between any pair of supported formats, in addition to offering
+other capabilities such as resampling (to change the sampling frequency),
+deletion or rearrangement of signals, rescaling (to change signal amplitudes),
+and removal of unwanted material at the beginning or end of a record.
+
+Programs `rdsamp' and `wrsamp' in the `app' directory convert signals between
+supported (binary) formats and text;  programs `rdann' and `wrann', also in
+the `app' directory, perform similar conversions for annotation files.
+
+European Data Format (EDF) has been used for storage of multiparameter,
+multifrequency data (such as polysomnograms) since 1990.  Program `edf2mit'
+reads an EDF file and generates WFDB-format header and signal files from it.
+(Although this conversion is no longer needed since current versions of the
+WFDB library can read EDF files directly, the native WFDB files produced by
+'edf2mit' can be read more efficiently and with lower latency and memory
+requirements than the EDF files.)  Program 'mit2edf' performs the inverse
+conversion.  Program 'rdedfann' creates a WFDB annotation file from the
+annotation stream embedded in an EDF+ file.  (Although multi-segment WFDB
+records can be discontinuous, there is currently no support for reading or
+writing discontinuous EDF+ files using the WFDB library, or for writing an EDF+
+annotation stream, either natively or using a converter.)
+
+The popular Matlab application (and the mostly compatible open-source Octave
+application) cannot read WFDB files unless they have been prepared specifically
+for Matlab.  Program `wfdb2mat' does this, converting all or any part of the
+samples in a record into a Matlab- and Octave-compatible '.mat' file, and also
+creating a new .hea file that allows WFDB applications to read the '.mat' file
+directly.
+
+The popular .wav format used for audio files is readable by WFDB applications
+once a short header (.hea) file that describes the format of the .wav file
+has been created;  'wav2mit' does this.  Note that there are many variants
+of .wav format, and only the common ones are readable in this way.  If you
+encounter an incompatible .wav file, or a file in another audio format, an
+audio format converter such as the open-source SoX (sox.sourceforge.net) may
+be helpful.  Program 'mit2wav' converts a WFDB record (signals only, not
+annotations) into a .wav file.
+
+The AHA Database for Evaluation of Ventricular Arrhythmia Detectors (AHA DB)
+is available on DVD from ECRI (www.ecri.org), in a format that is not compatible
+with those previously used for the AHA DB on CDs, floppy disks, and tapes.
+To convert this format to WFDB format, use 'ahaecg2mit.c'.  (There is no support
+for performing the inverse conversion.)
+
+AHA DB tape distribution format was used for both the AHA DB and the MIT-BIH
+DB between 1980 and 1990.  AHA DB tape distribution format requires more space
+than the other formats supported by the WFDB library and applications, however,
+so it is not recommended for on-line storage.  Programs `a2m' and `ad2m' can
+also convert AHA DB CD-ROM and diskette distribution format files into standard
+WFDB files;  the inverse conversion is not supported, however.
+
+Once you have installed 'a2m' and 'ad2m', the shell script 'ahaconvert' can be
+used to create a set of AHA DB records in WFDB format from an AHA DB CD-ROM
+(or from a set of AHA DB diskettes).  Run 'ahaconvert' without command-line
+arguments for instructions.  Under MS-DOS or MS-Windows, you will need to
+have a shell utility, such as 'bash' (included with the free Cygwin software
+package from http://www.cygwin.com/) in order to run 'ahaconvert'.
+
+This directory also contains the program `revise', which converts obsolete MIT
+header files into new-format WFDB header files.  (Unless you have very old
+header files, made before 1990, you will not need this program.)
+
+Contributions to this set of format converters are welcome.  If you have
+written a format converter, please send it together with a short input file and
+the output generated from the input to george@mit.edu.  (Don't omit the
+output;  I need to see that I can compile your converter and generate the same
+output that you do.)
+
+If a `make' utility is available, follow the instructions in 'Makefile' to
+compile and install these applications on your system.  If you do not have a
+`make' utility, you will have to perform the installation manually; the
+comments in 'Makefile' may be helpful in determining how to proceed.
+
+For information about using these applications, see the WFDB Applications
+Guide (in the 'doc' directory at the same level as this one), or look in the
+respective source files.  You can also obtain a brief usage summary for each
+application by running it without command-line arguments.
+
+You may wish to set the WFDB environment variable (the database path) before
+using these applications.  Select and customize the appropriate script for
+doing so from among the templates in the `app' directory on the same level as
+this one.
+
+The following files will be found in this directory:
+
+Makefile	`make' description file for compiling these applications using
+		 ANSI/ISO standard C compilers on supported platforms
+Makefile.top	Used by ../configure to construct Makefile (comments only)
+Makefile.tpl	Used by ../configure to construct Makefile (portable section)
+README		this file
+
+edf2mit.c	Converts an EDF file to a WFDB record
+mit2edf.c	Converts a WFDB record into an EDF file
+rdedfann.c	Converts an EDF+ annotation stream into a WFDB annotation file
+wfdb2mat.c	Converts a WFDB record into a .mat file
+wav2mit.c	Makes .hea file so that a .wav file is readable as a WFDB record
+mit2wav.c	Converts a WFDB record into a .wav file
+ahaecg2mit.c	Converts an AHA DB DVD file to a WFDB record
+
+a2m.c		Converts an AHA format annotation file to WFDB format
+ad2m.c		Converts an AHA format signal file to WFDB format
+ahaconvert	Converts an AHA DB CD-ROM to WFDB format using a2m and ad2m
+m2a.c		Converts a WFDB format annotation file to AHA format
+md2a.c		Converts a WFDB format signal file to AHA format
+readid.c	Extracts record name and file lengths from AHA-format ID block
+makeid.c	Makes an AHA-format ID block for a database record
+revise.c	Converts an obsolete WFDB header to a new-format WFDB header

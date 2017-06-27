@@ -1,0 +1,12 @@
+#! /bin/bash
+
+# make a map of a WFDB record
+
+RL=$1
+RS=`basename $RL`
+shift
+
+wfdbmap -r $RL $* >$RS.script
+bash $RS.script >$RS.plt 2>/dev/null
+lwcat -strip -eps $RS.plt >$RS.ps
+convert -density 150 $RS.ps $RS.png

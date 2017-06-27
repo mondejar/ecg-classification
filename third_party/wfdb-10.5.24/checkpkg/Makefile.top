@@ -1,0 +1,32 @@
+# file: Makefile	G. Moody	 7 September 2001
+#
+# UNIX 'make' description file for checking the WFDB software package
+#
+# -----------------------------------------------------------------------------
+# Copyright (C) 2000 George B. Moody
+#
+# These programs are free software; you can redistribute them and/or modify
+# them under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
+#
+# These programs are distributed in the hope that they will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# these programs; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+# You may contact the author by e-mail (george@mit.edu) or postal mail
+# (MIT Room E25-505A, Cambridge, MA 02139 USA).  For updates to this software,
+# please visit PhysioNet (http://www.physionet.org/).
+# _____________________________________________________________________________
+#
+# This file is used with the UNIX `make' command to check the functionality of
+# the WFDB library and applications.  Before using it for the first time, check
+# that the site-specific variables below are appropriate for your system.  To
+# build and install the applications, just type `make' (from within this
+# directory).  To print a set of source listings, type `make listing'.
+# _____________________________________________________________________________

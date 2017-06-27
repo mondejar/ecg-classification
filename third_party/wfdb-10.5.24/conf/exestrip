@@ -1,0 +1,6 @@
+#!/bin/sh
+
+for FILE in $*
+do
+   strip $FILE.exe
+done

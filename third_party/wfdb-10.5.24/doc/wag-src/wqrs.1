@@ -1,0 +1,111 @@
+.TH WQRS 1 "7 January 2009" "WFDB 10.4.12" "WFDB Applications Guide"
+.SH NAME
+wqrs \- single-channel QRS detector based on length transform
+.SH SYNOPSIS
+\fBwqrs -r\fR \fIrecord\fR [ \fIoptions\fR ... ]
+.SH DESCRIPTION
+.PP
+\fBwqrs\fR attempts to locate QRS complexes in an ECG signal in the
+specified \fIrecord\fR.  The detector algorithm is based on the length
+transform.  The output of \fBwqrs\fR is an annotation file (with
+annotator name \fBwqrs\fR) in which all detected beats are labelled
+normal; the annotation file will also contain optional J-point
+annotations if the \fB-j\fR option (see below) is used.
+.PP
+\fBwqrs\fR can process records containing any number of signals, but
+it uses only one signal for QRS detection (signal 0 by default; this
+can be changed using the \fB-s\fR option, see below).  \fBwqrs\fR is
+optimized for use with adult human ECGs.  For other ECGs, it may be
+necessary to experiment with the sampling frequency as recorded in the
+input record's header file (see \fBheader\fR(5)), the detector threshold
+(which can be set using the \fB-m\fR option), and the time constants
+indicated in the source file.
+.PP
+\fBwqrs\fR optionally uses the WFDB library's \fIsetifreq\fR function
+to resample the input signal at 120 or 150 Hz (depending on the mains
+frequency, which can be specified using the \fB-p\fR option).  \fBwqrs\fR
+performs well using input sampled at a range of rates up to 360 Hz and
+possibly higher rates, but it has been designed and tested to work best
+on signals sampled at 120 or 150 Hz.
+.PP
+\fIOptions\fR include:
+.TP
+\fB-d\fR
+Dump the raw and length-transformed input samples in text format on the
+standard output, but do not detect or annotate QRS complexes.
+.TP
+\fB-f\fR \fItime\fR
+Begin at the specified \fItime\fR in \fIrecord\fR (default: the beginning of
+\fIrecord\fR).
+.TP
+\fB-h\fR
+Print a brief usage summary.
+.TP
+\fB-H\fR
+Read the signal files in high-resolution mode (default: standard mode).
+These modes are identical for ordinary records.  For multifrequency records,
+the standard decimation of oversampled signals to the frame rate is suppressed
+in high-resolution mode (rather, all other signals are resampled at the highest
+sampling frequency).
+.TP
+\fB-j\fR
+Find and annotate J-points (QRS ends) as well as QRS onsets.
+.TP
+\fB-m\fR \fIthreshold\fR
+Specify the detection \fIthreshold\fR (default: 100 microvolts);  use higher
+values to reduce false detections, or lower values to reduce the number of
+missed beats.
+.TP
+\fB-p\fR \fIfrequency\fR
+Specify the power line (mains) frequency used at the time of the recording,
+in Hz (default: 60).  \fBwqrs\fR will apply a notch filter of the specified
+frequency to the input signal before length-transforming it.
+.TP
+\fB-R\fR
+Resample the input at 120 Hz if the power line frequency is 60 Hz, or at
+150 Hz otherwise (default: do not resample).
+.TP
+\fB-s\fR \fIsignal\fR
+Specify the \fIsignal\fR (number or name) to be used for QRS detection
+(default: 0).
+.TP
+\fB-t\fR \fItime\fR
+Process until the specified \fItime\fR in \fIrecord\fR (default: the end of the
+\fIrecord\fR).
+.TP
+\fB-v\fR
+Verbose mode: print information about the detector parameters.
+.SH ENVIRONMENT
+.PP
+It may be necessary to set and export the shell variable \fBWFDB\fR (see
+\fBsetwfdb\fR(1)).
+.SH EXAMPLES
+.PP
+To mark QRS complexes in record 100 beginning 5 minutes from the start, ending
+10 minutes and 35 seconds from the start, and using signal 1, use the command:
+.br
+	\fBwqrs -r 100 -f 5:0 -t 10:35 -s 1\fR
+.br
+The output annotations may be read using (for example):
+.br
+	\fBrdann -a wqrs -r 100\fR
+.PP
+To evaluate the performance of this program, run it on the entire record, by:
+.br
+	\fBwqrs -r 100\fR
+.br
+and then compare its output with the reference annotations by:
+.br
+	\fBbxb -r 100 -a atr wqrs\fR
+.SH SEE ALSO
+\fBbxb\fR(1), \fBecgpuwave\fR(1), \fBrdann\fR(1), \fBsetwfdb\fR(1),
+\fBsqrs\fR(1)
+.PP
+Zong W, Moody GB, and Jiang D.
+A robust open-source algorithm to detect onset and duration of QRS
+complexes.
+\fIComputers in Cardiology\fR \fB30\fR:737\-740 (2003).
+.SH AUTHORS
+Wei Zong (wzong@mit.edu) and George B. Moody (george@mit.edu).
+.SH SOURCE
+http://www.physionet.org/physiotools/wfdb/app/wqrs.c

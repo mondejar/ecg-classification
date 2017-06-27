@@ -1,0 +1,758 @@
+\documentclass[twoside]{article}
+\usepackage{rawfonts}
+\IfFileExists{times.sty}{\usepackage{times}}{\@missingfileerror{times}{sty}}
+
+\usepackage{fancyhdr}
+\oddsidemargin 0.1in
+\evensidemargin -0.1in
+\topmargin -0.5in
+\textheight 650pt
+\footskip 48pt
+\def\textwidth{6.375 in}
+\pagestyle{fancy}
+\def\headrulewidth{0pt}
+\lhead{\rm{}Evaluating ECG Analyzers}
+\chead{\rm{}WFDB Applications Guide}
+\rhead{\rm{}Evaluating ECG Analyzers}
+\lfoot[\rm\thepage]{\rm{}WFDB VERSION}
+\cfoot{\rm{}LONGDATE}
+\rfoot[\rm{}WFDB VERSION]{\rm\thepage}
+
+\title{Evaluating ECG Analyzers}
+\author{George B. Moody\\
+Harvard-MIT Division of Health Sciences and Technology, Cambridge, MA, USA}
+\date{}
+
+\begin{document}
+\setcounter{page}{FIRSTPAGE}
+
+\maketitle
+
+\section*{Summary}
+This paper describes how to evaluate an automated ECG analyzer using
+available annotated ECG databases and software, in compliance with
+standard evaluation protocols.  These protocols have been adopted as
+parts of the {\em American National Standard for Ambulatory
+Electrocardiographs} (ANSI/AAMI EC38:1998, and its predecessor,
+ANSI/AAMI EC38:1994), and the {\em American National Standard for
+Testing and Reporting Performance Results of Cardiac Rhythm and ST
+Segment Measurement Algorithms} (ANSI/AAMI EC57:1998).  They include
+earlier evaluation protocols developed for an AAMI Recommended
+Practice, {\em Testing and Reporting Performance Results of
+Ventricular Arrhythmia Detection Algorithms} (AAMI ECAR, 1987).  It
+will be most useful to readers who plan to use the suite of evaluation
+software included in the WFDB Software Package ({\tt
+http://www.\-physio\-net.\-org/\-physio\-tools/\-wfdb.\-shtml}); this
+suite of software includes the reference implementations of the
+evaluation protocols specified in EC38 and EC57.
+
+\section{Introduction}
+Continuous monitoring of the electrocardiogram in both inpatients and
+ambulatory subjects has become a very common procedure during the past
+thirty years, with diverse applications ranging from screening for cardiac
+arrhythmias or transient ischemia, to evaluation of the efficacy of
+antiarrhythmic drug therapy, to surgical and critical care monitoring.
+Since the first intensive care units were established in the 1960s,
+the need for automated data reduction and analysis of the ECG has been
+apparent, motivated by the very large amount of data that must be
+analyzed (on the order of $10^{5}$ cardiac cycles per patient per
+day).  As clinical experience has led to the identification of more
+and more prognostic indicators in the ECG, clinicians have demanded
+and received increasingly sophisticated automated ECG analyzers.  The
+early heart rate monitors rapidly evolved into devices that were
+designed first to detect ventricular fibrillation, then other
+``premonitory'' ventricular arrhythmias.  Many newer devices attempt
+to detect supraventricular arrhythmias and transient ischemic ST
+changes.
+
+Visual analysis of the ECG is far from simple.  Accurate diagnosis of
+ECG abnormalities requires attention to subtle features of the
+signals, features that may appear only rarely, and which are often
+obscured by or mimicked by noise.  Diagnostic criteria are complicated
+by inter- and intra-patient variability of both normal and abnormal
+ECG features.  Given these considerations, it is not surprising that
+developers are faced with a difficult task in the design of algorithms
+for automated ECG analysis, and that the results of their efforts are
+imperfect.  Certain parts of the problem --- QRS detection in the
+absence of noise, for example --- are well-solved by most current
+algorithms;  others --- detection of supraventricular arrhythmias, for
+example --- remain exceedingly difficult.  Just as we may find it easiest
+to analyze ``textbook'' examples, automated ECG analyzers may perform
+better while analyzing the recordings used during their development
+than when applied to ``real-world'' signals.
+
+Since automated ECG analyzers vary in performance, and since their
+performance is dependent on the characteristics of their input,
+quantitative evaluations of these devices are essential in order to
+assess the usefulness of their outputs.  At one extreme, a device's
+outputs in the context of a particular type of signal may be so
+unreliable as to be worthless;  unfortunately, the other extreme ---
+an output so reliable it can be accepted uncritically --- is not a
+characteristic of any existing monitor, nor can it be expected in
+the future.
+
+\subsection{ECG Databases}
+Several databases of ECG recordings are generally available
+for evaluating ECG analyzers.  They serve several important needs:
+\begin{itemize}
+   \item  They contain {\em representative} signals.  Wide variations in
+ECG characteristics among subjects severely limit the value of
+synthesized waveforms for testing purposes.  Realistic tests of ECG
+analyzers require large sets of ``real-world'' signals.
+
+   \item They contain {\em rarely observed but clinically significant}
+signals.  Although it is not particularly difficult to obtain
+recordings of common ECG abnormalities, often those that are most
+significant are rarely recorded.  Both developers and evaluators of
+ECG analyzers need examples of such recordings.
+
+   \item  They contain {\em standard} signals.  System comparisons
+are meaningless unless performance is measured using the same test
+data in each case, since performance is so strongly data-dependent.
+
+   \item  They contain {\em annotated} signals.  Typically, each QRS
+complex has been manually annotated by two or more cardiologists
+working independently.  The {\em reference} annotations produced
+as a result serve as a ``gold standard'' against which a device's
+analysis can be compared quantitatively.
+
+   \item They contain {\em digitized, computer-readable} signals.  It is
+therefore possible to perform a fully automated, strictly reproducible
+test in the digital domain if desired, allowing one to establish with
+certainty the effects of algorithm modifications on performance.
+\end{itemize}
+
+Standards EC38 and EC57 require the use of the following ECG
+databases:\footnote{Sources: ECRI, 5200 Butler Pike, Plymouth Meeting,
+  PA 19462 USA (AHA DB); PhysioNet (http://physionet.org/) (MIT, NST,
+  CU DB; and ESC DB for non-commercial use); Alessandro Taddei, CNR
+  Institute of Clinical Physiology, G. Pasquinucci Heart Hospital, via
+  Aurelia Sud, 54100 Massa, Italy (ESC DB for commercial use).}
+\begin{itemize}
+   \item {\bf AHA DB}: The American Heart Association Database for
+Evaluation of Ventricular Arrhythmia Detectors (80 records, 35 minutes
+each)
+
+   \item {\bf MIT DB}: The Massachusetts Institute of Technology--Beth
+Israel Hospital Arrhythmia Database (48 records, 30 minutes each)
+
+   \item {\bf ESC DB}: The European Society of Cardiology ST-T
+Database (90 records, two hours each)
+
+   \item {\bf NST DB}: The Noise Stress Test Database (12 records, 30
+minutes each)
+
+   \item {\bf CU DB}: The Creighton University Sustained Ventricular
+Arrhythmia Database (35 records, 8 minutes each)
+
+\end{itemize}
+Each of these databases represents a very substantial effort by many
+workers; in particular, the AHA, MIT, and ESC databases each required
+more than five years of sustained effort by large teams of researchers
+and clinicians from many institutions.  Nevertheless, it should be
+recognized that even these databases do not fully represent the
+variety of ``real-world'' ECGs observed in clinical practice.
+Although these databases permit standardized, quantitative, automated,
+and fully reproducible evaluations of analyzer performance, it is
+risky to extrapolate from the results of such evaluations to
+expectations of real-world performance.  Such extrapolations can be
+particularly error-prone if the evaluation data were also used for
+development of the analysis algorithm, since the algorithm may have
+been (perhaps unintentionally) ``tuned'' to its training set.  It
+should also be noted that the first four of the databases listed above were
+obtained from Holter ECG recordings; although the frequency response
+of the Holter recording technique is not usually a limiting factor in
+the performance of an ECG analyzer, it may tend to favor devices that
+are designed to analyze Holter recordings over devices that have been
+designed to analyze higher-fidelity input signals.
+
+\subsection{Evaluation Protocols}
+Between 1984 and 1987, the Association for the Advancement of Medical
+Instrumentation (AAMI) sponsored the development of a protocol for the
+use of the first two of these databases, which was published as an
+AAMI Recommended Practice.\footnote{{\it Testing and Reporting
+Performance Results of Ventricular Arrhythmia Detection
+Algorithms}. Publication AAMI ECAR (1987); succeeded by ANSI/AAMI
+EC57:1998, available from AAMI, 1110 N Glebe Road, Suite 220,
+Arlington, VA 22201 USA.}  Between 1990 and 1998, the ambulatory ECG
+subcommittee of the AAMI ECG committee developed and revised a
+standard for ambulatory ECG monitors, significant portions of which
+address the issue of the accuracy of automated analysis performed by
+some of these devices.\footnote{{\it American National Standard for
+Ambulatory Electrocardiographs}.  Publication ANSI/AAMI EC38:1998;
+available from AAMI (address above).}  The ambulatory ECG standard
+EC38:1998, and the ``testing and reporting performance results''
+standard EC57:1998, build on the evaluation protocol adopted for the
+earlier Recommended Practice (ECAR), incorporating provisions for the
+use of all five of the databases listed above, with extensions for
+assessing detection of supraventricular arrhythmias and transient
+ischemic ST changes.  The standard breaks new ground in establishing
+specific reporting requirements for the performance of automated ECG
+analyzers on standard tests using the databases listed above.
+
+A significant constraint imposed on evaluators by the EC38 standard
+is that they must obtain annotation files containing the analysis
+results of the device under test.  Although the device itself need not
+produce these files, EC38 specifically requires that they be produced
+by an automated procedure, which must be fully disclosed.  The intent
+of this requirement is to permit reproducible independent evaluations
+in which neither the proprietary data of the developers (the analysis
+algorithms) nor that of the evaluators (the test signals and reference
+annotations) need necessarily to be disclosed.  By defining the
+interface between the developer and the evaluator to be the annotation
+file, the responsibilities of each party are clearly defined: the
+developer must make certain that the device's outputs are recorded in
+the annotation file in the manner intended by the developer, but in
+the language of the standard; the evaluator must make certain
+that the algorithms used to compare the device's annotation files with
+the reference annotation files conform to the specification of the
+standard.  The format and content of these annotation files is
+specified in detail below.  For many existing devices, it may be
+difficult or impossible to obtain such annotation files without the
+cooperation of the developers.  Newly-designed devices should
+incorporate the necessary ``hooks'' for producing annotation files.
+
+\subsection{Software to Support Evaluations}
+This paper describes a suite of programs that support evaluations of
+automated ECG analyzers in accordance with the methods described in
+the EC38 and EC57 standards (as well as those in the earlier ECAR
+Recommended Practice).  These methods are sufficiently complex that
+the development of such a suite of programs is not an afternoon's
+work.  By making generally available reference implementations of the
+evaluation algorithms, much needless duplication of effort may be
+avoided.  By circulating them in source form to other users, we may
+hope to find and correct any bugs, with the eventual result that
+evaluators of devices should not have to bear the burden of evaluating
+the evaluation technique itself.  By using them for evaluations, any
+ambiguities in the English specification of the evaluation algorithms
+are resolved in a consistent manner for each device tested.  These
+programs are written in C and run under MS-DOS or UNIX.  They have
+been made available as part of the WFDB Software Package.  In this
+paper, the names of these programs are printed {\tt like this}.
+
+\section{Evaluating an ECG Analyzer}
+The major task facing an evaluator is that of presenting the reference signals
+to the device under test, and collecting annotation files from the device.  The
+details of this task will vary for each device, but a few general hints are
+given below.  A second task, that of obtaining reference heart rate
+measurements, should be a much simpler job.  Once all of this information has
+been gathered, the remaining work required --- that of comparing the device's
+analysis against the ``gold standard'' --- can be performed automatically.
+
+\subsection{Presenting Signals to the Analyzer}
+Two distinctly different types of tests are possible.  If the device can accept
+digital inputs, the reference signals can be supplied in that form (perhaps
+after resampling with {\tt xform} to convert the digitized samples to the
+expected sampling frequency and numerical range, and possibly with additional
+digital signal processing to simulate the signal conditioning normally
+performed by the device's front-end data acquisition hardware).  The primary
+advantage of testing in the digital domain is that the test is (or should be)
+strictly reproducible, since no noise or additional quantization error can be
+introduced in this way.  This method usually avoids the issue of
+synchronization of the test annotations with the reference signals discussed
+below.
+
+Testing in the analog domain requires that analog signals be recreated from
+the digital signals.  (It should be noted that even the analog versions of the
+MIT and AHA databases that have been available in the past were recreated
+from the digitized signals by the database developers.)  The advantage of this
+approach is that it exercises the entire system, including the front-end data
+acquisition hardware.  It is often difficult, however, to establish
+synchronization between the signal source and the analyzer, needed in order to
+permit comparisons of annotations.  One way of dealing with this problem is to
+arrange for the analyzer's sampling clock to trigger the digital-to-analog
+converter used to recreate the analog signals, or to arrange for an external
+clock to trigger both D/A conversion in the playback system and A/D conversion
+in the analyzer.  Another method is to begin and end the signal generation
+process by delivering signals from the analyzer to the playback device, and
+recording the analyzer's clock time at the times of the signals; assuming that
+both the analyzer and the playback device have stable clocks, event times in
+the analyzer's frame of reference can be converted to database sample numbers
+by linear interpolation.  The WFDB software package includes a program ({\tt
+sample}) that uses a Microstar DAP 2400-series analog interface
+board\footnote{
+Source: Microstar Laboratories, {\tt http://www.mstarlabs.com/}. External
+analog anti-aliasing filters (to reduce ``staircasing'') and attenuators (to
+obtain patient-level signals) may also be required, depending on the system to
+be evaluated.  DAP boards can also be used with {\tt sample} to create new
+database records.}
+and an MS-DOS PC to recreate analog signals from digital database records on
+CD-ROMs or magnetic disk files.
+
+\subsection{Obtaining Test Annotation Files}
+For any ambulatory ECG monitor that incorporates automated analysis functions,
+the EC-38 standard requires the manufacturer to implement and disclose a
+method for producing test annotation files.  Independent evaluators should seek
+assistance from the manufacturer in any case, since the manufacturer's
+interpretation of the device's outputs in the language of EC-38 is definitive
+(in effect, the annotation file generation technique becomes part of
+the system under test).  Note that generation of annotation files need not be
+synchronous with data acquisition; a device might conceivably store all of the
+necessary data until the end of the test, and only then write the file.
+Neither does the standard require that an annotation be determined within any
+fixed amount of time, as would be expected of devices designed to trigger
+pacing, for example.  Furthermore, EC-38 specifically allows for the
+possibility that the device under test might not produce the annotation file
+directly.  If any external hardware or software is required to do so, however,
+it must be made generally available or specified in sufficient detail by the
+manufacturer to permit an independent evaluator to obtain test annotation
+files.
+
+Annotation files contain a label (an annotation) for each beat and for certain
+other features of the signals, such as rhythm and ST changes.  Annotations are
+stored in time order in annotation files.  The ``time'' of an annotation is
+that of the sample in the signal file with which the annotation is
+associated.\footnote{Times in annotation and signal files are usually expressed
+as {\em sample numbers} (the number of samples in the signal file that precede
+the sample in question).} The WFDB library (included in the WFDB software package)
+includes C-callable functions ({\tt getann} and {\tt putann}) for reading and
+writing annotations.  In a C program, annotations appear as data structures
+containing a 32-bit {\tt time} field together with a pair of 8-bit fields that
+encode the annotation type and sub-type ({\tt anntyp} and {\tt subtyp} [sic],
+respectively), and a variable-length {\tt aux} field usually used to store
+text.  In annotation files, these annotation structures are usually stored in
+a variable-length bit-packed format averaging slightly more than 16 bits per
+annotation.\footnote{Test annotations that include heart rate or ST
+measurements require substantially more storage.  {\tt getann} and
+{\tt putann} can also use the original AHA DB format (containing fixed-length
+annotations, 16 bytes each), but this format should not be used for
+evaluations of devices that incorporate ST analysis functions, since the
+space available for the {\tt aux} data is too small to store ST measurements.}
+
+Test annotation files may include the following:
+\begin{itemize}
+   \item  {\em Beat annotations}.  These need not coincide precisely with the
+reference beat annotations, since the evaluation protocol allows a time
+difference of up to 150 ms between each pair of matching beat annotations.
+All beat annotations are mapped during the evaluation process into the set
+\{ N, V, F, S, Q \} (corresponding to normal, ventricular ectopic, ventricular
+fusion, supraventricular ectopic, and unclassifiable or paced beats
+respectively); devices need not be capable of producing all of these
+annotations, but any beat annotations that they do produce will be translated
+into one of these types.  The standard specifies the mapping used for the
+{\tt anntyp} values defined in {\tt <wfdb/ecgcodes.h>}. (This file is
+included in the WFDB Software Package.)  Any beat annotations that
+appear in the first five minutes of a record (the ``learning period'') are
+ignored in the evaluation process.  The remainder of the record (the ``test
+period'') must be fully annotated.  Note in particular that the last beat of
+some records may be very close to the last sample;  since the analyzer may
+reach the end of the input signals before producing an annotation for the last
+beat, it may be necessary to ``pad'' the input data for a few seconds at the
+end of the record to permit the analyzer to emit its final beat annotation.
+
+   \item {\em Shutdown annotations}.  If the device suspends its analysis
+because of poor signal quality or for any other reason, it should mark the
+periods during which analysis is suspended.  The evaluation software tallies
+beats missed during such periods separately from beats missed at other times.
+The beginning of each period of shutdown may be marked using a {\tt NOISE}
+annotation with ${\tt subtyp} = -1$, and the end of each period of shutdown
+may be marked using a {\tt NOISE} annotation with ${\tt subtyp} = 0$ (see
+the source for {\tt bxb} for notes on other acceptable methods of marking
+shutdown).
+
+   \item {\em Ventricular fibrillation annotations}.  The beginning and end
+of each detected episode of ventricular fibrillation should be marked using
+{\tt VFON} and {\tt VFOFF} annotations.
+
+   \item {\em Other rhythm annotations}.  These should include
+{\tt RHYTHM} annotations marking the beginning and end of each detected episode
+of atrial fibrillation.  The beginning of each episode should be marked with an
+``{\tt (AFIB}'' rhythm annotation, i.e., an annotation with {\tt anntyp} = {\tt
+RHYTHM} and {\tt aux} = \verb|"\05(AFIB"|, where ``\verb|\05|'' is C notation
+for a byte with the value 5 (ASCII control-E).  Non-empty {\tt aux} fields
+always begin with a byte that specifies the number of data bytes that follow;
+in this case, the five characters ({\tt ( A F I B}) of the string.  The end of
+each episode should be marked with any other rhythm annotation (for example,
+\verb|"\02(N"|).
+
+   \item {\em Heart rate measurements}.  Each type of heart rate measurement
+(including any heart rate or RR interval variability measurements) made by the
+device under test should be assigned a measurement number, $m$, between 0 and
+127.  A {\tt MEASURE} annotation should be recorded for each heart rate
+measurement, with ${\tt subtyp} = m$ and with the measurement in the {\tt aux}
+field, as an ASCII-coded decimal number.
+
+   \item {\em ST deviation measurements}.  If available, these should
+be provided in the {\tt aux} fields of beat annotations, as
+ASCII-coded decimal numbers indicating the deviations in microvolts
+from reference levels established for each signal from the first 30
+seconds of each record.  For example, ``{\tt 25 -104}'' indicates a 25
+$\mu$V elevation in signal 0 and a 104 $\mu$V depression in signal 1.
+If ST measurements are omitted from any beat annotation, the
+evaluation software assumes they are unchanged from their previous
+values.
+
+   \item {\em Ischemic ST change annotations}.  These {\tt STCH} annotations
+should mark the beginning and end of each detected episode of ischemic ST
+change.  ST change annotations have additional information in the {\tt aux}
+field as for rhythm annotations: the beginning of each episode is marked by an
+``{\tt (ST}{\it ns}'' annotation, and the end of each episode by a
+``{\tt ST{\it ns})}'' annotation, where {\it n} indicates the signal affected
+ (``{\tt 0}'' or ``{\tt 1}''), and {\it s} indicates ST elevation (``{\tt +}'')
+or depression (``{\tt -}'').  {\it n} may be omitted if the episode detection
+criteria depend on features of both signals.  The extremum of each episode may
+optionally be marked with an ``{\tt AST}{\it nsm}'' annotation, where {\it n}
+and {\it s} are defined as above, and {\it m} is the ST deviation in
+microvolts, relative to a reference level established as above.
+
+   \item {\em Comment annotations}.  Annotations with {\tt anntyp = NOTE}
+and any desired string data in {\tt aux} may be included anywhere in
+an annotation file.  {\tt NOTE} annotations are ignored by the
+standard evaluation software;  they may be used, for example, to
+record the values of internal algorithm variables for debugging purposes.
+\end{itemize}
+Note that only beat annotations are absolutely required in test annotation
+files.  ST deviation measurements within beat annotations, and the other
+types of annotations listed above, only need to be recorded for devices
+that are claimed by their manufacturers to provide optional features for
+detection of ventricular or atrial fibrillation, measurement of ST deviations,
+or detection of ischemic ST changes.
+
+If the time units in the test annotation files are not the same as those in
+the reference annotation files (for example, because {\tt xform} was used to
+change the sampling frequency of the signal files in a digital-domain test),
+the time units must be rescaled before proceeding with the comparison.  This
+may be done by using {\tt xform} to rewrite the test annotation files with
+the original sampling frequency.\footnote{
+The obvious alternative, using {\tt xform} to rewrite the reference annotation
+files at the time the signal files are resampled, should not be used in a
+formal evaluation.  Because of the possibility that resampling the reference
+annotation files might result in moving reference annotations into or out of
+the test period, or changing the lengths of episodes, doing so might produce
+results that could not be directly compared with those obtained in a standard
+evaluation.}
+
+Details of the ST deviation measurement and episode detection criteria used in
+producing the reference annotation files for the ESC database may be found in
+several sources.\footnote{ See, for example, the {\it European ST-T Database
+Directory}, pp. vi-vii, supplied with the ESC DB; or Taddei, A., et al., ``The
+European ST-T database: development, distribution, and use'', {\it Computers
+in Cardiology} {\bf 17}:177-180 (1990).} Note, however, that many techniques
+for measuring ST deviation and for detecting transient ischemic ST changes are
+possible, and that to date the best evaluation results have been obtained for
+analyzers using criteria that do not attempt to mimic those used by the human
+experts who annotated the database.
+
+\subsection{Obtaining Reference Heart Rate Data}
+The final step of preparation for the evaluation is to process the
+reference annotation files to obtain reference heart rate annotation
+files.  These files must contain heart rate measurement annotations
+with the same measurement numbers assigned as for the test heart rate
+annotations; they need not necessarily contain beat or other
+annotations from the reference annotation files.  Quoting from EC38,
+\begin{quote}
+To evaluate the accuracy of heart rate measurement, the evaluator
+shall implement and disclose a method for obtaining heart rate
+measurements using the reference annotation files (the `reference
+heart rate').  This method need not be identical to the method used by
+the device under test, but in general it will be advantageous if it
+matches that method as closely as possible.
+\end{quote}
+It will generally be in the manufacturer's interest to provide a
+program for generating reference heart rate annotation files, to avoid
+the need for an independent evaluator to do so, with a likely result
+of less than optimal agreement with the test heart rate measurements.
+The WFDB software package includes a sample implementation of such a
+program ({\tt examples/refhr.c}); note that it will need to be
+customized for each device to be tested.
+
+Note that measurement errors are normalized by the mean value of the reference
+measurements in each record.  Be certain that this mean value cannot be
+zero!\footnote{
+For certain types of HRV or RRV measurements (though not for heart rate
+measurements), this is a potential problem.  One solution is to add a small
+positive offset to any measurement with an expected zero mean.  It is within
+the letter, though not the spirit, of the standard protocol, to add a
+very large number in such a case, so as to make the error percentage
+arbitrarily small.  The mean value of the reference measurements must be
+reported; this should serve as a disincentive to this sort of creative abuse
+of the standard.  An honest approach might be to add an offset on the order of
+the expected standard deviation of the individual measurements.}
+
+\section{Comparing Annotation Files}
+
+Once the test annotation files and the reference heart rate annotation files
+have been obtained, the remainder of the evaluation procedure is
+straightforward.  All of the information needed to characterize the analysis
+performed by the device under test is encoded in the test annotation files;
+similarly, all of the information needed to characterize the actual contents
+of the test signals is encoded in the reference annotation and reference
+heart rate annotation files.  The evaluation procedure thus entails comparison
+of the test and reference annotation files for each record.
+
+Four programs are provided in the WFDB Software Package for this purpose:
+\begin{itemize}
+   \item {\tt bxb} compares annotation files beat by beat; its output
+includes QRS, VEB, and (optionally) SVEB sensitivity and positive
+predictivity, as well as RR interval error and shutdown statistics.
+
+   \item {\tt rxr} compares annotation files run by run; its output
+includes ventricular (and, optionally, supraventricular) ectopic couplet, short
+run (3--5 beats), and long run (6 or more beats) sensitivity and positive
+predictivity.
+
+   \item {\tt epicmp} compares annotation files episode by episode; its
+output includes ventricular fibrillation, atrial fibrillation, and ischemic ST
+detection statistics as well as comparisons of ST deviation measurements.
+
+   \item {\tt mxm} compares measurements from a test annotation
+file and a reference heart rate annotation file;  its output indicates
+measurement error.\footnote{
+{\tt mxm} is not restricted to comparison of heart rate measurements;  if
+other types of measurements are available, they may be compared in the same
+manner as heart rates by {\tt mxm}.}
+\end{itemize}
+
+The WFDB Software Package also includes three related programs:
+\begin{itemize}
+   \item {\tt sumstats} reads certain output files generated by {\tt bxb},
+{\tt rxr}, {\tt epicmp}, and {\tt mxm}, and calculates aggregate statistics for
+a set of records.
+   \item {\tt plotstm} generates scatter plots of ST deviation measurements
+collected by {\tt epicmp}.
+   \item {\tt ecgeval} automates the entire comparison procedure by running
+{\tt bxb}, {\tt rxr}, {\tt epicmp}, and {\tt mxm} for each record, collecting
+their output, then running {\tt sumstats} (and optionally {\tt plotstm}), and
+finally printing the results.
+\end{itemize}
+
+To obtain a concise summary of how to use any of these programs, including
+a list of any command-line options, simply run the program without any
+command-line arguments.  Refer to the {\it WFDB Applications Guide},
+which accompanies the WFDB Software Package, for details.
+
+In most cases, it will be easiest to collect all of the annotation files
+before beginning the comparison, and then to perform the comparison by typing:
+\begin{verbatim}
+ecgeval
+\end{verbatim}
+The program asks for the test annotator name, the names of the databases
+used for testing, and what optional detector outputs should be evaluated.
+
+Only the statistics required by EC38 and EC57 are reported by {\tt
+ecgeval}.  If more detailed evaluation data are needed, it will be
+necessary to run {\tt bxb}, {\tt rxr}, etc., separately.  If file
+space is extremely limited, it may be necessary to delete each test
+annotation file after it has been compared against the reference file,
+before the next test annotation file can be created; in such cases, it
+may also be necessary to prompt the user to change media containing
+signal or reference annotation files, or to reset the device under
+test before beginning each record.  Optionally, {\tt ecgeval} can
+generate a script (batch) file of commands, which can be edited to
+accommodate special requirements such as these.
+
+For example, suppose we have obtained a set of test annotation files with the
+annotator name ``{\tt yow}'', which we wish to compare against the reference
+annotation files (annotator name ``{\tt atr}'')\footnote{
+Annotation files for any given record are distinguished by annotator names,
+which correspond to the ``extension'' of the file name.  The
+reference annotation files supplied with the databases have the annotator
+name ``{\tt atr}'' (originally ``{\tt atruth}'' because ``{\tt a}''
+was intended to indicate the file type, and ``{\tt truth}'' because \ldots
+well, because the annotations are supposed to be The Truth).}
+and reference heart rate annotation files (annotator name ``{\tt htr}'').
+The portion of the evaluation script generated by {\tt ecgeval} for MIT DB
+record 100 is:
+\begin{verbatim}
+bxb -r 100 -a atr yow -L bxb.out sd.out
+rxr -r 100 -a atr yow -L vruns.out sruns.out
+mxm -r 100 -a htr yow -L hr0.out -m 0
+epicmp -r 100 -a atr yow -L -A af.out
+    -V vf.out -S st.out stm.out
+\end{verbatim}
+(The last two lines shown above form a single command.  The {\tt mxm} command
+gathers statistics on measurement number 0; if other heart rate measurements
+are defined, {\tt mxm} should be run once for each such measurement,
+substituting the appropriate measurement numbers for {\tt 0} in the output
+file name, {\tt hr0.out}, and the final argument.)  Statistics for the
+remainder of the MIT DB are obtained by repeating these commands, substituting
+in each the appropriate record names for {\tt 100}.  Once these commands have
+been run for all of the records, the record-by-record statistics will be found
+in nine files ({\tt bxb.out}, {\tt sd.out}, {\tt vruns.out}, {\tt sruns.out},
+{\tt hr0.out}, {\tt af.out}, {\tt vf.out}, {\tt st.out}, and {\tt stm.out}).
+The first eight of these files contain one line for each record.\footnote{
+{\tt stm.out} contains one line for each ST deviation measurement that was
+compared; in this example, {\tt stm.out} would be empty since the reference
+annotation files of the MIT DB do not contain ST deviation measurements.} {\tt
+sumstats} can read any of these files, and calculates aggregate performance
+statistics; to use it, type ``{\tt sumstats} {\it file}'', where {\it file} is
+the name of one of these files.  The output of {\tt sumstats} contains a copy
+of its input, with aggregate statistics appended to the end.  Typically this
+output might be saved in a file to be printed later, e.g.,
+\begin{verbatim}
+sumstats bxb.out >>report.out
+\end{verbatim}
+
+A scatter plot of the ST measurement comparisons performed by {\tt epicmp} can
+be produced using {\tt plotstm}, the output of which can be printed directly on
+any PostScript printer.  For example, to make a plot file for {\tt stm.out},
+type:
+\begin{verbatim}
+plotstm stm.out >stm.ps
+\end{verbatim}
+
+\section{Studying Discrepancies}
+
+Having conducted an evaluation as described above, a common question
+is ``what were the errors?''  {\tt bxb} and {\tt rxr} can help
+answer such questions.
+
+{\tt bxb} can generate an output annotation file (with annotator name
+``{\tt bxb}'') in which all matching beat annotations are copied from
+the test annotation file, and each mismatch is indicated by a {\tt
+NOTE} annotation, with the {\tt aux} field indicating the element of
+the confusion matrix in which the mismatch is tallied (e.g., ``{\tt Vn}''
+represents a beat called a VEB by the reference annotator and a normal
+beat by the test annotator).  Programs such as
+{\tt wave}\footnote{
+{\tt wave} (for FreeBSD, Linux, Mac OS X, Solaris, SunOS, and Windows)
+are included in the WFDB Software Package.}
+can be used to search for and display the waveforms associated with the
+mismatches.  To generate an output annotation file, add the {\tt -o} option to
+the {\tt bxb} command line, as in:
+\begin{verbatim}
+bxb -r 100 -a atr yow -L bxb.out sd.out -o
+\end{verbatim}
+A particularly useful way to document an evaluation is to print a
+full disclosure report with {\tt bxb} output annotations, using the
+program {\tt psfd} (also included in the WFDB Software Package).  This may
+be accomplished by preparing a file containing a list of the names of
+the records to be printed (call it {\tt list}), and then using the
+command:
+\begin{verbatim}
+psfd -a bxb list >output.ps
+\end{verbatim}
+The file {\tt output.ps} can be printed on any PostScript printer.
+Run {\tt psfd} without any arguments for a summary of its (numerous)
+options;  try a short test before making a large set of printouts,
+which can take a long time.
+
+Both {\tt bxb} and {\tt rxr} accept a {\tt -v} option to run in
+``verbose'' mode, in which each discrepancy is reported in the
+standard error output.  When running {\tt rxr}, this feature is useful
+for finding missed and falsely detected ectopic couplets and runs.
+
+\section{Acknowledgements}
+
+Having been involved in the production of most of the databases as
+well as the design of the evaluation protocols, it has been my
+privilege to receive the benefits of the sustained contributions of
+many colleagues who have supported these projects with their dedicated
+efforts.  I would like especially to thank
+Paul Albrecht,
+Jim Bailey,
+Ted Baker,
+Rich Bowser,
+Don Brodnick,
+Jerry Cox,
+Phil Devlin,
+Charlie Feldman,
+Scott Greenwald,
+Russ Hermes,
+David Israel,
+Franc Jager,
+Carlo Marchesi,
+Roger Mark,
+Joe Mietus,
+Warren Muldrow,
+Diane Perry,
+Scott Peterson,
+Ken Ripley,
+Paul Schluter,
+Alessandro Taddei,
+Roy Wallen,
+and Cees Zeelenberg.
+
+\appendix
+\section{Using the AHA Database}
+
+Since the AHA DB is not available in the standard PhysioBank format
+used by all of the other databases, the WFDB Software Package includes
+a pair of programs that convert files read from AHA DB distribution
+tapes or floppy disks into files in PhysioBank format.  {\tt a2m}
+converts AHA annotation files, and {\tt ad2m} converts AHA signal
+files and also generates header ({\tt *.hea}) files.  (Run these
+programs without command-line arguments to obtain instructions on
+their use.)  Using {\tt a2m} and {\tt ad2m}, all 80 AHA DB records can
+be stored in roughly 130 Mb of disk space (assuming use of the
+standard 35-minute records).  These programs can also reformat old
+(pre-1989) MIT DB tapes written in the AHA DB distribution format.
+
+It is also possible to read and write AHA tape-format files directly using
+the WFDB library;  refer to the {\it WFDB Programmer's Guide}
+for details.
+
+\section{Noise stress testing}
+
+With respect to many tasks performed by an ECG analyzer, dealing with
+noise is the major problem faced by system designers.  Although
+measurements such as ST deviation may be obtained reliably in clean
+signals, the presence of noise may render them inaccurate.  In some
+instances, it is sufficient to recognize the presence of noise and either
+to mark measurements as unreliable or to avoid making measurements
+altogether.  In other cases, excluding noisy data is inappropriate
+(for example, given the multiple correlations among physical
+activity, noise, and transient ischemia, excluding noisy signals is
+likely to introduce sampling bias in an ischemia detector).
+
+It is difficult to measure the effects of noise on an ECG analyzer
+using ordinary recordings.  Even if existing databases include an
+adequate variety of both ECG signals and noise, the sample size is
+certainly too small to include all combinations of noise and ECG
+signals that may be encountered in clinical use.  In ordinary
+recordings, it is difficult or impossible to separate the effects of
+noise from the intrinsic problems of analyzing clean signals of the
+same type.
+
+The noise stress test circumvents these problems.  By adding noise
+in calibrated amounts to clean signals, any combination of noise and
+signal types is possible.  Since both the noise-corrupted signal and
+the clean signal can be analyzed (in separate experiments) by the
+same analyzer, the effects of noise on the analysis are readily
+separable from any other problems that may arise while analyzing the
+clean signals.  Finally, since the test can be repeated using
+different amounts of noise, it is possible to characterize analyzer
+performance as a function of signal-to-noise ratio.
+
+The major criticisms of the noise stress test are that not all noise
+is additive, and that the characteristics of the added noise may not
+perfectly match those of noise observed in clinical practice.  These
+points, though formally irrefutable, do not negate the value of the
+test.  In practice, most of the troublesome noise is additive; thus
+(given appropriate inputs) the noise stress test can simulate most of
+the noisy signals of interest.  The NST DB includes noise recordings
+made using standard ambulatory ECG electrodes and recorders, but with
+electrodes placed on the limbs of active volunteers in configurations
+in which the subject's ECG is not apparent in the recorded signals.
+Given the recording technique used, it is not surprising that the
+characteristics of the recorded noise closely match those of noise in
+standard ambulatory ECG recordings. Although it may be argued that the
+particular muscles responsible for the recorded noise might produce
+different signals than those that generate the EMG present in noisy
+ECGs, no such differences are apparent from comparisons of either the
+signals or their power spectra.
+
+The NST DB includes a small set of ECG records with calibrated amounts
+of added noise.  EC38 specifies that performance on these records must
+be reported, although no specific performance levels are required.
+Program {\tt nst} can be used to generate additional records for noise
+stress testing.  To do so, choose an ECG record and a noise record
+(the latter may be {\tt bw}, {\tt em}, or {\tt ma} from the NST DB, or
+any other available noise recording).  Run {\tt nst} and answer its
+questions to generate a noisy ECG record that may then be used in the
+same way as any other WFDB record.  By default, {\tt nst} adds no noise
+during the first five minutes of the record, then adds noise for the
+next two minutes, none for the following two minutes, and repeats this
+pattern of two minutes of noise followed by two minutes of clean
+signals for the remainder of the record.  The scale factors for the
+noise, if determined by {\tt nst}, are adjusted such that the
+signal-to-noise ratios are equal for each signal.  The durations of
+the noisy periods, and the scale factors for each signal, are recorded
+in a {\em protocol annotation file}, which is generated by {\tt nst}
+unless an existing protocol annotation file is supplied as input.  To
+change these parameters, simply edit the protocol annotation file
+(using, for example, {\tt rdann} to convert it to text form, any text
+editor to make the modifications, and {\tt wrann} to convert it back
+to annotation file format), then rerun {\tt nst} using the protocol
+file to generate a new record.
+\end{document}

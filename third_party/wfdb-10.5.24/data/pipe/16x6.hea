@@ -1,0 +1,9 @@
+#  Use this record to read or write 6 signals via standard I/O.
+
+16x6 6
+- 16
+- 16
+- 16
+- 16
+- 16
+- 16

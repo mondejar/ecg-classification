@@ -1,0 +1,170 @@
+.so intro.hlp
+
+Contents
+========
+ . Before You Begin
+ . Starting WAVE
+   . Options
+   . Examples
+ . Using WAVE
+   . WAVE controls
+   . Annotation and Marker Editing
+   . Analyzing Data with WAVE
+   . WAVE Logs
+   . Printing
+ . Setting WAVE Resources
+
+Before You Begin
+================
+
+WAVE is a very powerful and flexible tool with a user interface that is easy
+to learn once you are familiar with the style of interaction common to other X
+applications.  To a significant extent, the "look and feel" of WAVE is
+determined by your choice of window manager and preferences.  If you have not
+used the X Window System before, you should study the documentation that
+describes your system's X server and window manager.  You should also find out
+how to simulate the possible actions of a three-button mouse if you do not
+have one (servers often provide keyboard/mouse combinations for this purpose).
+The remainder of this guide assumes that you know:
+ - how to log onto a system on which WAVE has already been installed;
+ - how to start an X application; and
+ - how to use the mouse.
+
+If you are planning to run WAVE remotely (i.e., if the display and
+keyboard in front of you do not belong to the system on which WAVE runs,
+but instead belong to another system on the same network), you may need
+to perform a few preparatory steps.  See `How can I use WAVE from an X
+terminal/PC/Mac/etc?' in the WAVE FAQ for details.
+
+Before running WAVE for the first time with a given X server, you may wish to
+calibrate your display so that WAVE can draw signals at the proper scales.
+See `How can I get correct display scales?' in the WAVE FAQ for details.
+
+In common with other WFDB applications, WAVE locates signal, annotation, and
+header files by searching for them in a user-definable sequence of locations
+(the WFDB path).  By default, the WFDB path includes the current directory,
+/usr/database, and http://www.physionet.org/physiobank/database (PhysioBank).
+If you keep data files that you wish to read using WAVE in other locations,
+be sure to set the WFDB path appropriately.  Bourne shell, Korn shell, and
+`bash' users can often do so by typing `. setwfdb';  C-shell users should type
+`source /PATH/TO/cshsetwfdb' (where /PATH/TO is usually one of the directories
+in the shell's own PATH, often /usr/bin or /usr/local/bin).  See the WFDB
+Programmer's Guide or the WFDB Applications Guide, or type `man setwfdb' for
+details.
+
+Starting WAVE
+=============
+
+From within a terminal window for the system on which WAVE resides, type:
+	wave -r RECORD OPTIONS
+where RECORD is the WFDB record name and OPTIONS can include any of the
+optional arguments listed below, or none of them.  Separate arguments
+with spaces, and execute the command by pressing RETURN (or ENTER, etc.).
+
+Options:
+--------
+ -a ANNOTATOR		Open the specified annotation file for the previously
+			specified RECORD.
+ -dpi XX[xYY]		Calibrate WAVE for a display with a resolution of
+			XX (by YY) dots per inch.
+ -f TIME		Open the previously specified RECORD at TIME.
+ -g			Use shades of grey only (even on a color monitor).
+ -m			Use black and white only (even on color or grayscale
+			monitors).
+ -O			Use overlay graphics (for the fastest and best-quality
+			graphics on displays that support this mode)
+ -s SIGNAL [SIGNAL ...] Initialize the signal list to the specified SIGNAL(s).
+ -S			Use the standard (shared) color palette (even if it
+			is possible to modify the palette).
+ -D LOGFILE		Start WAVE in `demo' mode (see below).
+ -V...			Specify initial values for the settings controlled
+			from the `View' panel (see `Resources' for details).
+Examples:
+---------
+ wave -r 200 -a atr		Open record 200, and show annotations from
+				the reference annotation file (200.atr)
+
+ wave -r 100 -g -dpi 65x70	Open record 100, and use shades of grey only
+				on a display that has a resolution of 65 dpi
+				horizontally by 70 dpi vertically
+
+WAVE queries the X server to determine the display capabilities and resolution;
+it is not necessary to use the -g, -m, or -S options unless you wish to
+restrict WAVE's use of the available capabilities.  The -O option exists only
+to force use of overlay mode if another mode has been set as the default (see
+`Setting WAVE Resources' below);  usually, overlay mode is the default.  Use
+-dpi only if the X server does not have, and cannot be supplied, the correct
+information about the display resolution.
+
+In `demo' mode, WAVE displays the strips specified in LOGFILE, pausing for 5
+seconds after each display.  All of WAVE's controls operate in normal fashion
+while `demo' mode is active.  To exit `demo' mode without exiting from WAVE,
+call up the `Log...' window from the `File' menu and press the `Pause' button.
+You can return to `demo' mode by pressing the `Review log' button.  (See `WAVE
+Logs', below, for information on creating a LOGFILE.)
+
+See the WAVE FAQ if you have difficulty getting started.
+
+Using WAVE
+==========
+
+After typing a command to start WAVE, as described above, the main window
+of WAVE should appear on your display.  (Some window managers may require
+you to specify the placement or sizing of a new window before it appears.
+In this case, you may see an outline of the window, or the cursor shape may
+change, and you must use the mouse to open the window.  This behaviour is
+beyond the control of WAVE.)
+
+Move the mouse so that the pointer lies within the WAVE main window.  (Again,
+depending on your window manager, you may have to set the input focus
+explicitly before proceeding.  Typically, you may have to click the left
+mouse button with the pointer within the window in order to do so.)  Once
+the WAVE main window has the input focus, the buttons in the main control
+panel (at the top of the window) can be used to control WAVE.
+
+Some of WAVE's panels contain regions marked by underlines for entry of text.
+By positioning the pointer near any of the underlined entries and clicking the
+left mouse button, you can set a text cursor that appears above the underline.
+You may delete characters to the left of the text cursor using the DELETE key,
+or you may type into the entry.  If you press RETURN, your changes take effect
+immediately;  you may change two or more entries without pressing RETURN, and
+the effects of the changes will be deferred until you press RETURN or select
+one of the buttons on the panel.  To select a panel button, position the
+pointer on the button and click the left mouse button.  If the button label
+includes a menu indicator (a downward- or rightward-pointing triangle), you
+may pop up the menu by pressing the right mouse button;  drag the pointer to
+the desired choice on the menu and release the right mouse button, or move the
+pointer off of the menu before releasing the right mouse button if you do not
+wish to choose any of the menu items.
+
+WAVE Controls
+-------------
+
+The buttons of the main control panel are:
+
+.so buttons.hlp
+
+Annotation and Marker Editing
+-----------------------------
+
+.so editing.hlp
+
+Analyzing Data with WAVE
+------------------------
+
+.so analysis.hlp
+
+WAVE Logs
+---------
+
+.so log.hlp
+
+Printing
+--------
+
+.so printing.hlp
+
+Setting WAVE Resources
+======================
+
+.so resource.hlp

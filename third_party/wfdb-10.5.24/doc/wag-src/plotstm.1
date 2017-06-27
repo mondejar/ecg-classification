@@ -1,0 +1,29 @@
+.TH PLOTSTM 1 "22 November 2002" "WFDB 10.3.0" "WFDB Applications Guide"
+.SH NAME
+plotstm \- produce scatter plot of ST measurement errors on a PostScript device
+.SH SYNOPSIS
+\fBplotstm\fR \fIfile\fR
+.SH DESCRIPTION
+.PP
+\fBplotstm\fR reads a file of ST measurement errors produced by \fBepicmp\fR(1)
+using its \fB-S\fR, \fB-S0\fR, or \fB-S1\fR option, and generates a PostScript
+page description for a scatter plot of these data, as specified by ANSI/AAMI
+EC38 and ANSI/AAMI EC57.  The standard output of \fBplotstm\fR may be printed
+directly on any PostScript device.
+.SH SEE ALSO
+\fBecgeval\fR(1), \fBepicmp\fR(1)
+.br
+\fIEvaluating ECG Analyzers\fR
+.br
+\fIAmerican National Standard ANSI/AAMI EC38:1998, Ambulatory
+Electrocardiographs\fR
+.br
+\fIAmerican National Standard ANSI/AAMI EC57:1998, Testing and Reporting
+Performance Results of Cardiac Rhythm and ST Segment Measurement Algorithms\fR
+.br
+The last two publications are available from AAMI, 1110 N Glebe Road,
+Suite 220, Arlington, VA 22201 USA (http://www.aami.org/).
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCE
+http://www.physionet.org/physiotools/wfdb/app/plotstm.c

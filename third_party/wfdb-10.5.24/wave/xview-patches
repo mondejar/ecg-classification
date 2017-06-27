@@ -1,0 +1,233 @@
+Current versions of gcc complain about statements of the form
+  #else FOO
+and
+  #endif BAR
+
+This syntax has historically been acceptable to most C compilers, although it
+is not permitted by ANSI/ISO C; any tokens following #else or #endif on the
+same line are simply ignored.  Some writers have exploited this permissiveness
+to make their code more easily readable, although most are careful to mark
+their comments using /* ... */ (which is permitted even by finicky compilers
+such as gcc).
+
+In the standard XView distribution, six of the *.h files normally found in
+/usr/openwin/include/pixrect/ contain #else or #endif statements that provoke
+warnings from gcc. Although these warnings do not prevent successful
+compilation of wave, they are so numerous that more serious errors can easily
+go unnoticed.
+
+This file contains patches that correct these bugs.  To apply them, copy
+this file to the parent directory of 'pixrect' (normally /usr/openwin/include),
+then type
+
+    patch -p0 <xview-patches
+
+If you don't have `patch', read the rest of this file and apply the edits
+manually.
+
+The patches themselves begin here:
+
+diff -Naur pixrect-/memvar.h pixrect/memvar.h
+--- pixrect-/memvar.h	Mon Jun  5 04:39:17 2000
++++ pixrect/memvar.h	Fri Oct 12 14:05:30 2001
+@@ -48,7 +48,7 @@
+ #ifdef i386
+ #define MP_I386		8	/* Pixrect is for 386 architecture */
+ #define MP_STATIC       16	/* Pixrect is a static pixrect */
+-#endif i386
++#endif /* i386 */
+ #define	MP_FONT		32	/* Pixrect is a part of a Pixfont */
+ 				/* (hint to pr_batchrop) */
+ 
+@@ -144,18 +144,18 @@
+ int	mem_put();
+ int	mem_vector();
+ Pixrect *mem_region();
+-#endif KERNEL
++#endif	/* KERNEL */
+ int	mem_putcolormap();
+ int	mem_putattributes();
+ #ifndef KERNEL
+ int	mem_getcolormap();
+ int	mem_getattributes();
+-#endif KERNEL
++#endif /* KERNEL */
+ 
+ #else /* NEWPIXMEM */
+ #define	MP_NOTMPR(pr)	(0)
+ extern struct pixrectops mem_ops;
+ int	mem_destroy();
+-#endif NEWPIXMEM
++#endif	/* NEWPIXMEM */
+ 
+-#endif	!memvar_DEFINED
++#endif	/* !memvar_DEFINED */
+diff -Naur pixrect-/pixfont.h pixrect/pixfont.h
+--- pixrect-/pixfont.h	Mon Jun  5 04:39:17 2000
++++ pixrect/pixfont.h	Fri Oct 12 14:05:49 2001
+@@ -43,7 +43,7 @@
+ 
+ #define	prs_ttext(prpos, op, pf, str) \
+ 	pr_ttext((prpos).pr, (prpos).pos.x, (prpos).pos.y, pf, str)
+-#endif lint
++#endif /* lint */
+ 
+ Pixfont	*pf_open();
+ Pixfont	*pf_open_private();
+@@ -53,4 +53,4 @@
+ 
+ #define	PIXFONT	Pixfont
+ 
+-#endif	pixfont_DEFINED
++#endif	/* pixfont_DEFINED */
+diff -Naur pixrect-/pixrect.h pixrect/pixrect.h
+--- pixrect-/pixrect.h	Mon Jun  5 04:39:17 2000
++++ pixrect/pixrect.h	Fri Oct 12 14:03:31 2001
+@@ -101,7 +101,7 @@
+  * Takes device file name.  This is how a screen pixrect is created.
+  */
+ extern Pixrect *pr_open();
+-#endif !KERNEL
++#endif	/* !KERNEL */
+ 
+ /*
+  * Pixrect ops vector, used by pr_ macros below to call the appropriate
+@@ -118,18 +118,18 @@
+ 	int	(*pro_put)();
+ 	int	(*pro_vector)();
+ 	Pixrect * (*pro_region)();
+-#endif !KERNEL
++#endif	/* !KERNEL */
+ 	int	(*pro_putcolormap)();
+ #ifndef KERNEL
+ 	int	(*pro_getcolormap)();
+-#endif !KERNEL
++#endif	/* !KERNEL */
+ 	int	(*pro_putattributes)();
+ #ifndef KERNEL
+ 	int	(*pro_getattributes)();
+-#endif !KERNEL
++#endif	/* !KERNEL */
+ #ifdef KERNEL
+ 	int	(*pro_nop)();		/* place holder */
+-#endif KERNEL
++#endif	/* KERNEL */
+ };
+ 
+ #if !defined(lint) || defined(KERNEL)
+@@ -169,9 +169,9 @@
+ 		(red), (grn), (blu))
+ #define	pr_getattributes(pr, planes) \
+ 	(*(pr)->pr_ops->pro_getattributes)((pr), (planes))
+-#endif !KERNEL
++#endif	/* !KERNEL */	
+ 
+-#else !lint || KERNEL
++#else /* !lint || KERNEL */
+ 
+ extern pr_rop();
+ extern pr_stencil();
+@@ -186,7 +186,7 @@
+ extern pr_putattributes();
+ extern pr_getattributes();
+ 
+-#endif lint
++#endif	/* lint */
+ 
+ /*
+  * Several of the above operations return a common, distinguished value when
+@@ -277,7 +277,7 @@
+ #define	pr_line(pr, x0, y0, x1, y1, brush, tex, op) \
+ 	pro_line((pr), (x0), (y0), (x1), (y1), (brush), (tex), (op), 0) 
+ 
+-#else !lint || KERNEL
++#else /* !lint || KERNEL */
+ 
+ extern prs_rop();
+ extern prs_stencil();
+@@ -296,7 +296,7 @@
+ extern pr_close();
+ extern pr_line();
+ 
+-#endif !lint || KERNEL
++#endif /* !lint || KERNEL */
+ 
+ 
+ 
+@@ -329,7 +329,7 @@
+ #define	pr_getlut(pr, ind, cnt, red, grn, blu) \
+ 	(*(pr)->pr_ops->pro_getcolormap)((pr), PR_FORCE_UPDATE | (ind), \
+ 		(cnt), (red), (grn), (blu))
+-#endif !KERNEL
++#endif	/* !KERNEL */
+ 
+ 
+ #endif	/* !_pixrect_pixrect_h */
+diff -Naur pixrect-/pr_line.h pixrect/pr_line.h
+--- pixrect-/pr_line.h	Mon Jun  5 04:39:17 2000
++++ pixrect/pr_line.h	Fri Oct 12 14:06:54 2001
+@@ -47,7 +47,7 @@
+ 	int width;
+     } Pr_brush;
+ 
+-#endif pr_line_h_DEFINED 
++#endif /* pr_line_h_DEFINED */
+ 
+ 
+ 
+diff -Naur pixrect-/pr_planegroups.h pixrect/pr_planegroups.h
+--- pixrect-/pr_planegroups.h	Mon Jun  5 04:39:17 2000
++++ pixrect/pr_planegroups.h	Fri Oct 12 14:04:05 2001
+@@ -47,4 +47,4 @@
+ extern void pr_set_plane_group();
+ extern void pr_set_planes();
+ 
+-#endif	pr_planegroups_DEFINED
++#endif /* pr_planegroups_DEFINED */
+diff -Naur pixrect-/pr_util.h pixrect/pr_util.h
+--- pixrect-/pr_util.h	Mon Jun  5 04:39:17 2000
++++ pixrect/pr_util.h	Fri Oct 12 14:04:36 2001
+@@ -66,11 +66,11 @@
+ 		op;							\
+ 	};								\
+ 	asm("dbra	d6,label");
+-#else mc68000
++#else	/* mc68000 */
+ #define	rop_slowloop(n, op) \
+ 	{ register int _loop = (n); \
+ 		while (--_loop >= 0) { op; } }
+-#endif mc68000
++#endif	/* mc68000 */
+ 
+ #ifdef mc68010
+ #define cases8(n, op)							\
+@@ -88,9 +88,9 @@
+ 			cases8(0, op); \
+ 			case 0:	break; \
+ 		} }
+-#else mc68010
++#else	/* mc68010 */
+ #define	rop_fastloop	rop_slowloop
+-#endif mc68010
++#endif	/* mc68010 */
+ 
+ /*
+  * Alloctype(datatype) allocates a datatype structure using calloc
+@@ -133,6 +133,6 @@
+ 
+ #ifndef KERNEL
+ Pixrect *pr_makefromfd();
+-#endif !KERNEL
++#endif	/* !KERNEL */
+ 
+-#endif pr_util_DEFINED
++#endif	/* pr_util_DEFINED */
+diff -Naur pixrect-/traprop.h pixrect/traprop.h
+--- pixrect-/traprop.h	Mon Jun  5 04:39:17 2000
++++ pixrect/traprop.h	Fri Oct 12 14:06:02 2001
+@@ -23,4 +23,4 @@
+ 	int y0, y1;			/* top+bottom boundaries */
+ };
+ 
+-#endif traprop_DEFINED
++#endif	/* traprop_DEFINED */

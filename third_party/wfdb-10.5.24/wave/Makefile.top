@@ -1,0 +1,46 @@
+# file: Makefile	G. Moody	 1 May 1990
+#			Last revised:  16 November 2001		WAVE 6.5
+# `make' description file for WAVE
+#
+# -----------------------------------------------------------------------------
+# WAVE: Waveform analyzer, viewer, and editor
+# Copyright (C) 2001 George B. Moody
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+# Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+# You may contact the author by e-mail (george@mit.edu) or postal mail
+# (MIT Room E25-505A, Cambridge, MA 02139 USA).  For updates to this software,
+# please visit PhysioNet (http://www.physionet.org/).
+# _____________________________________________________________________________
+#
+# This file is used with the UNIX `make' command to compile and install WAVE.
+# WAVE can be compiled and run only on UNIX systems, although any networked
+# system with an X11 server can be used to view its output;  suitable servers
+# are available for MS-DOS, the Macintosh, and VAX VMS as well as UNIX.
+# In order to compile WAVE, you must have already installed the X11 Xlib
+# (libX11.a), XView (libxview.a), and WFDB (libwfdb.a) libraries, and their
+# associated header files (in /usr/include/X11, /usr/include/xview, and
+# /usr/include/ecg respectively).  The WFDB library source is included with the
+# WAVE distribution (in the `lib' directory at the same level as this one).
+# Xlib and XView are freely available by anonymous FTP as parts of the X11R4
+# distribution from expo.lcs.mit.edu and other sites, or from the MIT Software
+# Distribution Center, MIT Room E32-300, Cambridge, MA 02139 USA; telephone
+# +1-617-253-6966.  See the main help file (wave.hl0, in this directory) for
+# further information.
+#
+# Before using this file for the first time, check that the site-specific
+# variables below are appropriate for your system.  To build and install WAVE,
+# just type `make' (from within this directory).
+# _____________________________________________________________________________

@@ -1,0 +1,91 @@
+.TH HRFFT 1 "16 June 2003" "WFDB 10.3.8" "WFDB Applications Guide"
+.SH NAME
+hrfft, hrlomb, hrmem \- calculate and plot heart rate power spectra
+.br
+hrplot \- plot heart rate time series
+.SH SYNOPSIS
+\fBhrfft\fR [ \fIoptions ...\fR ]
+.br
+\fBhrlomb\fR [ \fIoptions ...\fR ]
+.br
+\fBhrmem\fR [ \fIoptions ...\fR ]
+.br
+\fBhrplot\fR [ \fIoptions ...\fR ]
+.SH DESCRIPTION
+.PP
+The first three of these UNIX shell scripts are intended to illustrate the use
+of \fBfft\fR(1), \fBlomb\fR(1), and \fBmemse\fR(1) by producing heart rate
+power spectra using the fast Fourier transform, the Lomb periodogram,
+and the maximum entropy (all poles) method (also known as autoregressive,
+or AR, power spectral density estimation).  All four programs derive heart
+rate time series from beat annotation files.  \fBhrfft\fR and \fBhrmem\fR use
+\fBtach\fR(1) to obtain a uniformly resampled heart rate time series from the
+annotation file, which is then used as input to \fBfft\fR or \fBmemse\fR,
+and the spectrum thereby obtained is then plotted.  \fBhrlomb\fR and
+\fBhrplot\fR use \fBihr\fR(1) to obtain an irregularly sampled heart rate time
+series.  \fBhrplot\fR plots this time series directly, and \fBhrlomb\fR uses
+it as input to \fBlomb\fR, and then plots the spectrum.
+.PP
+All four programs accept the same \fIoptions\fR:
+.TP
+\fB-a\fR \fIannotator\fR
+Read annotations from the specified \fIannotator\fR (default: the value of
+the environment variable \fBANNOTATOR\fR, if set).
+.TP
+\fB-f\fR \fItime\fR
+Begin at the specified \fItime\fR within the annotation file (default: the
+value of the environment variable \fBSTART\fR, if set, or the beginning of the
+file otherwise).
+.TP
+\fB-l\fR \fIaxes\fR
+Log-transform the specified \fIaxes\fR (default: use linear axes).  The
+\fIaxes\fR can be specified as \fBx\fR, \fBy\fR, or \fBxy\fR.
+.TP
+\fB-p\fR \fIplot-utility\fR
+Use the specified \fIplot-utility\fR to generate the output (default: the
+value of the environment variable \fBPLOT\fR, if set, or
+\fBplt\fR(1), if it exists, or \fBplot2d\fR(1) otherwise). 
+.TP
+\fB-r\fR \fIrecord\fR
+Produce a heart rate power spectrum for the specified \fIrecord\fR (default:
+the value of the environment variable \fBRECORD\fR, if set).
+.TP
+\fB-t\fR \fItime\fR
+Stop at the specified \fItime\fR within the annotation file (default: the
+value of the environment variable \fBEND\fR, if set, or the end of the file
+otherwise).
+.TP
+\fB-T\fR \fIdevice\fR
+Produce output on the specified \fIdevice\fR (default: the screen).  The
+\fIdevice\fR must be among those supported by the \fIplot-utility\fR (see
+above).
+.PP
+If \fIannotator\fR or \fIrecord\fR are not specified using environment
+variables or command-line options, these programs obtain values from the user
+interactively.
+.PP
+Although \fBhrfft\fR, \fBhrlomb\fR, and \fBhrmem\fR all produce power spectra,
+the units of power differ among them.  Absolute comparisons can be made only
+between spectra produced using the same method, from time series of the same
+length.
+.PP
+Note that these shell scripts can be run under MS-DOS using a suitable set
+of UNIX-like utilities, such as the MKS Toolkit or the GNUish MS-DOS utilities,
+and under MS-Windows using the free Cygwin package.
+.SH ENVIRONMENT
+In addition to the variables \fBANNOTATOR\fR, \fBEND\fR, \fBPLOT\fR,
+\fBRECORD\fR, and \fBSTART\fR, it may be necessary to set \fBWFDB\fR
+(see \fBsetwfdb\fR(1)).
+.SH SEE ALSO
+\fBfft\fR(1), \fBihr\fR(1), \fBlomb\fR(1), \fBmemse\fR(1), \fBplot2d\fR(1),
+\fBplt\fR(1), \fBsetwfdb\fR(1), \fBtach\fR(1)
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCES
+http://www.physionet.org/physiotools/wfdb/psd/hrfft
+.br
+http://www.physionet.org/physiotools/wfdb/psd/hrlomb
+.br
+http://www.physionet.org/physiotools/wfdb/psd/hrmem
+.br
+http://www.physionet.org/physiotools/wfdb/psd/hrplot

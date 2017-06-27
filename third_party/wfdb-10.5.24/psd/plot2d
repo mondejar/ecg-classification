@@ -1,0 +1,188 @@
+#!/bin/sh
+# file: plot2d		G. Moody	16 May 1995
+#			Last revised:    5 May 1999
+#
+# -----------------------------------------------------------------------------
+# plot2d: Plot contents of stdin or a named file using 'gnuplot' in batch mode
+# Copyright (C) 1999 George B. Moody
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+# Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+# You may contact the author by e-mail (george@mit.edu) or postal mail
+# (MIT Room E25-505A, Cambridge, MA 02139 USA).  For updates to this software,
+# please visit PhysioNet (http://www.physionet.org/).
+# _____________________________________________________________________________
+#
+# This shell script is a quick-and-dirty partial replacement for 'plt', which
+# is available from http://www.physionet.org/physiotools/plt.  'plot2d' accepts
+# a few of the most commonly-used `plt' options and produces similar plots.
+#
+# See `plot2d.1' (type `man plot2d') for usage and examples.
+
+# Initialize variables.
+CFILE=/tmp/gpcommands.$$	# gnuplot command file
+TFILE=/tmp/gpdata.$$		# gnuplot data file (used only for piped input)
+IFILE='-'	# input file: '-' means use standard input
+FMTFILE='-'	# file containing additional GNUPLOT format commands
+PRINTER='-'	# printer name for lpr: '-' means don't print (plot on-screen)
+PIPED=no	# if 'yes', input is arriving via a pipe
+TITLE=''	# title for the top of the plot (may include spaces if quoted)
+XCOL='-1'	# column number for abscissas: -1 means use row numbers
+XLABEL=''	# label for x-axis (may include spaces if quoted)
+XMIN=''		# minimum abscissa for data to be included in the plot
+XMAX=''		# maximum abscissa for data to be included in the plot
+XTICK=''	# x-axis tick interval (currently ignored)
+YCOL='-2'	# column number for ordinates: -2 indicates YCOL not specified
+YLABEL=''	# label for y-axis (may include spaces if quoted)
+YMIN=''		# minimum ordinate for data to be included in the plot
+YMAX=''		# maximum ordinate for data to be included in the plot
+YTICK=''	# y-axis tick interval (currently ignored)
+
+# Read the argument list and interpret the arguments.
+while [ "x$1" != x ]
+do
+ case $1 in
+  -t) TITLE=$2;  shift ;;
+  -x) XLABEL=$2; shift ;;
+  -y) YLABEL=$2; shift ;;
+  -xa) XMIN=$2; shift; XMAX=$2; shift; XTICK=$2; shift ;;
+  -ya) YMIN=$2; shift; YMAX=$2; shift; YTICK=$2; shift ;;
+  -f) FMTFILE=$2; shift; ;;
+  -T) PRINTER=$2; shift ;;
+  -X) XMIN=$2; shift; XMAX=$2; shift ;;
+  -Y) YMIN=$2; shift; YMAX=$2; shift ;;
+  -1|0|1|2|3|4|5|6|7|8|9)
+   case $YCOL in
+    -2) YCOL=$1 ;;
+    *) XCOL=$YCOL; YCOL=$1 ;;
+   esac ;;
+  -*) echo "usage: plot2d [IFILE] [ [ XCOL ] YCOL ] [ OPTIONS ...]"
+      echo " IFILE is the input file.  It should contain one or more space- or"
+      echo "  tab-separated columns per line, with each point on a line.  Omit"
+      echo "  IFILE to read data from the standard input."
+      echo " XCOL specifies the column number of the abscissas.  The leftmost"
+      echo "  column is column 0.  Omit XCOL to use row numbers as abscissas."
+      echo " YCOL specifies the column number of the ordinates.  If YCOL is"
+      echo "  omitted, plot2d plots column 1 vs. column 0."
+      echo " OPTIONS include:"
+      echo "  -f FILE       Include the contents of FILE as additional GNUPLOT"
+      echo "                 formatting commands"
+      echo "  -h            Print this help and exit (no plot is made)"
+      echo "  -t TITLE      Use TITLE as the plot title"
+      echo "  -x LABEL      Use LABEL as the X-axis label"
+      echo "  -y LABEL      Use LABEL as the Y-axis label"
+      echo "  -X XMIN XMAX  Plot abscissas between XMIN and XMAX only"
+      echo "  -Y YMIN YMAX  Plot ordinates between YMIN and YMAX only"
+      echo "  -T PRINTER    Plot on the specified PostScript PRINTER (default:"
+      echo "                 plot on-screen; use '-T eps' to generate"
+      echo "                 encapsulated PostScript on the standard output)"
+      exit 1 ;;
+  *) IFILE=$1 ;;
+ esac	
+ shift
+done
+
+# Renumber the columns for gnuplot.  Columns are numbered beginning with 1 by
+# gnuplot, and beginning with 0 by plot2d (as in 'plt').  There are three
+# possibilities, depending on how many of XCOL and YCOL were specified:
+#   Specified		     Columns plotted
+#  XCOL  YCOL			X	Y
+#   no    no 			1	2
+#   no    yes			0 (*)	YCOL+1
+#   yes   yes			XCOL+1  YCOL+1
+#
+# (*) "Column 0" is the row number (line number) in gnuplot.  To use the row
+# number as the ordinate, specify YCOL as -1 in the plot2d argument list.
+XCOL=`expr $XCOL + 1`
+case $YCOL in
+ -2) XCOL=1; YCOL=2 ;;
+ *) YCOL=`expr $YCOL + 1` ;;
+esac
+
+# If receiving input from a pipe, save it in a file for plotting.  (This
+# program treats redirected standard input in the same way.)
+case $IFILE in
+ -) IFILE=$TFILE; PIPED=yes; cat >$TFILE ;;
+esac
+
+# Generate the gnuplot command file.
+#
+# The first section is omitted unless a -T option has been specified. The
+# "-T eps" option produces encapsulated PostScript on the standard output;
+# use it to generate a figure to be included within another document, or to
+# be rendered at a later time.  gnuplot's PostScript options follow the
+# "set terminal postscript ..." lines below.  The commonly-used alternatives
+# to those used here are "portrait" (instead of "landscape"), "color" (instead
+# of "monochrome"), "Courier" or "Helvetica" (instead of "Times-Roman"), and
+# "10", "12", or "16" (instead of "14", the type size in points).  See the
+# gnuplot manual for details if you wish to customize these options.
+case $PRINTER in
+ -) cp /dev/null $CFILE ;;
+ eps) cat >$CFILE <<!
+set terminal postscript eps
+!
+    ;;
+ *) cat >$CFILE <<!
+set terminal postscript landscape monochrome "Times-Roman" 14
+set output "| lpr -P$PRINTER"
+!
+    ;;
+esac
+
+# The next section of the gnuplot command file sets the plot parameters.
+cat >>$CFILE <<!
+set tics out
+set title '$TITLE'
+set xlabel '$XLABEL'
+set ylabel '$YLABEL'
+set xrange [$XMIN:$XMAX]
+set yrange [$YMIN:$YMAX]
+!
+
+# If there are any other formatting commands (specified by the -f option),
+# include them here.
+case $FMTFILE in
+ -) ;;
+ *) cat $FMTFILE >>$CFILE ;;
+esac
+# For example, FMTFILE might contain the line
+#    set xtics("10 AM" 0, "Noon" 100, "2 PM" 200, "4 PM" 300)
+# (omitting the initial '#').  This would replace the standard X-axis tick
+# labels with those specified in the strings ("10 AM" at X=0, "Noon at X=100,
+# etc.).  See the GNUPLOT manual for details about this and other options.
+
+# Finally write the command that will produce the plot itself.
+cat >>$CFILE <<!
+plot '$IFILE' using $XCOL:$YCOL notitle with lines
+!
+
+# The last section of the gnuplot command file is omitted if PostScript output
+# is to be produced (either on a printer or to a file).  Otherwise, the "pause"
+# command causes gnuplot to prompt the user after it renders the plot.
+case $PRINTER in
+ -) cat >>$CFILE <<!
+pause -1 "Press <RETURN> to dismiss the plot window: "
+!
+    ;;
+esac
+
+# Make the plot by executing the gnuplot command file.  Standard input is
+# reattached to the user's keyboard so that the response to the prompt can
+# be read.
+gnuplot $CFILE </dev/tty
+
+# Clean up and exit.
+rm -f $CFILE $TFILE
+exit 0

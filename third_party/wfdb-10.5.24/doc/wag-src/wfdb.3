@@ -1,0 +1,236 @@
+.TH WFDB 3 "1 July 2010" "WFDB software 10.5.4" "WFDB Applications Guide"
+.SH NAME
+wfdb \- Waveform Database library
+.SH SYNOPSIS
+.B #include <wfdb/wfdb.h>
+.PP
+int adumuv(WFDB_Signal \fIs\fP, WFDB_Sample \fIadc_units\fP)
+.br
+double aduphys(WFDB_Signal \fIs\fP, WFDB_Sample \fIadc_units\fP)
+.br
+char *anndesc(int \fIannotation_code\fP)
+.br
+int annopen(char *\fIrecord\fP, WFDB_Anninfo *\fIaiarray\fP, unsigned int \fInann\fP)
+.br
+char *annstr(int \fIannotation_code\fP)
+.br
+int calopen(char *\fIcalibration_filename\fP)
+.br
+char *datstr(WFDB_Date \fId\fP)
+.br
+char *ecgstr(int \fIannotation_code\fP)
+.br
+int findsig(char *\fIsignal_name\fP)
+.br
+void flushcal(void)
+.br
+WFDB_Frequency getafreq(void)
+.br
+int getann(WFDB_Annotator \fIa\fP, WFDB_Annotation *\fIannotation\fP)
+.br
+double getbasecount(void)
+.br
+int getcal(char *\fIdescription\fP, char *\fIunits\fP, WFDB_Calinfo *\fIcal\fP)
+.br
+WFDB_Frequency getcfreq(void)
+.br
+int getgvmode(void)
+.br
+WFDB_Frequency getifreq(void)
+.br
+int getseginfo(WFDB_Seginfo **segments)
+.br
+char *getwfdb(void)
+.br
+int getframe(WFDB_Sample *\fIvector\fP)
+.br
+char *getinfo(char *\fIrecord\fP)
+.br
+int getspf(void)
+.br
+int getvec(WFDB_Sample *\fIvector\fP)
+.br
+void iannclose(WFDB_Annotator a)
+.br
+int iannsettime(WFDB_Time \fIt\fP)
+.br
+int isgsettime(WFDB_Group \fIsignal_group\fP, WFDB_Time \fIt\fP)
+.br
+int isigopen(char *\fIrecord\fP, WFDB_Siginfo *\fIsiarray\fP, int \fInsig\fP)
+.br
+int isigsettime(WFDB_Time \fIt\fP)
+.br
+char *mstimstr(WFDB_Time \fIt\fP)
+.br
+WFDB_Sample muvadu(WFDB_Signal \fIs\fP, int \fImicrovolts\fP)
+.br
+int newcal(char *\fIcalibration_filename\fP)
+.br
+int newheader(char *\fIrecord\fP)
+.br
+void oannclose(WFDB_Annotator a)
+.br
+int osigfopen(WFDB_Siginfo *\fIsiarray\fP, unsigned int \fInsig\fP)
+.br
+int osigopen(char *\fIrecord\fP, WFDB_Siginfo *\fIsiarray\fP, unsigned int \fInsig\fP)
+.br
+WFDB_Sample physadu(WFDB_Signal \fIs\fP, double \fIv\fP)
+.br
+int putann(WFDB_Annotator \fIa\fP, WFDB_Annotation *\fIannotation\fP)
+.br
+int putcal(WFDB_Calinfo *\fIcal\fP)
+.br
+int putinfo(char *\fIinfo\fP)
+.br
+int putvec(WFDB_Sample *\fIvector\fP)
+.br
+WFDB_Frequency sampfreq(char *\fIrecord\fP)
+.br
+WFDB_Sample sample(WFDB_Signal \fIs\fP, WFDB_Time \fIt\fP)
+.br
+int sample_valid(void)
+.br
+void setafreq(WFDB_Frequency \fIannotation_clock_frequency\fP)
+.br
+int setanndesc(int \fIannotation_code\fP, char *\fIannotation_description\fP)
+.br
+int setannstr(int \fIannotation_code\fP, char *\fIannotation_mnemonic_string\fP)
+.br
+void setbasecount(double \fIbase_count\fP)
+.br
+int setbasetime(char *\fItime_string\fP)
+.br
+void setcfreq(WFDB_Frequency \fIcounter_frequency\fP)
+.br
+int setifreq(WFDB_Frequency \fIgetvec_frequency\fP)
+.br
+void setwfdb(char *\fIdatabase_path_string\fP)
+.br
+int setecgstr(int \fIannotation_code\fP, char *\fIannotation_mnemonic_string\fP)
+.br
+void setgvmode(int \fImode\fP)
+.br
+int setheader(char *\fIrecord\fP, WFDB_Siginfo *\fIsiarray\fP, unsigned int \fInsig\fP)
+.br
+int setibsize(int \fIsize\fP)
+.br
+int setmsheader(char *\fIrecord\fP, char **\fIseg_names\fP, unsigned int \fInsegments\fP)
+.br
+int setobsize(int \fIsize\fP)
+.br
+int setsampfreq(WFDB_Frequency \fIsampling_frequency\fP)
+.br
+int strann(char *\fIannotation_mnemonic_string\fP)
+.br
+WFDB_Date strdat(char *\fIdate_string\fP)
+.br
+int strecg(char *\fIannotation_mnemonic_string\fP)
+.br
+WFDB_Time strtim(char *\fItime_string\fP)
+.br
+char *timstr(WFDB_Time \fIt\fP)
+.br
+WFDB_Time tnextvec(WFDB_Signal \fIs\fP, WFDB_Time \fIt\fP)
+.br
+int ungetann(WFDB_Annotator \fIa\fP, WFDB_Annotation *\fIannotation\fP)
+.br
+const char *wfdbcflags(void)
+.br
+const char *wfdbdefwfdb(void)
+.br
+const char *wfdbdefwfdbcal(void)
+.br
+char *wfdberror(void)
+.br
+char *wfdbfile(char *\fItype\fP, char *\fIrecord\fP)
+.br
+void wfdbflush(void)
+.br
+int wfdbgetskew(WFDB_Signal \fIs\fP)
+.br
+long wfdbgetstart(WFDB_Signal \fIs\fP)
+.br
+int wfdbinit(char *\fIrecord\fP, WFDB_Anninfo *\fIaiarray\fP, unsigned int \fInann\fP,
+                WFDB_Siginfo *\fIsiarray\fP, unsigned int \fInsig\fP)
+.br
+const char *wfdbldflags(void)
+.br
+void wfdbmemerr(int exit_on_error)
+.br
+int wfdbputprolog(char *\fIprolog\fP, long \fIbytes\fP, WFDB_Signal \fIs\fP)
+.br
+void wfdbquiet(void)
+.br
+void wfdbquit(void)
+.br
+void wfdbsetskew(WFDB_Signal \fIs\fP, int \fIskew\fP)
+.br
+void wfdbsetstart(WFDB_Signal \fIs\fP, long \fIbyte_offset\fP)
+.br
+void wfdbverbose(void)
+.br
+const char *wfdbversion(void)
+.SH DESCRIPTION
+Waveform databases (including the MIT-BIH Arrhythmia Database, the AHA Database
+for Evaluation of Ventricular Arrhythmia Detectors, and the European ST-T
+Database) are accessible to applications written in C and C++ via the
+functions defined in the WFDB library.  Under UNIX, programs may be linked with
+the WFDB library by using the \fB-lwfdb\fR option at the end of the C or C++
+compiler command. The functions are described in detail in the reference below.
+.SH FILES
+.SS UNIX systems:
+.TP 22
+\fB/usr/lib/libwfdb.a\fR
+standard (statically bound) library
+.TP
+\fB/usr/lib/libwfdb.so
+.TP
+\fB/usr/lib/libwfdb.so.\fIM.N\fR
+shareable library (bound at run-time, not available on all systems).  On some
+systems, one of these pathnames is a link to the other, and both are needed;  on
+others, only one of the pathnames is needed.
+.TP
+\fB/usr/lib/libwfdb.sa\fR
+stubs for linking with applications that use \fBlibwfdb.so\fR (not needed on all
+systems).
+.PP
+The location of these files may vary on some systems.
+.SS MS-DOS/MS Windows systems:
+.TP
+\fBwfdb.lib\fR
+standard (small memory model) library
+.TP
+\fBwfdbl.lib\fR
+large memory model library
+.TP
+\fBwfdb.dll\fR
+dynamic link library for MS Windows
+.TP
+\fBwfdbdll.lib\fR
+stubs for linking with applications that use \fBwfdb.dll\fR
+.SH SEE ALSO
+.TP
+\fIWFDB Programmer's Guide\fR
+On systems that support GNU emacs, the \fIGuide\fR may be available on-line
+using emacs \fIinfo\fR;  from within \fIemacs\fR, type control-H followed by
+\fIi\fR to find out.  An HTML version may be installed on your system (in
+\fI/usr/help/html/wpg\fP);  the most recent version can be viewed on-line at
+\fBhttp://www.physionet.org/physiotools/wpg/\fP.
+.PP
+The WFDB library can also be used with Fortran programs;  see \fIwfdbf\fR(3)
+and the \fIGuide\fR for details.
+.SH DIAGNOSTICS
+All functions that return an \fBint\fR indicate errors with negative
+values.  Depending on context, zero returns may indicate success or
+failure.  Positive values indicate success.  Most errors other than
+EOF are accompanied by diagnostics on the standard error output.
+.SH AUTHORS
+George B. Moody (george@mit.edu), with contributions from many sources.
+The predecessor of the WFDB library was originally implemented in C by
+George Moody and Ted Baker, based on earlier designs by Paul Schluter and
+Larry Siegal.  Other contributors of code and ideas include Paul Albrecht,
+Mike Dakin, Phil Devlin, Scott Greenwald, David Israel, Roger Mark, Joe Mietus,
+and Warren Muldrow.  Pat Hamilton and Bob Farrell contributed ports, to MacOS
+and Win32 respectively.
+.SH SOURCES
+http://www.physionet.org/physiotools/wfdb/lib/

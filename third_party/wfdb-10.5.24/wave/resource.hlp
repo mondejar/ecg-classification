@@ -1,0 +1,113 @@
+You can control many aspects of WAVE's appearance and behaviour by setting its
+resources.  If you are not familiar with this concept, refer to an introductory
+book on using the X Window System, such as Quercia and O'Reilly's `X Window
+System User's Guide'.  Since WAVE is built using the XView toolkit, all of the
+resources listed in the man page for XView can be used with WAVE (type `man
+xview' for details).  In addition, the WAVE-specific resources listed below may
+also be set.  Those marked with a `*' are recorded in your `.Xdefaults' file
+when you use the `Save as new defaults' button in the `View' panel.
+
+If you use WAVE on workstations with different display capabilities, you can
+create custom resource settings for each one by moving these resource
+definitions from .Xdefaults to .Xdefaults-HOSTNAME (where HOSTNAME specifies
+the system to which the display is attached).  The resources marked below with
+a `+' are those that are most likely to require different settings on different
+displays, but any of the others can also be moved to .Xdefaults-HOSTNAME.
+
+Wave.AllowDottedLines * +
+    This resource specifies if WAVE is allowed to render dotted lines.  WAVE
+    normally draws annotation marker bars as dotted lines, and may use dotted
+    lines for other display elements on black-and-white displays for clarity.
+    Some X servers do not properly render dotted lines, however;  if you
+    observe irregular or missing annotation marker bars, change the value of
+    this resource from `True' to `False' (by editing `.Xdefaults').
+
+Wave.Anntab
+    This resource specifies the name of a file that contains a table of
+    annotation definitions.  The environment variable ANNTAB can also be used
+    to specify this filename;  the resource overrides the environment variable
+    if both are set.  The file contains one-line entries of the form
+        15 % Funny looking beat
+    in which the first field specifies the (numeric) annotation code in the
+    range between 1 and ACMAX inclusive (see /usr/include/ecg/ecgcodes.h for a
+    list of predefined codes and for the definition of ACMAX);  the second
+    field (`%' in the example) is a mnemonic (used in annotation display and
+    entry), and the remainder of the entry is a description of the intended use
+    of the annotation code (which appears next to the mnemonic in the `Type'
+    field and menu of `Annotation Template' windows).  Lines in the annotation
+    table that begin with `#' are treated as comments and ignored.  It is not
+    necessary to specify an annotation table when editing an existing
+    annotation file unless previously undefined annotation types are to be
+    added to it during the editing process, although it is generally harmless
+    to do so.
+
+Wave.Dpi * +
+    This resource specifies the display resolution in dots per inch in the
+    form `MMxNN', where MM is the horizontal resolution and NN is the vertical
+    resolution.  Normally, the resolution is known to the X server, and it is
+    unnecessary to specify this resource.  If your X server is misinformed,
+    WAVE's calibrated display scales will be incorrect;  the best solution is
+    to specify the resolution using a server option such as the `-dpi' option
+    supported by MIT's X11R4 servers, since this will solve problems common
+    to any other applications that require calibrated scales as well.  Sun's
+    xnews server, however, labors under the delusion that all displays have 83
+    dots per inch resolution (true only for some 19" monitors) and cannot be
+    persuaded otherwise, so it is necessary to inform WAVE using this resource
+    or the `-dpi' command-line option if you are using xnews on any other type
+    of monitor.  The command-line option overrides the resource if both are
+    specified.
+
+Wave.GraphicsMode * +
+    This resource specifies the graphics mode used by WAVE;  it can be
+    overridden using the -g, -m, -O, or -S options.  The legal values are
+    1 (monochrome mode), 2 (overlay greyscale mode), 4 (shared color mode), 6
+    (shared grey mode), and 8 (overlay color mode).
+
+Wave.SignalWindow.{Grey|Color}.{Background|Grid|Cursor|Annotation|Signal}
+    These resources specify the colors to be used on greyscale or color
+    displays.  The `Color.*' resources are used only if the display is
+    color-capable and neither greyscale nor monochrome mode has been
+    specified.  The defaults are:
+				Grey		Color
+		Background	white		white
+		Grid		grey75		grey75
+		Cursor		grey50		orange red
+		Annotation	grey25		yellow green
+		Signal		black		blue
+
+Wave.SignalWindow.Mono.Background
+    In monochrome mode, the background color is normally white, and all other
+    colors are normally black.  The reverse can be obtained by setting this
+    resource to `black'.  [There is at least one server for which this fails.]
+
+Wave.SignalWindow.{Height_mm|Width_mm} *
+    These resources specify the preferred dimensions (in millimeters) for the
+    signal window.  The defaults are 120 and 250 respectively.  The signal
+    window can be resized by dragging any of its resize handles using the left
+    mouse button.
+
+Wave.SignalWindow.Font
+    This resource specifies the font used to display annotations and time
+    marks in the signal window.  The default is `fixed'.
+
+Wave.TextEditor
+    This resource specifies the name of the text editor invoked by WAVE to
+    permit you to edit WAVE's log and analysis menu files.  The default is
+    `textedit' (the OpenLook visual editor).  You may override this resource
+    by using the environment variable EDITOR, which is also used by many other
+    UNIX applications that invoke editors.
+
+Wave.View.{Subtype|Chan|Num|Aux|Markers|SignalNames|Baselines|Level} *
+    These resources specify which of the `Show:' options at the top of the
+    `View' panel are enabled by default;  their values are `True' or `False'.
+
+Wave.View.{TimeScale|AmplitudeScale} *
+Wave.View.{SignalMode|AnnotationMode|TimeMode|GridMode} *
+    These resources specify the initial positions of the menu choices in the
+    corresponding `View' menus, where the top item on each menu is in position
+    0, the one below it is in position 1, etc.  For example, to set the
+    initial time scale to 50 mm/sec (the item at position 6 in the `Time Scale'
+    menu), set Wave.View.TimeScale to 6.
+
+Note that WAVE-specific resources cannot be set using the XView `-default'
+or `-xrm' options.

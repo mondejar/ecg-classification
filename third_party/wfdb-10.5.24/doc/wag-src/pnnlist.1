@@ -1,0 +1,113 @@
+.TH PNNLIST 1 "22 February 2003" "WFDB 10.3.2" "WFDB Applications Guide"
+.SH NAME
+pnnlist, pNNx \- derive pNNx statistics from an annotation interval list or an annotation file
+.SH SYNOPSIS
+\fBpnnlist\fR [ \fIoptions\fR ... ]
+\fBpNNx -r\fR \fIrecord\fR \fB-a\fR \fIinput-annotator\fR [ \fIoptions\fR ... ]
+.SH DESCRIPTION
+.PP
+These programs derive \fIpNNx\fR, time domain measures of heart rate
+variability defined for any time interval \fIx\fR  as the fraction of
+consecutive normal sinus (NN) intervals that differ by more than \fIx\fR.
+Conventionally, such measures have been applied to assess parasympathetic
+activity using \fIx\fR = 50 milliseconds (yielding the widely-cited \fIpNN50\fR
+statistic).
+.SS pnnlist
+.PP
+This program takes as standard input an annotation interval list, containing
+intervals in seconds and the (beat and non-beat) annotations that terminate
+each interval; and outputs on standard output each unique NN increment (x) in
+milliseconds, and the percentage of NN interval increments (pNNx) greater
+than x.
+.PP
+Options for \fBpnnlist\fR may include:
+.TP
+\fB-h\fR
+Print this usage summary.
+.TP
+\fB-i\fR \fIinc\fR
+Compute and output pNNx for x = 0, \fIinc\fR, \fI2*inc\fR, ... milliseconds.
+.TP
+\fB-p\fR
+Compute and output increments as percentage of initial intervals.
+.TP
+\fB-s\fR
+Compute and output separate distributions of positive and negative intervals.
+.SS pNNx
+.PP
+This shell script invokes \fBann2rr\fR(1) and \fBpnnlist\fR to obtain pNNx
+statistics using a beat annotation file as input.  The input file must be
+specified using the \fB-r\fR \fIrecord\fR and \fB-a\fR \fIannotator\fR
+arguments.
+.PP
+Options for \fBpNNx\fR may include any of those usable with \fBpnnlist\fR,
+as well as:
+.TP
+\fB-f\fR \fItime\fR
+Begin at the specified \fItime\fR.  By default, \fBpNNx\fR starts at the
+beginning of the record.
+.TP
+\fB-t\fR \fItime\fR
+Stop at the specified \fItime\fR.
+.SH EXAMPLES
+.PP
+These commands are functionally identical:
+.br
+	\fBann2rr -r nsrdb/16265 -a atr -A -i s8 -w | pnnlist\fR
+.br
+	\fBpNNx -r nsrdb/16265 -a atr\fR
+.PP
+Each of these commands reads the \fBatr\fR (reference) annotations for
+MIT-BIH Normal Sinus Rhythm Database (\fBnsrdb\fR) record 16265 (downloading
+them directly from PhysioNet if the annotation file has not previously been
+downloaded into a local \fBnsrdb\fR directory.  These commands will then print
+each unique NN interval increment in milliseconds along with the percentage of
+intervals greater than that value.  Both of the examples above produce the
+same output; the first few lines are shown below:
+.br
+	0       89.2738
+.br
+	7.8125  69.4564
+.br
+	15.625  53.3662
+.br
+	23.4375 40.8539
+.br
+	31.25   31.4265
+.br
+	39.0625 24.1817
+.br
+	46.875  18.4763
+.br
+	54.6875 14.1261
+.br
+	62.5    10.7312
+.br
+	70.3125 8.06025
+.br
+	78.125  6.09401
+.br
+	85.9375 4.56975
+.br
+	93.75   3.47841
+.br
+	101.562 2.66896
+.br
+	      .
+.br
+	      .
+.br
+	      .
+
+.SH ENVIRONMENT
+.PP
+It may be necessary to set and export the shell variable \fBWFDB\fR (see
+\fBsetwfdb\fR(1)).
+.SH SEE ALSO
+\fBann2rr\fR(1), \fBsetwfdb\fR(1)
+.SH AUTHOR
+Joe E. Mietus (joe at physionet dot org)
+.SH SOURCE
+http://www.physionet.org/physiotools/pNNx/pNNx.src/pnnlist.c
+.br
+http://www.physionet.org/physiotools/pNNx/pNNx.src/pNNx

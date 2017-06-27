@@ -1,0 +1,1515 @@
+#! /usr/bin/perl -w
+##############################################################################
+# $Id: pstoimg.pin,v 1.11 1999/10/25 21:18:22 MRO Exp $
+#
+# pstoimg
+#
+# Accompanies LaTeX2HTML
+#
+# Script to convert an arbitrary PostScript image to a cropped GIF or PNG
+# image suitable for incorporation into HTML documents as inlined images
+# to be viewed with WWW browsers.
+#
+# This software is provided as is without any guarantee.
+#
+##############################################################################
+#
+# $Log: pstoimg.pin,v $
+# Revision 1.11  1999/10/25 21:18:22  MRO
+#
+# -- added more configure options (Jens' suggestions)
+# -- fixed bug in regexp range reported by Achim Haertel
+# -- fixed old references in documentation (related to mail list/archive)
+#
+# Revision 1.10  1999/10/06 22:04:13  MRO
+#
+# -- texexpand: latex2html calls texexpand with the -out option instead of
+#    output redirection: this is safer on non-UNIX platforms
+# -- pstoimg: now there's no default cropping (useful for standalone
+#    conversions). latex2html was changes appropriately
+# -- minor cleanups in latex2html script and documentation
+#
+# Revision 1.9  1999/09/14 22:02:02  MRO
+#
+# -- numerous cleanups, no new features
+#
+# Revision 1.8  1999/07/19 09:51:00  RRM
+#  --  added  -aaliastext  switch, for easier way to specify anti-aliased
+#      font characters, without also anti-aliasing other graphics objects.
+#
+# Revision 1.7  1999/06/24 07:28:59  MRO
+#
+#
+# -- removed L2HMODULE
+# -- fixed processing of -info switch
+# -- changed option order for dvips on win32 (thanks JCL)
+# -- bumped version to 99.2a8
+#
+# Revision 1.6  1999/06/06 14:24:50  MRO
+#
+#
+# -- many cleanups wrt. to TeXlive
+# -- changed $* to /m as far as possible. $* is deprecated in perl5, all
+#    occurrences should be removed.
+#
+# Revision 1.5  1999/06/04 20:14:25  MRO
+#
+#
+# -- Reworked option parsing completely. Should behave much the same as before,
+#    options with -no_* work just like before.
+# -- Changed $NOFORK to $CAN_FORK and inverted the logic.
+# -- Small debugging enhancement in pstoimg
+#
+# Revision 1.4  1999/06/04 15:30:15  MRO
+#
+#
+# -- fixed errors introduced by cleaning up TMP*
+# -- made pstoimg -quiet really quiet
+# -- pstoimg -debug now saves intermediate result files
+# -- several fixes for OS/2
+#
+# Revision 1.3  1999/06/01 06:55:35  MRO
+#
+#
+# - fixed small bug in L2hos/*
+# - added some test_mode related output to latex2html
+# - improved documentation
+# - fixed small bug in pstoimg wrt. OS2
+#
+# Revision 1.2  1999/05/17 21:30:59  MRO
+#
+#
+# -- make texexpand warning-free and start making it use strict
+#    compliant
+#
+# Revision 1.1  1999/05/11 06:10:00  MRO
+#
+#
+# - merged config stuff, did first tries on Linux. Simple document
+#   passes! More test required, have to ger rid of Warnings in texexpand
+#
+# Revision 1.18  1999/05/05 19:47:03  MRO
+#
+#
+# - many cosmetic changes
+# - final backup before merge
+#
+# Revision 1.17  1999/03/15 23:00:53  MRO
+#
+#
+# - moved L2hos modules to top level directory, so that no dir-
+#   delimiter is necessary in the @INC-statement.
+# - changed strategy for "shave": Do not rely on STDERR redirection any
+#   more (caused problems on at least Win32)
+#
+# Revision 1.16  1999/02/14 23:44:34  MRO
+#
+#
+# -- first attempt to fix Win32 problems
+#
+# Revision 1.15  1999/02/11 00:18:29  MRO
+#
+#
+# -- cleaned up warppers, TeXlive stuff and Makefile
+#
+# Revision 1.14  1999/02/10 01:37:12  MRO
+#
+#
+# -- changed os-dependency structure again - now neat OO modules are
+#    used: portable, extensible, neat!
+# -- some minor cleanups and bugfixes
+#
+# Revision 1.13  1998/12/07 23:19:58  MRO
+#
+#
+# -- added POD documentation to pstoimg and did a general cleanup
+# -- some finetuning of config procedure and modules
+#
+# Revision 1.12  1998/10/31 14:13:05  MRO
+# -- changed OS-dependent module loading strategy: Modules are now located in
+#    different (OS-specific) directories nut have the same name: Easier to
+#    maintain and cleaner code
+# -- Cleaned up config procedure
+# -- Extended makefile functionality
+#
+# Revision 1.11  1998/08/09 20:45:20  MRO
+# -- some cleanup
+#
+# Revision 1.10  1998/06/14 14:10:38  latex2html
+# -- Started to implement TeXlive configuration and better OS specific
+#    handling (Batch files)                              (Marek)
+#
+# Revision 1.9  1998/06/07 22:35:24  latex2html
+# -- included things I learned from the Win95 port to config procedure:
+#    GS_LIB, Win32 module calls, directory separator stuff, ... (Marek)
+#
+# Revision 1.8  1998/06/01 12:57:56  latex2html
+# -- Cleanup and cosmetics.
+#
+# Revision 1.7  1998/05/14 22:27:37  latex2html
+# -- more work on config procedure (Makefile, GS_LIB)
+# -- tested pstoimg in 98.1 environment successfully on Linux
+#
+# Revision 1.6  1998/05/06 22:31:09  latex2html
+# -- Enhancements to the config procedure: Added a "generic" target
+#    in the Makefile for the TeXlive CD (not perfect yet)
+# -- included test for kpsewhich / Web2C
+# -- included latest stuff from Override.pm into os_*.pm
+#
+# Revision 1.5  1998/04/28 22:18:11  latex2html
+# - The platform specific stuff is now kept in a separate perl module. This
+#   does not introduce significant overhead and enhances maintainability.
+#
+# Revision 1.4  1998/03/19 23:38:06  latex2html
+# -- made pstoimg plug-in compatible with old one (touchwood!)
+# -- cleaned up, added some comments
+# -- inserted version information output
+# -- incorporated patches to make OS/2 run better (thanks Uli)
+# -- updated Makefile: make, make test, make install should work now
+#
+# Revision 1.3  1998/03/11 23:44:00  latex2html
+# -- cleaned up config.pl and reworked dvips checks
+# -- got pstoimg.pin up to par with the regular pstoimg
+# -- cosmetic changes
+# -- runs now under Win95 with Fabrice Popineau's Win32 tools (gs, TeX,...)
+#
+# Revision 1.2  1998/03/02 23:38:40  latex2html
+# Reworked configuration procedure substantially. Fixed some killing bugs.
+# Should now run on Win32, too.
+# The file prefs.pm contains user-configurable stuff for DOS platforms.
+# UNIX users can override the settings with the configure utility (preferred).
+#
+# Revision 1.1  1998/02/14 19:31:55  latex2html
+# Preliminary checkin of configuration procedure
+#
+# (end CVS log)
+###############################################################################
+
+# This file has been automatically generated by build.pl from pstoimg.pin
+# Do not edit this file as your changes will be lost when reconfiguring.
+# If you want to supply patches, please apply them to pstoimg.pin and send
+# the diff relative to the original pstoimg.pin. Thank you.
+
+=head1 NAME
+
+pstoimg - Convert a PostScript file to a bitmap image using 
+Ghostscript and the Netpbm utilities
+
+=cut
+
+use 5.003;
+use strict;
+#use diagnostics;
+use vars qw(*SAVEERR $LATEX2HTMLDIR $SCRIPT);
+
+# This variable points to the DIRECTORY where the latex2html files
+# can be found.
+
+use Getopt::Long;
+
+
+# see below for a description of the environment
+
+BEGIN {
+  # print "scanning for l2hdir\n";
+  if($ENV{LATEX2HTMLDIR}) {
+    $LATEX2HTMLDIR = $ENV{LATEX2HTMLDIR};
+  } else {
+    $ENV{LATEX2HTMLDIR} = $LATEX2HTMLDIR = '/usr/share/latex2html';
+  }
+
+  if(-d $LATEX2HTMLDIR) {
+    push(@INC,$LATEX2HTMLDIR);
+  } else {
+    die qq{Fatal: Directory "$LATEX2HTMLDIR" does not exist.\n};
+  }
+}
+
+use L2hos; # load OS-specific stuff
+
+my $RELEASE = '2K.1beta';
+my ($VERSION) = q$Revision: 1.11 $ =~ /:\s*(\S+)/;
+
+$| = 1; # unbuffer STDOUT
+
+my $dd = L2hos->dd; # Directory delimiter
+my $prompt;
+($prompt = $0) =~ s|^.*[/\\]||;
+
+# Configuration as determined by "configure"
+#
+# Ghostscript
+my $GS = '/usr/bin/gs';
+my $GSDEVICE = 'pnmraw';
+my $GSALIASDEVICE = 'ppmraw';
+# Supported format(s)
+my @IMAGE_TYPES = qw(png);
+# Netpbm
+my $PNMCROP = '/usr/bin/pnmcrop';
+my $PPMQUANT = '/usr/bin/ppmquant';
+my $PNMFLIP = '/usr/bin/pnmflip';
+my $PNMCAT = '/usr/bin/pnmcat';
+my $PNMFILE = '/usr/bin/pnmfile';
+my $PBMMAKE = '/usr/bin/pbmmake';
+# PNG support
+my $PNMTOPNG = '/usr/bin/pnmtopng';
+# Temporary diskspace
+my $def_tmp = '/tmp'; # Space for temporary files
+
+# Some lengths used by dvips
+# MRO: Is this true for all runs of dvips?
+
+my $PAGE_HEIGHT = 841.889;   # dvips page height, in pts.
+my $PAGE_WIDTH  = 595.275;   # dvips page width, in pts.
+my $PAGE_HMARGIN = 72;       # dvips margin: 1 inch = 72pt
+my $PAGE_VMARGIN = 72;       # dvips margin: 1 inch = 72pt
+
+# The color to be made transparent
+my $trans_color = '#ffffff';
+
+###############################################################################
+# Default settings
+# Environment overrides defaults, command line options override everything
+
+unless(@ARGV) {
+  print_help();
+  exit 0;
+  }
+
+=head1 SYNOPSIS
+
+B<pstoimg> B<-help> | B<-version>
+
+B<pstoimg>
+S<[ B<-antialias> ]>
+S<[ B<-aaliastext> ]>
+S<[ B<-center> I<num> ]>
+S<[ B<-color> I<num> ]>
+S<[ B<-crop> I<code> ]>
+S<[ B<-debug> ]>
+S<[ B<-density> I<num>]>
+S<[ B<-depth> I<num> ]>
+S<[ B<-discard> ]>
+S<[ B<-flip> I<code> ]>
+S<[ B<-geometry> I<X>xI<Y> ]>
+S<[ B<-interlaced> ]>
+S<[ B<-margins> I<X>,I<Y> ]>
+S<[ B<-multipage> ]>
+S<[ B<-out> I<file> ]>
+S<[ B<-quiet> ]>
+S<[ B<-rightjustify> I<num> ]>
+S<[ B<-scale> I<num> ]>
+S<[ B<-tmp> I<path> ]>
+S<[ B<-topjustify> [B<x>]I<num> ]>
+S<[ B<-transparent> ]>
+S<[ B<-type> I<type> ]>
+S<[ B<-shoreup> I<num>[B<d>] ]>
+S<[ B<-white> ]>
+I<file>
+S<[ I<file2> ... ]>
+
+=cut
+
+my %opt = ();
+unless(&GetOptions(\%opt, qw(-help -version -debug -discard -antialias -aaliastext
+  -multipage -type=s -gif -png -out=s -depth=i -color=i -flip=s -density=i
+  -scale=f -geometry=s -margins=s -crop=s -transparent -interlaced 
+  -rightjustify=i -center=i -topjustify=s -shoreup=s -tmp=s -white -quiet))) {
+  print_usage("$prompt: Error: Invalid option(s) specified.");
+  exit 1;
+}
+
+=head1 OPTIONS
+
+The command line options may be abbreviated to the shortest unique
+prefix.
+
+=over 4
+
+=item B<-help>
+
+Show this help page and exit.
+
+=cut
+
+if($opt{help}) {
+  print_help();
+  exit 0;
+  }
+
+=item B<-version>
+
+Show the release and version of pstoimg and exit.
+
+=cut
+
+if($opt{version}) {
+  print_version();
+  exit 0;
+  }
+
+banner() unless($opt{quiet});
+
+=item B<-antialias>
+
+Use Ghostscript's anti-aliasing feature for rendering "softer" images.
+This applies to lines and edges of polygonal and oval or circular shapes.
+Only valid if Ghostscipt 4.03 or higher is installed.
+
+=item B<-aaliastext>
+
+Use Ghostscript's anti-aliasing feature for "smoother" font characters,
+without the jagged edges. Similar to B<-antialias> for graphic components.
+Only valid if Ghostscipt 4.03 or higher is installed.
+
+=item B<-center> I<num>
+
+Add the appropriate amount of whitespace to the left of the image so
+that the image appears to be centered in a total width of I<num> pixels.
+
+=cut
+
+my $CENTER = 0; # No centering by default
+if($opt{center}) {
+  $CENTER = $opt{center};
+  die <<"EOF" unless ($CENTER =~ /^\d+$/ && $CENTER > 0);
+$prompt: Error: Illegal width for -center specified: "$CENTER"
+         Value must be a positive integer.
+EOF
+  }
+
+=item B<-crop> I<code>
+
+Crop the bitmap from the given directions. I<code> may be a string of
+several cropping instructions, which are executed strictly in the given
+order. Possible values are: B<h> (horizontal, i.e. crop top and
+bottom), B<v> (vertical), B<tblr> (top, bottom, left, right) and B<a> (all
+directions). A special case is B<s>: "shave" the image at the bottom, but only
+if a single line of whitespace exists.
+
+=cut
+
+my $EXTRA_CROP = '';
+if($opt{crop}) {
+  $EXTRA_CROP = lc($opt{crop});
+  die <<"EOF" unless ( $EXTRA_CROP =~ /^([vhtblras]+)$/i );
+$prompt: Error: Illegal crop specified: "$EXTRA_CROP"
+         Crop must be  h, v, t, b, l, r, a, s  or combination
+EOF
+  }
+
+=item B<-debug>
+
+Turn on debugging output. This can get rather verbose. Any intermediate
+files generated are not removed to help debugging.
+
+=cut
+
+if($ENV{DEBUG}) {
+  $opt{debug} = 1;
+  }
+
+=item B<-density> I<num>
+
+The density (resolution) in DPI in which to render the bitmap. The default
+is 72.
+
+=cut
+
+my $DENSITY = 72;
+if($opt{density}) {
+  $DENSITY = $opt{density};
+  }
+elsif($ENV{DENSITY}) {
+  $DENSITY = $ENV{DENSITY};
+  }
+die <<"EOF" unless $DENSITY =~ /^\d+$/;
+$prompt: Error: Illegal density specified: "$DENSITY"
+         Density must be an integer value. Default is 72.
+EOF
+
+=item B<-depth> I<num> or B<-color> I<num>
+
+Specify the color depth of the bitmap. Legal values are 1 (black & white),
+8 (256 colors) and 24 (true color).
+
+=cut
+
+unless($opt{depth}) {
+  if($opt{color}) {
+    $opt{depth} = $opt{color};
+    }
+  elsif($ENV{DEPTH}) {
+    $opt{depth} = $ENV{DEPTH};
+    }
+  else {
+    $opt{depth} = 8;
+    }
+  }
+die <<"EOF" unless $opt{depth} =~ /^(1|8|24)$/;
+$prompt:  Error: Illegal color depth specified: "$opt{depth}"
+          Depth must be either 1, 8 or 24.
+EOF
+
+=item B<-discard>
+
+Delete the input postscript file if the conversion was successful. Setting
+the environment DISCARD to a true value (as perl sees it) has the same
+effect.
+
+=cut
+
+if($ENV{DISCARD}) {
+  $opt{discard} = 1;
+  }
+
+=item B<-flip> I<code>
+
+Flip all generated output bitmaps. The following codes are recognized:
+lr (flip left-right), tb (flip top-bottom), xy (flip bottom/left-top/right),
+r90 and ccw (rotate by 90 degrees counterclockwise), r270 and cw (rotate
+90 degrees clockwise) and r180 (rotate 180 degrees).
+
+=cut
+
+if($opt{flip}) {
+  $opt{flip} = lc($opt{flip});
+  die <<"EOF" unless $opt{flip} =~ /^(lr|tb|xy|r90|ccw|r270|cw|r180)$/;
+$prompt: Error: Illegal flip option specified: "$opt{flip}"
+         Flip must be one of: lr tb xy r90 ccw r270 cw r180
+EOF
+  }
+
+=item B<-geometry> I<X>xI<Y>
+
+Render only this "window" of the PostScript file. If given, this option
+can dramatically reduce memory requirements and speed up conversion. The
+geometry is automatically detected in case of EPS files (Encapsulated
+PostScript).
+
+=cut
+
+my $GEOMETRY = '';
+if($opt{geometry}) {
+  $GEOMETRY = $opt{geometry};
+  if($GEOMETRY =~ s/-//o ) {
+    $EXTRA_CROP .= 'bl';
+    }
+  die <<"EOF" unless ($GEOMETRY =~ /^\d+x\d+$/i);
+$prompt: Error: Illegal geometry specified: "$GEOMETRY"
+         Geometry must be <width>x<height>
+EOF
+  }
+
+=item B<-interlaced>
+
+Generate an interlaced bitmap. Interlaced images build up from coarse to
+fine as they are loaded. This option may not work on every installation
+and/or bitmap type, depending of the capabilities of external programs.
+
+=cut
+
+my $INTERLACE = 0; # Do not make interlaced images by default
+if($opt{interlaced}) {
+  if($opt{type} eq 'gif') {
+    print "$prompt: Warning: Interlaced GIFs not supported.\n";
+    }
+  $INTERLACE=1;
+  }
+
+=item B<-margins> I<X>,I<Y>
+
+The offset of the rectangle in the postscript file that is going to be
+rendered from top/left. Can be used together with B<-geometry> to further
+reduce the size of the intermediate bitmap file generated by Ghostscript.
+
+=cut
+
+if($opt{margins}) {
+  die <<"EOF" unless (($opt{margins} =~ /^(\d+),(\d+)$/));
+$prompt: Error: Illegal margins specified: "$opt{margins}"
+         Margins must be <hmargin>,<vmargin>
+EOF
+  $PAGE_HMARGIN = $1;
+  $PAGE_VMARGIN = $2;
+  }
+
+=item B<-multipage>
+
+Process a multi-page PostScript file, i.e. create an individual bitmap
+for every page. The resulting files are numbered: The decimal number
+(starting with 1) is appended to the basename of the PostScript input
+file (or the basename of the filename specified with B<-out>), while
+keeping the extension.
+
+=item B<-out> I<file>
+
+The file where to write the bitmap. If multiple PostScript files are
+supplied on the command line, this option is ignored. The bitmap type
+extension is appended automatically if I<file> does not contain a dot.
+In connection with B<-multipage> I<file> is extended by the page number
+as shown in this example:
+
+-outfile foo.gif  --------E<gt> foo1.gif, foo2.gif, ...
+
+=cut
+
+if(!$opt{out} && $ENV{OUTFILE}) {
+  $opt{out} = $ENV{OUTFILE};
+  }
+
+=item B<-quiet>
+
+Do not print anything except error messages.
+
+=item B<-rightjustify> I<num>
+
+Add the appropriate amount of whitespace to the left of the image so that
+it appears to be aligned to the right in a total width of I<num> pixels.
+
+=cut
+
+my $RIGHT_JUSTIFY = 0; # No right justifying by default
+if($opt{rightjustify}) {
+  $RIGHT_JUSTIFY = $opt{rightjustify};
+  die <<"EOF" unless ($RIGHT_JUSTIFY =~ /^\d+$/ && $RIGHT_JUSTIFY > 0);
+$prompt: Error: Illegal width for -rightjustify specified: "$RIGHT_JUSTIFY"
+         Value must be a positive integer.
+EOF
+  }
+
+=item B<-scale> I<factor>
+
+Scale the image by I<factor>. Valid choices are any numbers greater than
+zero. Useful choices are numbers between 0.1 - 5.
+Large numbers may generate very large intermediate files and will take
+longer to process. If this option is omitted, the environment SCALE is
+considered.
+
+=cut
+
+unless($opt{scale}) {
+  if($ENV{SCALE}) {
+    $opt{scale} = $ENV{SCALE};
+    }
+  else {
+    $opt{scale} = 1;
+    }
+  }
+die <<"EOF" unless ($opt{scale} =~ /^[\d.e]+$/i && $opt{scale} > 0);
+$prompt: Error: Illegal scale specified: "$opt{scale}"
+         Scale must be nonnegative float value.
+EOF
+
+=item B<-shoreup> I<num>[B<d>]
+
+Make height and width of the bitmap(s) an exact multiple of I<num>. If
+I<num> is followed by a "d", then half the extra vertical space is placed
+underneath. This option is useful, if you want to have "blown-up" images
+of high quality for print, but downscale them in HTML using
+C<E<lt>IMG WIDTH=x HEIGHT=yE<gt>>. If the actual image is is not an
+integer multiple of x,y then browsers tend to display distorted images.
+
+=cut
+
+my $SHORE_UP = 0; # No pixel alignment by default
+if($opt{shoreup}) {
+  $SHORE_UP = $opt{shoreup};
+  die <<"EOF" unless $SHORE_UP =~ /^\d+d?$/i;
+$prompt: Error: Illegal shore-up specified: "$SHORE_UP"
+         Value must be a positive integer, optionally followed by d
+EOF
+  }
+
+=item B<-tmp> I<path>
+
+Use I<path> to store temporary files. Defaults to /tmp on this
+installation. This parameter can be set by the environment B<TMP> or 
+B<TEMP>, too.
+
+=cut
+
+my $TMP = '';
+if($opt{tmp}) {
+  $opt{tmp} =~ s|\Q$dd\E+$||; # remove trailing directory separator(s)
+  if(-d $opt{tmp} && -r _ && -w _) {
+    $TMP = $opt{tmp};
+  } else {
+    print "$prompt: Warning: Cannot use $opt{tmp} as temporary directory.\n";
+  }
+}
+if(!$TMP && ($ENV{TMP} || $ENV{TEMP})) {
+  ($opt{tmp} = $ENV{TMP} || $ENV{TEMP}) =~ s|\Q$dd\E+$||;
+  if(-d $opt{tmp} && -r _ && -w _) {
+    $TMP = $opt{tmp};
+  } else {
+    print "$prompt: Warning: Cannot use $opt{tmp} as temporary directory.\n";
+  }
+}
+if(!$TMP && -d $def_tmp && -r _ && -w _) {
+  $TMP = $def_tmp;
+}
+print "$prompt: Temporary directory is $TMP\n" if($opt{debug});
+
+=item B<-topjustify> [B<x>]I<num>
+
+Add padding whitespace to the image so that it gets a defined height.
+If an integer value is given, it defines the total height. The whitespace
+is added at the bottom. If the number is preceded by "x", then this
+multiple of the image height is added as whitespace at the bottom.
+
+=cut
+
+my $TOP_JUSTIFY = 0; # No top justifying by default
+if($opt{topjustify}) {
+  $TOP_JUSTIFY = $opt{topjustify};
+  die <<"EOF" unless $TOP_JUSTIFY =~ /^x?\d+[.]?\d*$/i;
+$prompt: Error: Illegal align specified: "$TOP_JUSTIFY"
+         Value must be positive numeric, optionally preceded by x
+EOF
+  }
+
+=item B<-transparent>
+
+Generate transparent bitmaps, i.e. the background color (white) is
+transparent if viewed with certain viewers (e.g. browsers). This option
+may not be available due to missing capabilities of external
+programs.
+
+=cut
+
+my $TRANSPARENT = 0; # Do not make make images transparent by default
+if($opt{transparent}) {
+  $TRANSPARENT = 1;
+  }
+
+=item B<-type> I<type>
+
+Instruct pstoimg to render the bitmap in I<type> format. Depending on 
+the local installation, pstoimg is capable of generating either GIF or
+PNG bitmaps. This site features the following types: png
+
+If omitted, the first type in this list is taken.
+
+=cut
+
+if($opt{type}) {
+  $opt{type} = lc($opt{type});
+  die <<"EOF" unless grep($_ eq $opt{type},@IMAGE_TYPES);
+$prompt: Error: This version of pstoimg does not support
+    "$opt{type}" image format.
+EOF
+  }
+else {
+  ($opt{type}) = @IMAGE_TYPES; # default image type
+  }
+# Support -gif and -png for a transition period
+if($opt{gif}) {
+  print qq{$prompt: Warning: The -gif switch is deprecated. Use "-type gif" instead.\n};
+  if(grep($_ eq 'gif',@IMAGE_TYPES)) {
+    $opt{type} = 'gif';
+    }
+  else {
+    die <<"EOF";
+$prompt: Error: This version of pstoimg does not support "gif" format.
+EOF
+    }
+  }
+if($opt{png}) {
+  print qq{$prompt: Warning: The -png switch is deprecated. Use "-type png" instead.\n};
+  if(grep($_ eq 'png',@IMAGE_TYPES)) {
+    $opt{type} = 'png';
+    }
+  else {
+    die <<"EOF";
+$prompt: Error: This version of pstoimg does not support "png" format.
+EOF
+    }
+  }
+
+=item B<-white>
+
+Remove TeX's page color information from the PostScript file before 
+converting so that a white background is used.
+
+=back
+
+=cut
+
+# do some consistency checks on the options
+
+if($TRANSPARENT && $opt{type} eq 'gif') {
+  print "$prompt: Warning: Transparent GIFs not supported.\n";
+  }
+
+die <<"EOF" if($RIGHT_JUSTIFY && $CENTER);
+$prompt: Error: Conflicting options -center and -rightjustify.
+EOF
+
+# now setup some parameters
+
+# calculate dpi resolution from density and scale
+$DENSITY = int($opt{scale} * $DENSITY + .5) if($opt{scale} != 1);
+
+my $reduce_color = '';
+if($opt{depth} == 1) {
+  $reduce_color = "$PPMQUANT 2";
+  }
+elsif ($opt{depth} == 8) {
+  $reduce_color = "$PPMQUANT 256";
+  }
+
+my $gs_aalias = '';
+if($opt{antialias}) {
+  $GSDEVICE = $GSALIASDEVICE;
+  if($opt{depth} == 1) { 
+    $gs_aalias = '-dTextAlphaBits=4 ';
+    $reduce_color = "$PPMQUANT -floyd 256";
+    }
+  else {
+    $gs_aalias = '-dTextAlphaBits=4 -dGraphicsAlphaBits=4 ';
+    }
+  }
+elsif ($opt{aaliastext}) {
+  $GSDEVICE = $GSALIASDEVICE;
+    $gs_aalias = '-dTextAlphaBits=4 ';
+    $reduce_color = "$PPMQUANT -floyd 256";
+  }
+my $PAPERSIZE = $ENV{PAPERSIZE} || '';
+# This rx matches float values in Bounding Box expressions
+my $Brx = '-?\d+(?:\.\d*|)';
+
+##############################################################################
+# Main program
+
+=head1 DESCRIPTION
+
+B<pstoimg> iterates over the given input files and runs them through
+Ghostscipt. The resulting pnm (portable anymap files) are processed
+with different Netpbm tools (cropping, color mapping, aligning, ...)
+and finally converted into (currently) either GIF or PNG format. The
+bitmaps can now be included e.g. in WWW pages.
+
+The PostScript file is converted as is. If a valid bounding box is
+found (EPS format), then only this area is converted. The image is
+I<not> cropped by default.
+
+=cut
+
+die "$prompt: Error: No input file(s) specified\n"
+  unless(@ARGV);
+
+# suppress diagnostics messages if possible
+my $NULLFILE = '/dev/null';
+open(STDERR, ">$NULLFILE") unless($opt{debug});
+
+my $exit = 0;
+
+$opt{out} = '' if(@ARGV > 1); # disable -out if multiple ps files given
+
+my $psfile;
+foreach $psfile (@ARGV) {
+  unless (-f $psfile) {
+    print qq{$prompt: Error: Cannot find file "$psfile": $!\n};
+    exit 1;
+  }
+  $exit += (&pstoimg($psfile) ? 0 : 1);
+}
+
+=head1 RETURN VALUE
+
+=over 4
+
+=item 0
+
+if everything went all right
+
+=item x
+
+(x != 0) something went wrong. See the message output.
+
+=back
+
+=cut
+
+exit $exit ? 1 : 0;
+
+##############################################################################
+# Subroutines
+
+sub pstoimg {
+  my ($psfile) = @_;
+
+  print "$prompt: Processing $psfile\n" unless($opt{quiet});
+  # remove a trailing suffix the same way a shell would do it
+  my $base = $psfile;
+  $base =~ s|[.][^.$dd$dd]*$||;
+
+  my $outfile;
+  if($opt{out}) {
+    $outfile = $opt{out};
+    # append the type unless -outfile has a "." in it
+    $outfile .= ".$opt{type}" unless($outfile =~ /[.]/);
+  }
+  else {
+    $outfile = "$base.$opt{type}";
+  }
+
+  # Invoke Ghostscript
+  my $pnmdir = $TMP ? "$TMP$dd" : ".$dd";
+  my $pnmbase = "p$$"; # keep it short for dos
+  my $pnmfile = $pnmdir . 
+    ($opt{multipage} ? "%d_${pnmbase}.pnm" : "$pnmbase.pnm");
+
+  ps2pnm($psfile,$pnmfile) || return 0;
+
+  my $ok = 1;
+  if (-f $pnmfile) {
+    if(crop_scale_etc($pnmfile, $outfile)) {
+      L2hos->Unlink($pnmfile) unless($opt{debug});
+      }
+    else {
+      return 0;
+      }
+    }
+  elsif($opt{multipage}) {
+    unless(opendir(DIR,$pnmdir)) {
+      print qq{$prompt: Error: Could not open directory "$pnmdir": $!\n};
+      return 0;
+      }
+    my @list = grep(/^\d+_\w*\./,readdir(DIR));
+    closedir(DIR);
+    if(@list) {
+      my $i;
+      foreach $i (@list) {
+        my ($n) = $i =~ /^(\d+)_/;
+        my $j = $outfile;
+        $j =~ s|(\.[^/.]*)$|$n$1|;
+	if(crop_scale_etc("$pnmdir$i", $j)) {
+          L2hos->Unlink("$pnmdir$i") unless($opt{debug});
+          }
+        else {
+          $ok = 0;
+          }
+        }
+      }
+    else {
+      goto not_found;
+      }
+    }
+  else {
+    not_found:
+    print "$prompt: Error: Couldn't find pnm output of $psfile\n";
+    }
+  L2hos->Unlink($psfile) if($opt{discard} && !$opt{debug});
+  $ok;
+  }
+
+sub ps2pnm {
+  my ($psfile,$pnmfile) = @_;
+  my $gs_size = $PAPERSIZE ? "-sPAPERSIZE=$PAPERSIZE" : '';
+  my $gs_density = ($DENSITY != 72) ? "-r$DENSITY" : '';
+
+  my ($bbx, $bby, $bbw, $bbh) = (0,0,0,0);
+  my $max_lines = 100;
+  my ($epsf,$have_geometry) = (0,0);
+
+  # Parse postscript file for information
+  unless(open(PS, "<$psfile")) {
+    print qq{$prompt: Error: Cannot read "$psfile": $!};
+    return 0;
+    }
+  $_ = <PS>; # read one line
+  if( /^%!.*EPSF/ ) {
+    # we're in a EPSF file
+    $epsf = 1;
+    }
+  if($GEOMETRY || $epsf) {
+    while (defined ($_ = <PS>)) {
+      # Look for bounding box comment
+      # MRO: add support of precise bounding boxes
+      if ($epsf && (
+        /^%+(?:HiRes|Exact)BoundingBox:\s+($Brx)\s+($Brx)\s+($Brx)\s+($Brx)/o ||
+        /^\%\%BoundingBox:\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)/)) {
+        $bbx = 0 - $1;    $bby = 0 - $2;
+        $bbw = $3 + $bbx; $bbh = $4 + $bby;
+        if(($bbw > 0) && ($bbh > 0)) { # we have a valid bounding box
+          print "$prompt: EPSF dimensions are ${bbw}x$bbh\n" if($opt{debug});
+          # this overrides the -geometry switch
+          if($DENSITY) { # scale the output
+            my $scale = $DENSITY / 72.0;
+            $bbw *= $scale;
+            $bbh *= $scale;
+          }
+          $bbw = int($bbw + 0.99);
+          $bbh = int($bbh + 0.99);
+          $GEOMETRY = "${bbw}x${bbh}";
+          $have_geometry = 1;
+          last;
+          }
+        }
+      # Look for page size information
+      elsif($GEOMETRY && /TeXDict\s+begin\s+(\d+)\s+(\d+)\s+/) {
+        $PAGE_WIDTH  = int($1 / 65536 * 72 /72.27 +.5);
+        $PAGE_HEIGHT = int($2 / 65536 * 72 /72.27 +.5);
+        print "$prompt: Page dimensions are ${PAGE_WIDTH}x$PAGE_HEIGHT\n"
+          if($opt{debug});
+        # we don't have to look further for EPSF stuff at this point
+        last;
+        }
+      elsif(!$GEOMETRY && (/^\%\%EndComments/ || --$max_lines == 0)) {
+        # abort at a certain point to avoid scanning huge ps files
+        last;
+        }
+      }
+    }
+  close PS;
+  if($GEOMETRY && !$have_geometry) { # RRM: overrides $PAPERSIZE 
+    # no geometry info found in the Postscript file
+    $bbx = $PAGE_HMARGIN;
+    $bby = $PAGE_HEIGHT - $PAGE_VMARGIN;
+    unless($GEOMETRY =~ /\s*(\d+)x(\d+)/i) {
+      print qq{$prompt: Illegal geometry "$GEOMETRY" specified.\n};
+      return 0;
+      }
+    $bbw = $1 + 10;  # allow for the side-bars
+    $bbh = $2;
+    $bby = int(-$bby + $bbh + 8); # allow small margin for error
+    $bbx = int(-$bbx + 5);        # allow small margin for error
+    if($DENSITY) {
+      my $scale = $DENSITY / 72.0;
+      $bbw = int($scale * $bbw + .99);
+      $bbh = int($scale * $bbh + .99);
+      }
+    $bbw += 10;  # add a 5pt margin for safety
+    $bbh += 40;  # add a 20pt margin for safety
+    $GEOMETRY = "${bbw}x$bbh";
+    $have_geometry = 1;
+    }
+  if($have_geometry) {
+    $gs_size = "-g$GEOMETRY ";
+    }
+
+  my $ps_changed = 0;
+  if($have_geometry || $opt{white}) {
+    # Remove any Postscript commands concerning Papersize if -g switch is used
+    # thanks to  Axel Ramge for identifying the problem and for this code
+    local($/) = undef;
+    open(PS,"<$psfile");
+    my $ps = <PS>;
+    close(PS);
+    my $had_papersize;
+    if($have_geometry) {
+      $had_papersize = ($ps =~ s/\n%%BeginPaperSize.*?%%EndPaperSize[^\n]*\n/\n/sg);
+      }
+    my $had_nonwhite;
+    if($opt{white}) {
+      $had_nonwhite = ($ps =~ s/(\n\d+ \d+ bop gsave) \d*\.\d+ (TeXcolorgray clippath fill grestore)/$1 1 $2/s);
+      }
+    $ps_changed = $had_papersize || $had_nonwhite;
+    if($ps_changed) {
+      my $tmppsfile = $pnmfile; # was "tmpps$$.ps"
+      $tmppsfile =~ s/\.[^.]*$/.ps/;
+      unless(open(PS,">$tmppsfile") && (print PS $ps) && (close PS)) {
+        if($had_papersize) {
+          print <<"EOF";
+$prompt: Warning: Could not write "$tmppsfile": $!
+    "$psfile" contains %%Papersize comments.
+    Any of these should be removed else GS will fail.
+EOF
+          }
+        if($had_nonwhite) {
+          print <<"EOF";
+$prompt: Warning: Could not write "$tmppsfile": $!
+    "$psfile" has a non-white background.
+    This may cause ugly images.
+EOF
+          }
+        }
+      $psfile = $tmppsfile;
+      print qq{Debug: Papersize comment in "$psfile" deleted.\n}
+        if($had_papersize && $opt{debug});
+      print qq{Debug: Background switched to white in "$psfile".\n}
+        if($had_nonwhite && $opt{debug});
+      }
+    }
+
+  my $gs_quiet = $opt{debug} ? '' : '-q -dNOPAUSE -dNO_PAUSE';
+  my $out_redirect = $opt{debug} ? '' : "> $NULLFILE";
+  my $gs_out = "-sOutputFile=$pnmfile";
+  my $gsfile = $psfile;
+  # Ghostscript understands only '/' as path delimiter!
+  if($opt{debug}) {
+    print "$prompt: Running $GS $gs_quiet -sDEVICE=$GSDEVICE $gs_size $gs_density $gs_aalias $gs_out $out_redirect\n";
+    print "GS>$bbx $bby translate\n" if($have_geometry);
+    print "GS>($gsfile) run\n";
+    print "GS>showpage\n" if ($epsf);
+    print "GS>quit\n";
+    }
+  open (GS, "|$GS $gs_quiet -sDEVICE=$GSDEVICE $gs_size $gs_density $gs_aalias $gs_out $out_redirect");
+  print GS "$bbx $bby translate\n" if ($have_geometry);
+  print GS "($gsfile) run\n";
+  print GS "showpage\n" if ($epsf);
+  print GS "quit\n";
+  print "\n" if($opt{debug});
+  unless(close(GS)) {
+    print "$prompt: Error: Ghostscript returned error status ",$?>>8,"\n";
+    }
+  L2hos->Unlink($psfile) if($ps_changed && !$opt{debug});
+  1;
+  }
+
+
+# This sub post-processes the PNM images that come out of Ghostscript.
+# The image is cropped, flipped and finally converted to PNG or GIF.
+
+sub crop_scale_etc {
+  my ($in, $out) = @_;
+
+  # create temp filename; should be auto-incrementable
+  my $tmp = $in;
+  $tmp =~ s/(\.[^.]*)?$/.t00/;
+  # save the original Ghostscript result
+  if($opt{debug}) {
+    L2hos->Copy($in,$tmp);
+    &increment_name($tmp);
+  }
+  my ($cmd,$type,$width,$height,$just);
+
+  my $must_align = 0;
+  #$EXTRA_CROP = "a$EXTRA_CROP" # hack to ensure first all-over cropping
+  #  unless($EXTRA_CROP =~ /^a/i);
+
+  # RRM: Remove justification bars
+  $EXTRA_CROP =~ s/h/bt/gi; # crop horizontally
+  $EXTRA_CROP =~ s/v/rl/gi; # crop vertically
+  while ($EXTRA_CROP =~ /([atblrs])/gi) {
+    my $edge = $1;
+    my $croparg = '';
+    if($edge =~ /b/i) {
+      $croparg = '-bot -sides ';
+    } elsif($edge =~ /[tlr]/i) {
+      $croparg = "-$edge -sides ";
+    } elsif($edge =~ /s/i) {
+      #RRM: shave at most 1-2 rows of white from the bottom
+      if($cmd) {
+        # Terminate command pipe
+        &do_cmd($in,$tmp,$cmd) || return 0; # failure
+        $cmd = '';
+      }
+      my ($type,$width,$height) = get_image_geometry($in);
+      next unless($type); # skip if no geometry
+      if(&do_cmd_norename("$PNMCROP -bot -sides < $in",$tmp)) {
+        my ($type,$width,$height2) = get_image_geometry($tmp);
+        if($type && ($height - $height2) < 3 ) {
+          # command succeeded and shaved less than 3 rows
+          if($opt{debug}) {
+            L2hos->Copy($tmp,$in);
+            &increment_name($tmp);
+          } else {
+            L2hos->Rename($tmp,$in);
+          }
+          next;
+        }
+      }
+      # MRO: this shouldn't be necessary: L2hos->Unlink($tmp);
+      next; # go to next crop argument
+    } # end switch on crop codes
+    if($cmd) {
+      # Continue command pipe
+      $cmd .= "| $PNMCROP $croparg";
+    } else {
+      # start new pipe
+      $cmd = "$PNMCROP $croparg< $in ";
+    }
+  } # end cropping
+
+
+  if($opt{flip}) {
+    unless($cmd) {
+      $cmd = "$PNMFLIP -$opt{flip} < $in";
+    } else {
+      $cmd .= "| $PNMFLIP -$opt{flip} ";
+    }
+  }
+
+  if($RIGHT_JUSTIFY || $TOP_JUSTIFY || $CENTER || $SHORE_UP) {
+    if($cmd) {
+      # empty command pipe, we need the image's geometry
+      &do_cmd($in,$tmp,$cmd);
+      $cmd='';
+    }
+
+    # Get bitmap type and dimensions
+    ($type,$width,$height) = &get_image_geometry($in);
+    return 0 unless($type);
+
+    my ($white_left,$white_right,$white_top,$white_bottom) = (0,0,0,0);
+
+    if($RIGHT_JUSTIFY || $CENTER) {
+      if($RIGHT_JUSTIFY) {
+        $white_left = int($RIGHT_JUSTIFY-$width);
+      } else { # CENTER
+        $white_left = int(($CENTER-$width) / 2);
+      }
+      $white_left = 0 unless($white_left > 0);
+
+      $width += $white_left;
+    }
+
+    if($TOP_JUSTIFY) {
+      if($TOP_JUSTIFY =~ /^x([0-9.]+)/io) {
+        $white_bottom = $1 * $height;
+      } else {
+        $white_bottom = $TOP_JUSTIFY - $height;
+      }
+      if($white_bottom > 0) {
+        $white_bottom = int($white_bottom + 0.99); # round up
+        $height += $white_bottom;
+      } else {
+        $white_bottom = 0;
+      }
+    }
+
+    if($SHORE_UP =~ /(\d+)(d?)/ && $1) {
+      # RRM: make height and width an exact multiple of $SHORE_UP
+      my ($shoreup,$depth) = ($1,$2);
+      my $extra = $height % $shoreup;
+      if($depth) { # image needs depth, place half the extra space underneath
+        my $bextra = int($extra/2);
+        $white_bottom += $bextra;
+        $white_top += $extra - $bextra;
+      } else {
+        $white_top += $extra;
+      }
+
+      $extra = $width % $shoreup;
+      my $rextra = int($extra/2);
+      $white_right += $rextra;
+      $white_left += $extra - $rextra;
+      $cmd = '';
+    }
+
+
+  if($white_left) {
+    if($cmd) {
+      &do_cmd($in,$tmp,$cmd) || return 0;
+    }
+    # Start new command pipe
+    $cmd = "$PBMMAKE -white $white_left 1 | $PNMCAT -white -lr - $in ";
+  }
+
+  if($white_right) {
+    if($cmd) {
+      &do_cmd($in,$tmp,$cmd) || return 0;
+    }
+    # Start new command pipe
+    $cmd = "$PBMMAKE -white $white_right 1 | $PNMCAT -white -lr $in - ";
+  }
+
+  if($white_top) {
+    if($cmd) {
+      &do_cmd($in,$tmp,$cmd) || return 0;
+    }
+    # Start new command pipe
+    $cmd = "$PBMMAKE -white 1 $white_top | $PNMCAT -white -tb - $in ";
+  }
+
+  if($white_bottom) {
+    if($cmd) {
+      &do_cmd($in,$tmp,$cmd) || return 0;
+    }
+    # Start new command pipe
+    $cmd = "$PBMMAKE -white 1 $white_bottom | $PNMCAT -white -tb $in - ";
+    }
+  } # endif must_align
+
+  my $pnmtoimg;
+  if($opt{type} eq 'png') {
+    $pnmtoimg = $PNMTOPNG;
+    if($INTERLACE) {
+      $pnmtoimg .= ' -interlace';
+    }
+    if($TRANSPARENT) {
+      $pnmtoimg .= ' -trans ' . L2hos->quote($trans_color);
+    }
+  }
+  unless($pnmtoimg) {
+    print qq($prompt: Error: unknown image type "$opt{type}".\n);
+    exit 2;
+  }
+
+  unless($type) {
+    ($type,$width,$height) = &get_image_geometry($in);
+    return 0 unless($type);
+  }
+  # run ppmquant only on color/gray images
+  if(!$type || $type =~ /(ppm|pgm)/i) {
+    if($cmd) {
+      $cmd .= "| $reduce_color "
+    } else {
+      $cmd = "$reduce_color < $in ";
+    }
+  }
+
+  if($cmd) {
+    $cmd .= "| $pnmtoimg "
+  } else {
+    $cmd = "$pnmtoimg < $in ";
+  }
+  &do_cmd_norename($cmd,$out) || return 0;
+  print qq{$prompt: Written $out\n} unless($opt{quiet});
+
+  1;
+}
+
+sub banner {
+  print "$prompt V$RELEASE (Revision $VERSION, Perl $])\n";
+}
+
+sub print_version {
+  my $formats = join(',',@IMAGE_TYPES);
+  print <<"EOM";
+$prompt (Revision $VERSION, perl $]),
+part of LaTeX2HTML Release V$RELEASE.
+
+Supported output image format(s): $formats
+EOM
+  1;
+}
+
+sub print_help {
+  L2hos->perldoc($SCRIPT);
+  1;
+}
+
+sub print_usage {
+  my $start  = 0;
+  my $usage  = 'Usage: ';
+  my $indent = '';
+
+  print (@_, "\n") if @_;
+
+  my $perldoc = '/usr/bin'.$dd."perldoc";
+  my $script = $SCRIPT || $0;
+  open(PIPE, "$perldoc -t $script |")
+     || die "Fatal: can't open pipe: $!";
+  while (<PIPE>)
+  {
+    if (/^\s*$/) {
+      next;
+    } elsif (/^SYNOPSIS/) {
+      $start = 1;
+    } elsif (/^\w/) {
+      $start = 0;
+    } elsif ($start == 1) {
+      ($indent) = /^(\s*)/;
+      s/^$indent/$usage/;
+      $usage =~ s/./ /g;
+      $start = 2;
+      print $_;
+    } elsif ($start == 2) {
+      s/^$indent/$usage/;
+      print $_;
+    }
+  }
+  close PIPE;
+  1;
+}
+
+sub do_cmd {
+  my ($in,$tmp,$cmd) = @_;
+  
+  print qq{Running "$cmd > $tmp"\n} if($opt{debug});
+  my $stat = system("$cmd > $tmp");
+  if($stat) { # error
+    print qq{$prompt: Error: "$cmd > $tmp" failed: $!\n};
+    return 0; # failure
+  }
+  elsif(!-s $tmp) { # does not exist or zero size
+    print qq{$prompt: Error: "$cmd > $tmp" produced empty file\n};
+    L2hos->Unlink($tmp) if(-e $tmp);
+    return 0; # failure
+  }
+  if($opt{debug}) {
+    # increase the temporary filename by 1
+    # this uses perl's magic autoincrement
+    &increment_name($_[1]);
+    return L2hos->Copy($tmp,$in);
+  } elsif(!L2hos->Rename($tmp,$in)) {
+     print qq{$prompt: Error: rename of "$tmp" to "$in" failed: $!\n};
+     return 0; # failure
+  }
+  1;
+}
+
+sub do_cmd_norename {
+  my ($cmd,$out) = @_;
+  
+  print qq{Running "$cmd > $out"\n} if($opt{debug});
+  my $stat = system("$cmd > $out");
+  if($stat) { # error
+    print qq{$prompt: Error: "$cmd > $out" failed: $!\n};
+    return 0; # failure
+  }
+  elsif(!-s $out) { # does not exist or zero size
+    print qq{$prompt: Error: "$cmd > $out" produced empty file\n};
+    L2hos->Unlink($out) if(-e $out);
+    return 0; # failure
+  }
+  1;
+}
+
+sub do_cmd_plain {
+  my ($cmd) = @_;
+  
+  print qq{Running "$cmd"\n} if($opt{debug});
+  my $stat = system($cmd);
+  if($stat) { # error
+    print qq{$prompt: Error: "$cmd" failed: $!\n};
+    return 0; # failure
+  }
+  1;
+}
+
+sub get_image_geometry {
+  my ($pnmfile) = @_;
+
+  my ($type,$width,$height);
+  my $out = `$PNMFILE $pnmfile`;
+  if($? || $out =~ /(P[BGP]M)[^0-9]*(\d+)\s*by\s*(\d+)/i) {
+    $type = $1;
+    $width = $2;
+    $height = $3;
+    print qq{Image "$pnmfile" is $type, ${width}x$height\n} if($opt{debug});
+  } else {
+    print "$prompt: Error: Could not determine image size: $out\n";
+    return undef;
+  }
+  ($type,$width,$height);
+}
+
+# push the number in the suffix up one notch
+sub increment_name {
+  $_[0] =~ s/(\d+)$/$a=$1;++$a/e;
+}
+
+__DATA__
+
+=head1 EXAMPLES
+
+=over 4
+
+=item C<pstoimg foo.ps>
+
+Convert the first page of foo.ps to the default bitmap type.
+
+=item C<pstoimg -type png -crop a -trans -interlace foo.ps>
+
+Same as above, but force png output and crop all the whitespace
+around the image and make the color white transparent and
+generate an interlaced bitmap.
+
+=item C<pstoimg -multi -out bar -type gif -crop a foo.ps>
+
+Consider foo.ps a multiple page PostScript file and create output
+files bar1.gif, bar2.gif, etc.
+
+=back
+
+=head1 ENVIRONMENT
+
+=over 4
+
+=item DENSITY, DEPTH, DEBUG, DISCARD
+
+See B<-density>, B<-depth>, B<-debug>, B<-discard>, respectively.
+
+=item GS_LIB
+
+This variable is set to the path(s) where Ghostscript libraries have
+been found on this system during configuration, but only if the built-in
+paths are not correct. This fixes the problem of relocation that is quite
+common on Win32 installations. This behavior can be overridden by
+setting GS_LIB manually before starting pstoimg.
+
+=item LATEX2HTMLDIR
+
+The directory where the LaTeX2HTML library and perl modules are found.
+Defaults to "/usr/share/latex2html" on this installation.
+
+=item OUTFILE
+
+Setting this has the same effect as specifying B<-out>. Please do not rely
+on this feature any more, it will disappear from the next releases!
+
+=item PAPERSIZE
+
+The papersize to use by Ghostscript to render the image. pstoimg tries
+hard to optimize for rendering on the smallest possible bitmap size.
+Still this option is there to enable tuning by hand, although it is
+deprecated. If pstoimg finds a better setting, this parameter is ignored.
+
+=item SCALE
+
+See the discussion of B<-scale>.
+
+=item TMP and TEMP
+
+Unless overridden by B<-tmp>, these variables denote a directory where
+to store temporary files. TMP is considered first, then TEMP.
+
+=back
+
+=head1 SEE ALSO
+
+gs, pnmcrop, pnmquant, pbmmake, pnmcat, pnmfile, pnmflip, ppmtogif,
+pnmtopng, giftool, giftrans.
+
+=head1 NOTES
+
+Several people have suggested to use ImageMagick's convert instead of
+pstoimg. A few comments on this: convert uses (of course) Ghostscript 
+for conversion of PostScript to bitmap, so one still needs gs. And
+for the special requirements of LaTeX2HTML convert's features are not
+sufficient. The ImageMagick toolset has everything in place, but it
+has some overhead that can prove killing when processing some 100 
+images. pstoimg only does what it really has to, so it should be
+quite efficient. Don't get me wrong - I like ImageMagick, but not in
+the context of LaTeX2HTML.
+
+=head1 CAVEATS
+
+This utility is automatically configured and built to work on the
+local setup. If this setup changes (e.g. some of the external commands
+are moved), the script has be be reconfigured.
+
+Despite the portability of perl, a pstoimg configured on UNIX will
+probably not work on Win32 and vice versa.
+
+=head1 BUGS
+
+This is a major enhancement release, so there may be a few bugs. As
+the user inteface changed a bit, some of your tools that were using
+pstoimg may not work any more. 
+
+Please report bugs to latex2html@tug.org, stating the (debug) output
+of pstoimg, your perl version and the versions of the external tools.
+Best is to include the cfgcache.pm file from the configuration procedure.
+
+=head1 AUTHOR
+
+Marek Rouchal E<lt>marek@saftsack.fs.uni-bayreuth.deE<gt>
+
+=head1 HISTORY
+
+This script went through a long evolution, beginning with a modification
+of Doug Crabill's E<lt>dgc@cs.purdue.eduE<gt> ps2epsi script.
+The first perl version was done by Nikos Drakos <nikos@cbl.leeds.ac.uk>.
+It was gradually improved by numerous LaTeX2HTML developers:
+Ross Moore <ross@mpce.mq.edu.au>, Jens Lippmann 
+<lippmann@rbg.informatik.tu-darmstadt.de> and others (sorry for not
+mentioning everyone and thanks for your contributions).
+
+=cut
+

@@ -1,0 +1,11 @@
+null 2 360 1800
+* 0 0 0 0 0 0
+* 0 0 0 0 0 0
+
+# This is a "null record", readable by any application built using WFDB library
+# version 9.1 or later.  There are no signal files associated with this
+# record (the `*' in the signal specification lines above has no special
+# significance).  If read, this record appears to have 1800 samples (5 seconds
+# at 360 Hz) in each of two signals, and all samples are zero.  If this record
+# is used as a template for output (e.g., using osigopen("null", ...)), any
+# samples "written" using putvec() are discarded.

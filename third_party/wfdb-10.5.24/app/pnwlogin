@@ -1,0 +1,52 @@
+#! /bin/bash
+
+# file: pnwlogin	G. Moody	12 August 2012
+#			Last revised:   30 July 2014
+#
+# Log in to PhysioNetWorks
+#
+# After successfully entering your user name and password, WFDB applications
+# run in this shell have access to files belonging to your projects.
+
+if (! curl-config --features | grep -q SSL)
+then 
+echo "Access to PhysioNetWorks requires SSL."
+echo "Install a version of libcurl with SSL support and try again."
+exit
+fi
+
+read -p "PhysioNetWorks user name (email address): " PNWUSER
+stty -echo
+read -p "Password: " PNWPASS
+stty echo
+echo
+
+WFDBPASSWORD="https://physionet.org/ $PNWUSER:$PNWPASS"
+export WFDBPASSWORD
+unset PNWPASS # in case it was previously exported
+( WFDB=https://physionet.org/users
+  export WFDB
+  wfdbcat "$PNWUSER/?pnwlogin=10.5.24" >.pnwhome 2>/dev/null )
+
+if [ ! -s .pnwhome ]
+then
+    echo "No response from server: check network connection"
+    exit
+elif (! grep -q Review/ .pnwhome)
+then
+    echo "Access denied"
+    rm -f .pnwhome
+    exit
+fi
+
+rm -f .pnwhome
+if [ -z "${WFDB+xxx}" ]
+then
+    WFDB=". /usr/local/database http://physionet.org/physiobank/database"
+fi
+WFDB="$WFDB https://physionet.org/works/\
+ https://physionet.org/users/$PNWUSER/works/"
+PS1="<$PNWUSER \\h:\\W>\\$ "
+export WFDB PS1
+echo "PhysioNetWorks access enabled; disable with ^D or exit"
+/bin/bash

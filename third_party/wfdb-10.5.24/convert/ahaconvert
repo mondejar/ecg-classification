@@ -1,0 +1,54 @@
+#! /bin/sh
+# file: ahaconvert		G. Moody		12 July 2002
+#                               Last revised:           23 July 2002
+
+if [ $# -lt 1 ]
+then
+    cat <<EOF
+usage: $0 CMPFILE [ CMPFILE ... ]
+
+Use this script to convert one or more records from an AHA DB CDROM into
+WFDB format.  The converted files are written into the current directory.
+
+One or more CMPFILEs (files from the CD-ROM with the suffix .CMP or .cmp)
+must be named on the command line.  Unless you have copied the CMPFILEs
+and the associated .ANO files into the current directory, include the path
+information needed to locate these files, as shown in the examples below.
+
+Examples:
+   $0 /mnt/cdrom/3001.CMP /mnt/cdrom/3002.CMP
+      [converts records 3001 and 3002]
+
+   $0 /mnt/cdrom/*.CMP
+      [converts all records found on the CD-ROM]
+
+   $0 /mnt/cdrom/?2??.CMP
+      [converts all short-format (35-minute) records found on the CD-ROM]
+
+For each .CMP file, this script creates a header (.hea) file, a signal (.dat)
+file, and a reference annotation (.atr) file (created from the corresponding
+.ANO file) within the current directory.
+EOF
+    exit 1
+fi
+
+for C in $*
+do
+    case $C in
+	*.cmp) R=`basename $C .cmp`
+	       S=`dirname $C`
+	       A=$S/$R.ano
+	       echo Converting record $R ...
+	       ad2m -i $C
+	       a2m -i $A ;;
+	*.CMP) R=`basename $C .CMP`
+	       S=`dirname $C`
+	       A=$S/$R.ANO
+	       echo Converting record $R ...
+	       ad2m -i $C
+	       a2m -i $A ;;
+	    *) echo "Warning: $C is not a .CMP file, skipping ..." ;;
+    esac
+done
+echo Done!
+exit 0

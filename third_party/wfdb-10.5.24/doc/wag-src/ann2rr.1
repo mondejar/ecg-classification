@@ -1,0 +1,165 @@
+.TH ANN2RR 1 "28 October 2009" "WFDB 10.4.24" "WFDB Applications Guide"
+.SH NAME
+ann2rr, rr2ann \- convert annotation files to interval lists and vice versa
+.SH SYNOPSIS
+\fBann2rr -r\fR \fIrecord\fR \fB-a\fR \fIannotator\fR [ \fIoptions\fR ... ]
+.br
+\fBrr2ann -r\fR \fIrecord\fR \fB-a\fR \fIannotator\fR [ \fIoptions\fR ... ]
+.SH DESCRIPTION
+These programs are typically used to obtain RR interval series from ECG
+annotation files, or to create an annotation file from such a series, but
+they have a wider range of uses.
+
+.SS "ann2rr"
+.PP
+Use \fBann2rr\fR to extract a list of intervals, in text format, from an
+annotation file.  By default, the intervals are listed in units of sample
+intervals (use \fBsampfreq\fR(1) to determine the sampling frequency of the
+input record if necessary).  Options for \fBann2rr\fR include:
+.TP
+\fB-A\fR
+Print all intervals between annotations.  By default, \fBann2rr\fR prints
+only RR intervals (those between QRS (beat) annotations).  This option
+overrides the \fB-c\fR and \fB-p\fR options.
+.TP
+\fB-c\fR
+Print intervals between consecutive valid annotations only.  (See discussion
+below.)
+.TP
+\fB-f\fR \fItime\fR
+Begin at the specified \fItime\fR.  By default, \fBann2rr\fR starts at the
+beginning of the record.
+.TP
+\fB-h\fR
+Print a usage summary.
+.TP
+\fB-i\fR \fIformat\fR
+Print intervals in the specified \fIformat\fR.  By default, intervals are
+printed in units of sample intervals.  Other \fIformat\fRs include \fBs\fR
+(seconds), \fBm\fR (minutes), \fBh\fR (hours), and \fBt\fR (time interval
+in hh:mm:ss format).  Formats \fBs\fR, \fBm\fR, and \fBh\fR may be followed
+by an integer between 0 and 15 inclusive, specifying the number of decimal
+places (default: 3).  For example, use the option \fB-is8\fR to obtain
+intervals in seconds with 8 decimal places.
+.TP
+\fB-p\fR \fItype\fR [ \fItype\fR ... ]
+Print intervals ended by annotations of the specified \fItypes\fR only.
+The \fItype\fR arguments should be annotation mnemonics (e.g., \fBN\fR),
+as normally printed by \fBrdann\fR(1) in the third column.  More than one
+\fB-p\fR option may be used in a single command, and each \fB-p\fR option may
+have more than one \fItype\fR argument following it.  If \fItype\fR begins
+with ``-'', however, it must immediately follow \fB-p\fR (standard annotation
+mnemonics do not begin with ``-'', but modification labels in an annotation
+file may define such mnemonics).
+.TP
+\fB-P\fR \fItype\fR [ \fItype\fR ... ]
+Print intervals begun by annotations of the specified \fItypes\fR only.
+.TP
+\fB-t\fR \fItime\fR
+Stop at the specified \fItime\fR.
+.TP
+\fB-v\fR \fIformat\fR
+Print final times (the times of occurrence of the annotations that end each
+interval).  This option accepts all of the \fIformat\fRs defined for \fB-i\fR,
+as well as \fBT\fR (to print the date and time in [hh:mm:ss dd/mm/yyyy] if the
+starting time and date have been recorded in the header file for \fIrecord\fR).
+If this option is chosen, the times appear at the end of each line of output.
+.TP
+\fB-V\fR \fIformat\fR
+Print initial times (the times of occurrence of the annotations that begin each
+interval).  Any of the \fIformat\fRs usable for the \fB-v\fR option may be used
+with \fB-V\fR.  If this option is chosen, the times appear at the beginning of
+each line of output.
+.TP
+\fB-w\fR
+Print final annotations (the types (\fBN\fR, \fBV\fR, etc., as for \fB-p\fR
+above) of the annotations that end each interval), immediately following the
+intervals in each line of output.
+.TP
+\fB-W\fR
+Print initial annotations (the types of the annotations that begin each
+interval), immediately before the interval in each line of output.
+.PP
+The \fB-c\fR option, used without the \fB-p\fR option, causes \fBann2rr\fR to
+filter out intervals between beats that have intervening non-beat annotations,
+such as rhythm or signal quality change annotations.  Used with the \fB-P\fR
+and \fB-p\fR options, the \fB-c\fR option causes \fBann2rr\fR to reject
+intervals between annotations of the type(s) specified by \fB-p\fR if there are
+annotations of any other types intervening;  thus, for example,
+``\fB-c -P N -p N\fR'' yields only intervals between consecutive normal beats,
+and intervals between pairs of normal beats surrounding an ectopic beat are
+discarded from the output.  As another example, ``\fB-c -P N -p V\fR'' yields
+premature ventricular coupling intervals only (a coupling interval is the
+interval between a normal beat and an immediately following premature
+ventricular contraction).
+.PP
+The default output contains a single column of intervals only;  by using the
+\fB-v\fR, \fB-V\fR, \fB-w\fR, and \fB-W\fR options, up to five columns,
+separated by tabs, may be output.  The order of the columns is fixed (initial
+times, initial annotations, intervals, final annotations, final times).
+
+.SS "rr2ann"
+.PP
+Use \fBrr2ann\fR to create an annotation file from the standard input,
+which should usually be a list of intervals in the format produced by
+\fBann2rr\fR.  (For exceptions, see \fB-T\fR, \fB-w\fR, and \fB-x\fR below.)
+The first token on each line is taken as an interval, and (if the \fB-w\fR
+option is present) the second token is taken as an annotation mnemonic;
+anything else on the same line is ignored, as are empty lines, spaces and tabs
+at the beginning of a line, non-numeric tokens and anything following
+them on the same line, negative intervals, and zero intervals.  The
+output consists of a binary annotation file (\fIrecord\fR.\fIannotator\fR),
+and (if it does not exist already) a text header file (\fIrecord\fR.hea).
+Options for \fBrr2ann\fR include:
+.TP
+\fB-F\fR \fIfrequency\fR
+Assume the specified sampling \fIfrequency\fR.  This option has no effect
+unless it is necessary for \fBrr2ann\fR to create a header file;  in this case,
+a sampling frequency of 250 Hz is assumed if the \fB-F\fR option is omitted.
+.TP
+\fB-h\fR
+Print a usage summary.
+.TP
+\fB-T\fR
+Interpret the input as times of occurrence, rather than as intervals.
+.TP
+\fB-w\fR
+Set each annotation type from the mnemonic (\fBN\fR, \fBV\fR, etc.) in the
+second column of the input (in the format produced by \fBann2rr\fR using
+its \fB-w\fR option).
+.TP
+\fB-x\fR \fIn\fR
+Multiply input by \fIn\fR to obtain intervals (or, if \fB-T\fR is also used,
+times of occurrence) in units of sample intervals).  Default: \fIn\fR = 1.
+.PP
+Note that \fBwrann\fR(1) also provides a way to generate an annotation file
+from text.  Unlike that of \fBrr2ann\fR, \fBwrann\fR's input format permits
+specifying annotation subtypes and other fields.
+.SH ENVIRONMENT
+.PP
+It may be necessary to set and export the shell variable \fBWFDB\fR (see
+\fBsetwfdb\fR(1)).
+.SH FILES
+.TP 22
+\fIrecord\fR.hea
+header file
+.TP 22
+\fIrecord\fR.\fIannotator\fR
+annotation file
+
+.SH AVAILABILITY
+These programs are provided in the \fIapp\fR directory of the WFDB Software
+Package.  Run \fBmake\fR in that directory to compile and install them if they
+have not been installed already.
+.PP
+The PhysioNet ATM (http://physionet.org/cgi-bin/ATM) provides web access to
+\fBann2rr\fR (select \fBShow RR intervals as text\fR from the Toolbox). 
+
+.SH SEE ALSO
+\fBrdann\fR(1), \fBsampfreq\fR(1), \fBsetwfdb\fR(1), \fBwrann\fR(1)
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCE
+http://www.physionet.org/physiotools/wfdb/app/ann2rr.c
+.br
+http://www.physionet.org/physiotools/wfdb/app/rr2ann.c

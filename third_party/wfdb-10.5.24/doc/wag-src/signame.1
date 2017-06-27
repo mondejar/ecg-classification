@@ -1,0 +1,30 @@
+.TH SIGNAME 1 "9 April 2008" "WFDB 10.4.6" "WFDB Applications Guide"
+.SH NAME
+signame \- print names of signals of a WFDB record
+.SH SYNOPSIS
+\fBsigname -r\fR \fIrecord\fR [ \fIoptions\fR ... ]
+.SH DESCRIPTION
+.PP
+\fBsigname\fR prints the names of the signals in the specified \fIrecord\fR
+(one per line).  Using the \fB-s\fR option, only the names of the signals
+specified by signal number are printed.
+.PP
+\fIOptions\fR include:
+.TP
+\fB-h\fR
+Print a usage summary.
+.TP
+\fB-s\fR \fIsignal\fR [ \fIsignal\fR ... ]
+Print names for the specified \fIsignal\fR(s) only.  Signals are numbered
+0, 1, 2 .... If the specified signal does not exist in \fIrecord\fR,
+\fBsigname\fR outputs "[INVALID]".
+.SH ENVIRONMENT
+.PP
+It may be necessary to set and export the shell variable \fBWFDB\fR (see
+\fBsetwfdb\fR(1)).
+.SH SEE ALSO
+\fBsignum\fR(1)
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCE
+http://www.physionet.org/physiotools/wfdb/app/signame.c

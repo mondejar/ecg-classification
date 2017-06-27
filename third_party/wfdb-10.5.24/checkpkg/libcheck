@@ -1,0 +1,115 @@
+#!/bin/sh
+# file: libcheck		G. Moody       8 September 2001
+#                               Last revised:  26 November 2010
+#
+# This script checks the functionality of the WFDB library by comparing the
+# outputs of 'lcheck' with expected outputs.  See 'lcheck.c' for details of
+# the tests performed, or examine the output of 'lcheck -v'.  Note that
+# 'lcheck' must be run within this directory to ensure that its local input
+# files (in ../data) are available.
+#
+# 'make check' invokes this script with DBDIR as a command-line argument;
+# this is used to edit the expected lcheck.log to reflect the installation
+# directory.
+#
+# Suggestions for additional checks are welcome;  please send them to the
+# author (george@mit.edu).
+
+cp -pr ../data .
+
+if [ \! -s ../data/100s.hea ]
+then
+  echo "Run this program from the 'checkpkg' directory of the WFDB sources."
+  echo "The 'data' directory, including record 100s, must also be present."
+  exit
+fi
+
+# If WFDB was set by the user, unset it for the duration of this test so
+# that we have a known WFDB path.
+unset WFDB
+
+case $# in
+  0) VERBOSE=0 ;;
+  *) VERBOSE=1 ;;
+esac
+
+DBDIR=$1
+LIBDIR=$2
+
+case `uname` in
+    Darwin*)
+	if [ "x$DYLD_LIBRARY_PATH" != x ]
+	    then
+	    DYLD_LIBRARY_PATH=$LIBDIR:$DYLD_LIBRARY_PATH
+	else
+	    DYLD_LIBRARY_PATH=$LIBDIR
+	fi
+	export DYLD_LIBRARY_PATH
+	;;
+    CYGWIN*|MINGW*)
+	export PATH=.:$LIBDIR/../bin:$PATH
+	;;
+    *)
+	if [ "x$LD_LIBRARY_PATH" != x ]
+	    then
+	    LD_LIBRARY_PATH=$LIBDIR:$LD_LIBRARY_PATH
+	else
+	    LD_LIBRARY_PATH=$LIBDIR
+	fi
+	export LD_LIBRARY_PATH
+	;;
+esac
+
+test -s Makefile || ( cd ..; ./configure )
+test -s lcheck || make lcheck
+./lcheck -v >lcheck.log
+cp ../data/100s.atr expected/100s.chk
+cp ../data/100s.dat expected/100z.dat
+CF="lcheck.log lcheck_cal 100s.chk 100z.dat 100z.hea"
+if grep "WFDB supports NETFILES" lcheck.log >/dev/null 2>&1
+then
+  CF="$CF udb/100s.chk udb/100z.dat udb/100z.hea"
+  cp ../data/100s.atr expected/udb/100s.chk
+  cp ../data/100s.dat expected/udb/100z.dat
+  sed s+/usr/database+$1+ <expected/lcheck.log-NETFILES >expected/lcheck.log
+else
+  sed s+/usr/database+$1+ <expected/lcheck.log-no-NETFILES >expected/lcheck.log
+fi
+
+PASS=0
+FAIL=0
+TESTS=0
+
+for i in $CF
+do
+    if ( ./checkfile $i )
+    then
+	PASS=`expr $PASS + 1`
+	case $i in
+	    *.hea) rm -f $i ;;
+	    lcheck_cal) rm -f $i ;;
+	    *)     rm -f $i expected/$i ;;
+	esac
+    else
+	FAIL=`expr $FAIL + 1`
+    fi
+    TESTS=`expr $TESTS + 1`
+done
+
+rm -rf data
+
+if [ $PASS = $TESTS ]
+then
+    echo "`basename $0`: all $TESTS tests passed."
+else
+    if [ $FAIL = 1 ]
+    then
+	echo "`basename $0`: $PASS of $TESTS tests passed, $FAIL test failed."
+    else
+	echo "`basename $0`: $PASS of $TESTS tests passed, $FAIL tests failed."
+    fi
+fi
+
+# rmdir will fail if 'udb' is not empty.  This is a *feature*, not a bug --
+# don't fix it!
+test -d udb && rmdir udb

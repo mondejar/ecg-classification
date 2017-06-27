@@ -1,0 +1,54 @@
+#! /bin/sh
+# file: install-wave32		G. Moody	7 October 2008
+#				Last revised:	12 March 2014  
+# Build and install WAVE on 64-bit GNU/Linux platforms
+
+# *****************************************************************************
+# This script builds and installs 'wave' as a 32-bit application on x86_64
+# (AMD/Intel 64-bit) Fedora GNU/Linux.  It has been tested on Fedora 12, 14, 16,
+# and 18; it will probably require modification on other platforms.
+#
+# Part 1 of this script automates installation of prerequisite 32-bit libraries
+# and *.h files on Fedora GNU/Linux and compatible platforms such as Red Hat,
+# Scientific Linux, and Centos.  It is harmless to rerun this script if some or
+# all of these prerequisites have been installed already.
+#
+# If you use another GNU/Linux platform such as Debian, Ubuntu, or Mint:
+# You will need to install these prerequisites in some other way before running
+# part 2 of this script using the -q option; see
+#    http://physionet.org/physiotools/wave-installation.shtml
+# for details.
+# *****************************************************************************
+
+echo
+echo "If this script fails, read it for troubleshooting hints."
+
+# Part 1: install prerequisites (unless skipped using -q option)
+if [ "x$1" != "x-q" ]; then
+  if [ $UID != 0 ]; then
+    echo "You do not have root (superuser) permissions, so this script may fail"
+    echo "if it needs to install missing libraries.  If this happens, rerun it"
+    echo "as root (e.g., using su or sudo)."
+  fi
+
+  # Install fonts and 32-bit libraries available from Fedora repositories
+  yum -y install libgcc.i686 glibc-devel.i686 libX11-devel.i686 \
+	libXpm-devel.i686 libcurl-devel.i686 xorg-x11-fonts-misc \
+	xorg-x11-fonts-100dpi xorg-x11-fonts-ISO8859-1-100dpi \
+	xorg-x11-fonts-75dpi xorg-x11-fonts-ISO8859-1-75dpi
+
+  # Install XView libraries and development toolkit available from PhysioNet
+  rpm -Uvh http://physionet.org/physiotools/xview/i386-Fedora/xview-3.2p1.4-21.1.fc8.i386.rpm \
+	http://physionet.org/physiotools/xview/i386-Fedora/xview-clients-3.2p1.4-21.1.fc8.i386.rpm \
+	http://physionet.org/physiotools/xview/i386-Fedora/xview-devel-3.2p1.4-21.1.fc8.i386.rpm
+fi
+
+# Part 2: compile and install 32-bit WFDB library and WAVE
+make clean
+./configure -m32 $*
+cd lib;
+ make install
+cd ../wave;
+ make install
+cd ..;
+ make clean

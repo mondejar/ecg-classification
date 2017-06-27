@@ -1,0 +1,90 @@
+#! /bin/sh
+# file: wugfigures		G. Moody	20 December 2001
+#				Last revised:	 8 August 2005
+#
+# Get or remove a set of WAVE User's Guide figures in the wug-src directory.
+# The wug-src directory must be the current directory when this script is run.
+
+# Arrgh!!! Current versions of pnmtops, standard with Redhat Linux 7.3 and
+# later, produce incorrect output unless the option -nosetpage is used ... but
+# older versions produces no output if -nosetpage is used.  So, let's see which
+# version we've got:
+
+if [ x$1 = x-clean ]
+    then
+    for i in wave/ps/*.ps
+      do
+      rm -f `basename $i .ps`.p*
+    done
+    for i in wave/ppm/*.ppm.gz
+      do
+      rm -f `basename $i .ppm.gz`.p*
+    done
+    exit
+fi
+
+gzip -d <wave/ppm/wave-icon.ppm.gz | pnmdepth 255 | \
+  pnmtops -nosetpage -noturn -scale .5 >tmp$$.ps 2>/dev/null
+if [ -s tmp$$.ps ]; then PNMTOPS="pnmtops -nosetpage"
+else PNMTOPS=pnmtops
+fi
+rm -f tmp$$.ps
+
+if [ $# -eq 1 ]; then OPT=$1
+else OPT=-grey
+fi
+
+case $OPT in
+  -color) for i in wave/ps/*.ps
+	  do
+	     OUT=`basename $i`
+	     if [ ! -s $OUT ]; then
+	        cp -f $i $OUT
+	        echo $i '-->' $OUT
+	     fi
+	  done
+	  for i in wave/ppm/*.ppm.gz
+	  do
+	     OUT=`basename $i .ppm.gz`.ps
+	     if [ ! -s $OUT ]; then
+	        gzip -d <$i | pnmdepth 255 | \
+		    $PNMTOPS -noturn -scale .5 >$OUT 2>/dev/null
+	        echo $i '-->' $OUT
+	     fi
+	  done ;;
+   -grey) for i in wave/ps/*.ps
+	  do
+	     OUT=`basename $i`
+	     if [ ! -s $OUT ]; then
+	        cp -f $i $OUT
+	        echo $i '-->' $OUT
+	     fi
+	  done
+	  for i in wave/ppm/*.ppm.gz
+	  do
+	     OUT=`basename $i .ppm.gz`.ps
+	     if [ ! -s $OUT ]; then
+	        gzip -d <$i | pnmdepth 255 | ppmtopgm | \
+		    $PNMTOPS -noturn -scale .5 >$OUT 2>/dev/null
+	        echo $i '-->' $OUT
+	     fi
+	  done ;;
+    -pdf) for i in wave/ps/*.ps
+	  do
+	     OUT=`basename $i .ps`.pdf
+	     if [ ! -s $OUT ]; then
+	        epstopdf --filter <$i >$OUT
+	        echo $i '-->' $OUT
+	     fi
+	  done
+	  for i in wave/ppm/*.ppm.gz
+	  do
+	     OUT=`basename $i .ppm.gz`.pdf
+	     if [ ! -s $OUT ]; then
+	        gzip -d <$i | pnmdepth 255 | \
+		    $PNMTOPS -noturn -scale .5 2>/dev/null | \
+		    epstopdf --filter --outfile=$OUT
+	        echo $i '-->' $OUT
+	     fi
+	  done ;;
+esac

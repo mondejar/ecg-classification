@@ -1,0 +1,65 @@
+file: README		G. Moody	7 September 1989
+			Last revised:	29 October 2002
+
+This directory contains UNIX man pages in troff source format for the WFDB
+software and other sources for the WFDB Applications Guide.  Under Unix, Linux,
+or under MS-Windows with the Cygwin toolkit, this material can be printed or
+installed on-line by following the instructions in `Makefile'.
+
+If you follow the instructions for a standard installation of the WFDB Software
+Package, the man pages from this directory will be installed so they can be
+read using 'man', 'xman', etc.  If you have the necessary formatting software,
+these man pages and the remainder of the WFDB Applications Guide can be
+produced in a wide variety of formats from the sources in in this directory
+(see 'Makefile').  Here is a brief list of available formats and the commands
+needed to produce them:
+
+  printed copy	'make wag-book'(requires troff, tbl, latex, dvips, & a printer)
+  HTML		'make wag.html'(requires rman, latex2html, and perl)
+  man pages	'make wag.man'
+  PDF		'make wag.pdf' (requires troff, tbl, latex, dvips, and pstopdf)
+  PostScript	'make wag.ps'  (requires troff, tbl, latex, and dvips)
+
+All of these, with the exception of printed copies, can be downloaded from
+PhysioNet (look in http://www.physionet.org/physiotools/manuals.shtml).
+
+
+The following files will be found in this directory:
+
+.latex2html-init  Customized startup file for converting the appendices into
+		 HTML using latex2html
+Makefile	`make' description file for printing the WFDB software
+		 documentation and installing it on-line
+Makefile.top	Used by ../../configure to construct Makefile (comments only)
+Makefile.tpl	Used by ../../configure to construct Makefile (portable
+		 section)
+README		this file
+
+eval0.tex	LaTeX source for "Evaluating ECG Analyzers" (appendix 2)
+faq.ht0		HTML-format FAQ
+fixag.sed	sed commands for fixing HTML links (used by fixag.sh)
+fixag.sh	Script for postprocessing HTML files
+getpagenos.c	utility for extracting page numbers (used by maketoc-tex.sh)
+install0.tex	LaTex source for "Installing the WFDB Software Package"
+		 (appendix 1)
+intro.ht0	HTML-format introduction for the WFDB Applications Guide
+maketoc-html.sh	script for creating the HTML-form table of contents
+maketoc-tex.sh	script for creating the LaTeX-format table of contents
+maketoclines.c	utility for reformatting man page name lines to TOC entries
+		 (used by maketoc-tex.sh)
+manhtml.sh	Script for converting man pages to HTML using `rman'
+maninst.sh	Script for installing man pages (to be invoked by `make' using
+		 `Makefile')
+tmac.dif	notes on troff macros for printing the Applications Guide
+wag.cover	troff source for the cover of the WFDB Applications Guide
+wag.ht0		header for the HTML-format table of contents
+wag.ht1		trailer for the HTML-format table of contents
+wag.tex		LaTeX source for the front matter (title, contents, intro, FAQ)
+*.1		troff sources for man pages for the programs in app, convert,
+		 psd, wave, and wview (*)
+*.3		troff sources for man pages for the WFDB library functions
+*.5		troff sources for man pages for WFDB file format specifications
+xview.7		XView toolkit man page (for use with WAVE)
+
+(*) These files also include man pages for other software available from
+    PhysioNet.

@@ -1,0 +1,108 @@
+.TH NGUESS 1 "11 June 2008" "WFDB 10.4.7" "WFDB Applications Guide"
+.SH NAME
+nguess \- guess the times of missing normal beats in an annotation file
+.SH SYNOPSIS
+\fBnguess -r\fR \fIrecord\fR \fB-a\fR \fIinput-annotator\fR [ \fIoptions\fR ... ]
+.SH DESCRIPTION
+.PP
+This program copies its input (a WFDB annotation file containing beat
+annotations), removing annotations of events other than sinus beats, and
+interpolating additional Q (unknown beat) annotations at times when sinus beats
+are expected.  Intervals between sinus beats are predicted using a predictor
+array as described by Paul Schluter ("The design and evaluation of a bedside
+cardiac arrhythmia monitor";  Ph.D. thesis, MIT Dept. of Electrical
+Engineering, 1981).  When the predictions are inconsistent with the known sinus
+beats, as may occur in extreme noise or in highly irregular rhythms such as
+atrial fibrillation, no interpolations are made.
+.PP
+Options for \fBnguess\fR include:
+.TP
+\fB-f\fR \fItime\fR
+Begin at the specified \fItime\fR.  By default, \fBnguess\fR starts at the
+beginning of the record.
+.TP
+\fB-h\fR
+Print a usage summary.
+.TP
+\fB-m\fR \fIM\fR
+Insert Q annotations in the output at the inferred locations of sinus beats
+only when the input RR interval exceeds \fIM\fR times the predicted RR interval
+(default: \fIM\fR = 1.75).  \fIM\fR must be greater than 1;  its useful range
+is roughly 1.5 to 2.
+.TP
+\fB-o\fR \fIoutput-annotator\fR
+Write output to the annotation file specified by \fIoutput-annotator\fR
+(default: \fBnguess\fR).
+.TP
+\fB-t\fR \fItime\fR
+Stop at the specified \fItime\fR.
+.PP
+It should be understood that, as the name of this program implies, the Q labels
+it generates represent, at best, good guesses about the times at which sinus
+beats may be expected.  Ideally, one should avoid having to make such guesses,
+but some commonly-used techniques for study of heart rate variability (for
+example, conventional methods for power spectral density estimation in the
+frequency domain) require a uniformly sampled instantaneous heart rate signal,
+such as can be obtained using \fBtach\fR(1) to process the output of
+\fBnguess\fR.  Other techniques, such as the Lomb periodogram method
+implemented by \fBlomb\fR(1), can obtain frequency spectra from time series
+with missing and irregularly spaced values, such as can be produced from a beat
+annotation file using \fBihr\fR(1) without the need to use \fBnguess\fR.  Use
+\fBnguess\fR only when necessary and do not expect it to perform miracles; as
+a rule of thumb, if the number of guesses (Q annotations) exceeds one or two
+percent of the number of known sinus beats (N annotations), be exceedingly wary
+of the guesses and consider using techniques such as \fBlomb\fR(1) that do not
+require the use of \fBnguess\fR.  Also as a general rule, \fBnguess\fR works
+best when it is guessing the locations of sinus beats obscured by noise, or
+those of sinus beats that were inhibited by isolated premature ventricular
+beats; the underlying hypothesis of a quasi-continuous sinus rhythm, the basis
+not only of \fBnguess\fR but also of all other algorithms for reconstructing
+NN interval time series, is most suspect in the context of supraventricular
+ectopic beats (which may reset the SA node, thus interrupting the sinus rhythm)
+and consecutive ventricular ectopic beats.
+.PP
+The predictor array method is based on the observation that most of the
+short-term variability in normal sinus inter-beat (NN) intervals is due to
+respiratory sinus arrhythmia (RSA, the quasi-periodic modulation of heart rate
+by respiration, which is most notable in young, healthy subjects and decreases
+with age).  Since respiration rate is (in humans and smaller mammals)
+substantially slower than heart rate, it is possible to estimate the length of
+the respiratory cycle in terms of some number of NN intervals.  If, for
+example, heart rate is around 60 beats per minute and respiration rate is
+around 10 breaths per minute, one might expect that 6 NN intervals would
+correspond to one breath, and that the current interval might be particularly
+well-approximated by the sixth previous interval.  Since we don't know the
+ratio between heart and respiration rate a priori, we can observe how well each
+of the previous \fBPBLEN\fR (a constant defined in \fBnguess.c\fR, see below)
+intervals predicts the current interval on average.  Thus we have \fBPBLEN\fR
+predictors for each interval, some of which may be much better on average than
+others.  At any time, we know which predictor is (locally) the best, and we can
+use that predictor to make a best guess of the location of the next sinus beat.
+In subjects with significant RSA, the best predictor may be determined by the
+length of the respiratory cycle; in others, the previous beat may be a better
+predictor.  For our purposes, it really doesn't matter which predictor is best,
+only that the mean error of the best predictor is small.  If the next known
+sinus beat is at least 1.75 times as distant as the prediction, and if the
+predictions are reasonably good on average, 'nguess' asserts that a gap exists
+and fills it in with a Q annotation (or more than one, if the gap is
+sufficiently long).
+.SH ENVIRONMENT
+.PP
+It may be necessary to set and export the shell variable \fBWFDB\fR (see
+\fBsetwfdb\fR(1)).
+.SH FILES
+.TP 22
+\fIrecord\fR.hea
+header file
+.TP 22
+\fIrecord\fR.\fIinput-annotator\fR
+input annotation file (may contain any annotations)
+.TP 22
+\fIrecord\fR.\fIoutput-annotator\fR
+output annotation file (contains N and Q annotations only)
+.SH SEE ALSO
+\fBihr\fR(1), \fBlomb\fR(1), \fBsetwfdb\fR(1), \fBtach\fR(1)
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCE
+http://www.physionet.org/physiotools/wfdb/app/nguess.c

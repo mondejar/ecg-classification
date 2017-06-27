@@ -1,0 +1,71 @@
+.TH SNIP 1 "1 December 2013" "WFDB 10.5.21" "WFDB Applications Guide"
+.SH NAME
+snip \- copy an excerpt of a WFDB record
+.SH SYNOPSIS
+\fBsnip -i\fR \fIinput-record\fR \fB-n\fR \fInew-record\fR [ \fIoptions\fR ]
+.SH DESCRIPTION
+\fBsnip\fR copies the signal files (and, optionally, annotation files) of
+the specified \fIinput-record\fR, and generates a header file, thereby creating
+the specified \fInew-record\fR.  \fBsnip\fR is usually used to extract an
+excerpt of its \fIinput-record\fR, using the \fB-f\fR and \fB-t\fR options (see
+below) to specify the segment to be copied.
+.PP
+The program \fBxform\fR(1) can also perform this task, but offers additional
+flexibility (it can scale the signals, resample them at a different frequency,
+rearrange them, select subsets of them, or reformat them);  \fBsnip\fR is
+faster than \fBxform\fR, however.
+.PP
+\fIOptions\fR are:
+.TP
+\fB-a\fR \fIannotator\fR
+Copy the specified \fIannotator\fR as well as the signal files.  Two or more
+\fIannotator\fR arguments, separated by spaces, can follow \fB-a\fR.  An
+annotator supplied via the standard input may be specified using `\fB-\fR', but
+only immediately after \fB-a\fR;  in this case only, annotations are copied
+to the standard output.
+.TP
+\fB-f\fR \fItime\fR
+Begin at the specified \fItime\fR in the input record (default: the
+beginning of the record).
+.TP
+\fB-h\fR
+Print a usage summary.
+.TP
+\fB-l\fR \fIduration\fR
+Snip a segment of the specified \fIduration\fR (hh:mm:ss or s\fInnnn\fR;
+overrides \fB-t\fR if given).
+.TP
+\fB-m\fR
+Preserve segments of multi-segment input, if possible.
+.TP
+\fB-O\fR \fIformat\fR
+Write output in the specified \fIformat\fR.  See \fBheader\fR(5) for a list of
+available formats (16, 80, 212, ...).  If this option is omitted, \fBsnip\fR
+uses a format that best fits the ADC resolution of the samples.
+.TP
+\fB-s\fR
+Suppress output of info strings in the output header file.
+.TP
+\fB-t\fR \fItime\fR
+Process until the specified \fItime\fR in the input record (default: continue
+to the end of the record).
+.SH ENVIRONMENT
+.PP
+It may be necessary to set and export the shell variable \fBWFDB\fR (see
+\fBsetwfdb\fR(1)).
+.SH FILES
+.TP 22
+\fInew-record.annotator\fR
+output annotation file
+.TP
+\fInew-record\fR.dat
+output signal file
+.TP
+\fInew-record\fR.hea
+output header file
+.SH SEE ALSO
+\fBsetwfdb\fR(1), \fBxform\fR(1), \fBheader\fR(5)
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCE
+http://www.physionet.org/physiotools/wfdb/app/snip.c

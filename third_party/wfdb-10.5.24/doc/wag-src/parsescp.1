@@ -1,0 +1,254 @@
+.TH PARSESCP 1 "8 March 2014" "WFDB 10.5.23" "WFDB Applications Guide"
+.SH NAME
+parsescp \- parse SCP-ECG, optionally save in PhysioBank-compatible format
+.SH SYNOPSIS
+\fBparsescp [ \fIoptions\fR ... ]
+.SH DESCRIPTION
+\fBparsescp\fR converts SCP-ECG output produced by SpaceLabs/Burdick ECG carts
+into more easily usable formats.  It was written in 2000 and has been used to
+convert about a million ECGs collected at Boston's Beth Israel Deaconess Medical
+Center since then.  \fBparsescp\fR can also be used to create deidentified
+SCP-ECG files, although it does not perform this function by default.
+.PP
+\fIOptions\fR include:
+.TP
+\fB-a\fR
+Anonymize: copy standard input to standard output, removing protected health
+information (PHI).  This option suppresses all other output.
+.TP
+\fB-b\fR
+Show baselines (residuals after template subtraction).
+.TP
+\fB-f\fR
+Force the input to be parsed even if it contains CRC errors.
+.TP
+\fB-h\fR
+Print a usage summary.
+.TP
+\fB-l\fR
+Low-pass filter (smooth) the output waveforms.
+.TP
+\fB-o\fR \fIrecord\fR
+Set the record name (default: \fBecg\fR) for output files.
+.TP
+\fB-s\fR \fIN\fR
+Shift templates by \fIN\fR samples before adding them to the baselines.
+.TP
+\fB-S\fR \fIN\fR
+Skip parsing of SCP-ECG section \fIN\fR.
+.TP
+\fB-t\fR
+Show templates; suppress baselines (complement of \fB-b\fR option).
+.TP
+\fB-v\fR
+Verbose mode: print a very detailed analysis of the SCP-ECG input, and write
+\fIrecord\fR.txt (specify \fIrecord\fR using \fB-o\fR).
+.TP
+\fB-w\fR
+Create a PhysioBank-compatible record (specify the record name using \fB-o\fR).
+.TP
+\fB-x\fR
+Show a hexadecimal data dump (implies \fB-v\fR).
+.TP
+\fB-z\fR
+Suppress final transients and zero-mean the ECGs.
+
+.PP
+Unless the \fB-a\fR option is used, this program produces at least these three
+files:
+.TP
+\fIrecord\fB.des\fR
+(text) description (age, sex, recording bandwidth, measurements, diagnoses)
+.TP
+\fIrecord\fB.ecg\fR (binary) reconstructed ECGs (see comments in
+\fBparsescp.c\fR, the \fBparsescp\fR source file, for format)
+.TP
+\fIrecord\fB.key\fR
+(text) patient's name and ID (medical record number)
+.PP
+If invoked with the \fB-v\fR option, \fBparsescp\fR produces:
+.TP
+\fIrecord\fB.txt\fR
+(text) reconstructed ECGs
+.PP
+With \fB-v\fR, \fBparsescp\fR also writes a (very) detailed analysis of the
+contents of the SCP-ECG input on the standard output.
+.PP
+If \fBparsescp\fR was compiled with the WFDB library, and if it is invoked with
+the \fB-w\fR option, it also produces a pair of PhysioBank-compatible output
+files:
+.TP
+\fIrecord\fB.dat\fR
+(binary) signal file containing 12 continuous leads
+.TP
+\fIrecord\fB.hea
+(text) header file describing \fIrecord\fB.dat\fB
+
+.SS Supported SCP versions
+.PP
+This program was written using AAMI SCP-1999 (\fIStandard communications
+protocol for computer-assisted electrocardiography\fR, 25 October 1999 draft)
+as a reference for SCP format.  It has been tested only with SCP records
+produced by SpaceLabs/Burdick ECG carts (these produce second-difference
+encoded data with reference beat subtraction using a single reference beat,
+Huffman encoded using the SCP standard Huffman table).  Amplitude (unencoded)
+data and first-difference encoded data should be readable using this program,
+but these formats have not been tested.  Use of custom Huffman tables is
+recognized but not otherwise supported.  Use of multiple reference beats is
+recognized but not otherwise supported.
+
+.SS ECG signals in Spacelabs/Burdick SCP-ECG files
+.PP
+Spacelabs/Burdick ECG carts of the type for which this program was designed
+record 2 of the 3 Einthoven leads and all 6 precordial leads simultaneously for
+10 seconds, at 500 samples per second per lead, with 16-bit precision over a
+range of +/-32.767 mV.  Thus the sampling interval is 2 ms, and the amplitude
+resolution is 5 microvolts (5000 nanovolts) per ADC unit.
+.PP
+Note that although the SCP standard specifies how to record the sampling
+frequency and amplitude resolution in SCP-ECG files, the Spacelabs/Burdick
+carts don't do this, so \fBparsescp\fR assumes the sampling frequency and
+resolution above.  \fBparsescp\fR will need modification in order to convert
+ECGs with other sampling frequencies or resolutions correctly.
+
+.SS ECG signals in parsescp's output files
+.PP
+This program derives the third Einthoven lead and the three augmented leads
+using the standard relationships among the leads:
+.br
+    III = II - I
+.br
+    aVR = -(I + II)/2
+.br
+    aVL = II/2 - III
+.br
+    aVF = I/2 + III
+.PP
+In all of its output formats, \fBparsescp\fR represents the samples of each
+signal as a sequence of unscaled integers, exactly as they appear in the
+original SCP-ECG input file.  Thus, in the \fB.ecg\fR, \fB.txt\fR, and
+\fB.dat\fR output files, the unit of amplitude is equivalent to 5 microvolts
+(5000 nanovolts), as in the SCP input.  If the recording is shorter than 10
+seconds, or if a signal is missing and cannot be reconstructed from the
+relationships above, each missing sample is assigned a special value
+(WFDB_INVALID_SAMPLE, or -32768).
+.PP
+The \fB-l\fR and \fB-z\fR options modify the input values as noted above; if
+neither option is used, the output sample values are numerically identical to
+the input sample values.
+.PP
+The \fB.ecg\fR file contains selected and rearranged segments of the signals in
+the commonly-used layout of twelve 2.5 second segments arranged in groups of 4
+above a continuous 10-second lead II.  Each sample is represented as a
+big-endian 16-bit two's complement signed integer.  The file begins with a
+512-byte prolog containing the record name and recording date and time, which
+are HIPAA-defined protected health information (PHI) unless the input SCP-ECG
+has been deidentified.  The prolog is followed by four "traces", each
+representing the same 10-second interval.  The first three of these traces are
+made by concatenating 2.5 second segments (1250 samples) of each of the 12
+leads, in this order:
+.br
+	(  I aVR V1 V4)
+.br
+	( II aVL V2 V5)
+.br
+	(III aVF V3 V6)
+.br
+The fourth trace is a continuous 10-second segment (5000 samples) of lead II.
+
+.PP
+The optional \fB.txt\fR and \fB.dat\fR files contain the ECG signals only (no
+metadata, and no PHI).  The signals appear in the standard order:
+.br
+   I, II, III, aVR, aVF, aVL, V1, V2, V3, V4, V5, V6
+.br
+.PP
+In the \fB.txt\fR file, each line begins with a sample number (0 to 4999)
+and is followed by a sample from each of the 12 leads, in order.  Each
+sample is represented as a base 10 numeral, with spaces inserted
+between samples so that the columns line up.  Thus the sample numbers
+are in column 0, samples of lead I are in column 1, those of lead II
+are in column 2, etc.
+.PP
+In the \fB.dat\fR file, the first 24 bytes contain the first sample of each
+signal, in the standard order as for the \fB.txt\fR file.  As in the \fB.ecg\fR
+file, each sample is represented as a big-endian 16-bit two's complement
+signed integer.  The next 24 bytes contain the second sample of each signal,
+etc.
+
+.SS Other output files
+.PP
+The \fB.des\fR file contains a variety of information extracted from the SCP-ECG
+input file, in human-readable form.  It does not contain the ECG signals
+themselves, or the patient's name or medical record number.  Note
+that \fB.des\fR files made from SCP-ECG files that have not been anonymized will
+generally contain HIPAA-defined PHI (protected health information) such as
+the recording date and the patient's age (even if over 90).
+.PP
+The \fB.key\fR file contains the recording date and time, the patient's name,
+and the medical record number, if recorded in the input file.
+.PP
+The \fB.hea\fR file, if generated, contains metadata (information about the
+corresponding \fB.dat\fR file) only;  it does not contain any PHI, even if the
+input was not anonymized.  Age and sex are recorded in the \fB.hea\fR file if
+present in the input file, except that ages of 90 and more are recorded
+as 90.  The recording date and time are not recorded in the \fB.hea\fR file.
+
+.SS Using parsescp to create deidentified SCP-ECG files
+.PP
+The SCP-ECG standard defines how to record a variety of information
+that includes elements defined by HIPAA as PHI (protected health information).
+These include the patient's name, medical record number, birth day and month,
+recording day and month, and (if the age is over 90) birth year and age.
+.PP
+If invoked with the \fB-a\fR option, \fBparsescp\fR reads the input SCP-ECG
+file and writes an anonymized (deidentified) version of it to the standard
+output.  For example:
+.br
+        \fBparsescp -a <12345678.scp >anonymous.scp\fR
+.br
+In this case, none of the other output files are produced.
+.PP
+\fBparsescp\fR removes all of the PHI as well as names of physicians and
+technicians, names of hospitals or clinics, and room numbers, replacing them
+with 'xxx'.  It changes all dates to January 1, and if the age is over 90, it
+resets the age to 90 and the birth year to 90 years before the recording year.
+Finally, it recalculates the SCP-ECG CRCs so that the output is still a valid
+SCP-ECG file.  Note that the original input file is not modified.
+.PP
+Note that \fBparsescp\fR does not deidentify other types of data (including its
+own \fB.des\fR and \fB.key\fR files);  it can only deidentify SCP-ECG files.
+
+.SH ENVIRONMENT
+.PP
+It may be necessary to set and export the shell variable \fBWFDB\fR (see
+\fBsetwfdb\fR(1)).
+.SS Examples
+.br
+	\fBparsescp -o 12345 <12345.scp\fR
+.br
+The command above converts an SCP-ECG file named \fB12345.scp\fR into a set of
+three files (\fB12345.des\fR, \fB12345.ecg\fR, and \fB12345.key\fR), as
+described above.  The argument following \fB-o\fR need not match the name of
+the input file as in this example, but such a choice may reduce opportunities
+for confusion.
+.br
+	\fBparsescp -o 12345 -w <12345.scp\fR
+.br
+Same as the first example, but this command also creates a PhysioBank-compatible
+record named \fB12345\fR (consisting of two files named \fB12345.dat\fR
+and \fB12345.hea\fR).
+.br
+	\fBparsescp -a <12345.scp >a001.scp\fR
+.br
+The final example reads its input (\fB12345.scp\fR), removes all PHI, and writes
+the deidentified data to a new SCP-ECG file (\fBa001.scp\fR).
+.PP
+Note that none of these commands modify the original input file
+(\fB12345.scp\fR).
+.SH SEE ALSO
+\fBrdsamp\fR(1), \fBsetwfdb\fR(1), \fBxform\fR(1), \fBsignal\fR(5)
+.SH AUTHOR
+George B. Moody (george@mit.edu) and Edna S. Moody
+.SH SOURCE
+http://www.physionet.org/physiotools/wfdb/convert/parsescp.c

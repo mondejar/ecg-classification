@@ -1,0 +1,152 @@
+.TH XFORM 1 "7 January 2009" "WFDB 10.4.12" "WFDB Applications Guide"
+.SH NAME
+xform \- sampling frequency, amplitude, and format conversion for WFDB records
+.SH SYNOPSIS
+\fBxform -i\fR \fIinput-record\fR [ \fIoptions\fR ... ]
+.SH DESCRIPTION
+\fBxform\fR copies the signal files (and, optionally, annotation files) of the
+specified \fIinput-record\fR.  By default, all signals are copied in their
+entirety;  using appropriate options, \fBxform\fR can be used to copy only
+a portion of the record, or only a subset of the signals, or both.
+\fIOptions\fR are:
+.TP
+\fB-a\fR \fIannotator\fR
+Copy the specified \fIannotator\fR as well as the signal files.  Two or more
+\fIannotator\fR arguments, separated by spaces, can follow \fB-a\fR.  An
+annotator supplied via the standard input may be specified using `-', but only
+immediately after \fB-a\fR;  in this case only, annotations are copied to the
+standard output.
+.TP
+\fB-c\fR
+Clip the output (set any sample values that would fall outside of the range
+supported by the selected format to the maximum or minimum supported values).
+By default, the output is not clipped;  rather, the values are wrapped around
+modulo the supported range (i.e., the excess high-order bits are simply
+discarded).  Use of wrap-around can result in bizarre artifacts, but has the
+advantage that the affected portions of the output signals can (usually) be
+interpreted properly.  Clipping mode is appropriate for testing algorithms or
+devices that must operate using a more restricted amplitude range than was
+used when digitizing the original record.
+.TP
+\fB-d\fR
+Dither the input by adding a pseudo-random value to each
+sample.  The pseudo-random values are selected from a triangular
+probability density function between -1 and +1.  Dithering is
+appropriate whenever the output has a lower resolution than the input,
+as may occur when changing the sampling frequency or gain.  The
+\fB-d\fR option has no effect unless the sampling frequency or gain
+are changed in the output record.  Note that the RNG used to generate the
+pseudo-random values is started with a fixed seed, so that \fBxform\fR's
+output is strictly reproducible.  Change the seed in the source and recompile
+to obtain a different realization of dither if desired.
+.TP
+\fB-f\fR \fItime\fR
+Begin at the specified \fItime\fR in the input record (default: the
+beginning of the record).
+.TP
+\fB-h\fR
+Print a usage summary.
+.TP
+\fB-H\fR
+Read the signals in high-resolution mode (default: standard mode).
+These modes are identical for ordinary records.  For multifrequency records,
+the standard decimation of oversampled signals to the frame rate is suppressed
+in high-resolution mode (rather, all other signals are resampled at the highest
+sampling frequency).
+.TP
+\fB-M\fR
+Read the signals in multifrequency mode.  Each signal (in a multifrequency
+record) is copied to the output record without changing its sampling frequency.
+In an ordinary record, this option has no effect other than to force the input
+and output sampling frequencies to be equal.
+.TP
+\fB-n\fR \fInew-record\fR
+Create a \fInew-record\fR for the output signal files.
+.TP
+\fB-N\fR \fInew-record\fR
+As above, but copy the signal descriptions from the header file for the
+record specified using the \fB-o\fR option (see below) rather than from
+the input record.
+.TP
+\fB-o\fR \fIoutput-record\fR
+The header file for \fIoutput-record\fR (which must exist before running
+\fBxform\fR) determines the names, sampling frequency, formats (see
+\fBsignal\fR(5)), gains, and ADC zero levels of the output signals.
+If the \fB-o\fR option is absent, \fBxform\fR prompts the user for the
+output specifications.
+.TP
+\fB-s\fR \fIsignal-list\fR
+Write only the signals named in the \fIsignal-list\fR (one or more input signal
+numbers or names, separated by spaces;  default: write all signals).  This option
+may be used to re-order or duplicate signals.
+.TP
+\fB-S\fR \fIscript\fR
+Take answers to prompts from the specified \fIscript\fR (a text file).
+.TP
+\fB-t\fR \fItime\fR
+Process until the specified \fItime\fR in the input record (default: continue
+to the end of the record).
+.TP
+\fB-u\fR
+Adjust annotation times as needed so that they are unique.  If the output
+sampling frequency is less than that of the input, the times of closely-spaced
+annotations may coincide in the output, which may cause problems for some
+older WFDB applications.  The \fB-u\fR option avoids this.
+.PP
+If a \fInew-record\fR is specified, a new header file is created
+after the signal file transformation is complete.  The new header file,
+if created, contains the correct sample counts and checksums for the
+new signal files.  Any output annotation files that are created as a result
+of using \fB\-a\fR are associated with \fInew-record\fR if it has been
+specified, or with \fIoutput-record\fR otherwise.
+To process only a segment of the \fIinput-record\fR, specify the starting and
+ending times using the \fB-f\fR and \fB-t\fR options.
+.PP
+Sampling frequency changes are performed by linear interpolation; any
+combination of input and output sampling frequencies is permissible.  This
+interpolation method has the advantage of being reasonably fast, an important
+consideration since it is often necessary to operate on a million or more
+samples.  Resampling noise is not a significant problem for the typical
+applications of \fBxform\fR (changing the sampling frequency by factors of five
+or less).  Aliasing can be a problem, however, when the input sampling
+frequency is greater than the output sampling frequency.  In such cases, if the
+input signals contain frequency components at or above half of the output
+sampling frequency, the input signals should be low-pass filtered (using, for
+example \fBfir\fR(1)) to remove these components before processing them with
+\fBxform\fR.  Conversely, if the output sampling frequency is substantially
+greater than the input sampling frequency, resampling noise introduced at
+frequencies in excess of half of the input sampling frequency can be removed by
+low-pass filtering the output signals.
+.PP
+Normally, the ADC resolution fields in the header files are ignored, and
+scaling is determined by the ratios of the gain fields.  An undefined (0)
+gain is considered equivalent to a gain of 200 ADC units per physical unit.
+An exception to this rule occurs if both input and output gains are undefined;
+in this case, scaling is determined by the difference in the ADC resolution
+fields, if any.
+.PP
+Also note that \fBxform\fR writes over any existing data files named in 
+the header file for \fIoutput-record\fR;  thus \fIoutput-record\fR should not
+be the name of an ordinary database record.  Normally, the database signal
+files are read-only, and attempts to overwrite them are futile.  For many
+applications the "piped records" \fI8\fR and \fI16\fR and the "local records"
+\fI8l\fR and \fI16l\fR will be found useful as output records.
+.PP
+If signal selection, scaling, and sampling frequency conversion are not needed,
+\fBsnip\fR(1) is recommended as a faster alternative to \fBxform\fR.
+.SH ENVIRONMENT
+.PP
+It may be necessary to set and export the shell variable \fBWFDB\fR (see
+\fBsetwfdb\fR(1)).
+.SH DIAGNOSTICS
+.PP
+As \fBxform\fR runs, it prints a `.' on the standard error output for each
+minute processed.  If any of the output samples fall outside the range of
+values that can be properly represented using the specified output format,
+\fBxform\fR issues warnings but continues to process the record.
+.SH SEE ALSO
+\fBfir\fR(1), \fBsetwfdb\fR(1), \fBsnip\fR(1), \fBsignal\fR(5)
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCE
+http://www.physionet.org/physiotools/wfdb/app/xform.c

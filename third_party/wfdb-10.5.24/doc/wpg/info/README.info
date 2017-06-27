@@ -1,0 +1,42 @@
+File: README.info
+
+These files were generated using 'makeinfo' from the texinfo source for the
+WFDB Programmer's Guide (wpg.tex, included in the WFDB Software Package).
+
+Once installed, you will be able to browse the info files (those named 'wpg',
+'wpg-1', 'wpg-2', etc.) in this directory using any of several info browsers.
+To install the info files:
+
+1. Install at least one of GNU emacs, XEmacs, or GNU info (free, from
+   http://www.gnu.org/) if you have not already done so.
+
+2. Locate your 'info' directory, which may be any of:
+	/usr/info
+	/usr/local/info
+	/usr/share/info
+   or, in some older installations:
+	/usr/local/emacs/info
+
+   Within emacs, you can locate your info directory with the sequence
+	C-h C-i C-x C-f
+   which will display the directory name in the minibuffer.
+
+3. Copy the files in this directory (excluding this README) into your 'info'
+   directory.
+
+4. Finally, add a link to these files from the top of the 'info' tree.
+   There are two ways to do this:
+
+   * Look for the 'install-info' utility (if it's not in your PATH, look in
+     /sbin/ or /usr/sbin/).  If you have it, add the link this way:
+	install-info --info-dir=/usr/info wpg
+     (replace /usr/info as appropriate for your system).
+
+   * If you don't have 'install-info', copy the last line below (do not
+     reformat it) and append it to the end of the 'dir' file you will find in
+     your 'info' directory.
+
+---------------- cut and paste the last line below into 'dir' -----------------
+
+* WFDB library: (wpg).	The Waveform Database library.
+

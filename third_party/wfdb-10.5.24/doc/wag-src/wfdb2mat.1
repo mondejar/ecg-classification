@@ -1,0 +1,129 @@
+.TH WFDB2MAT 1  "8 December 2013" "WFDB 10.5.22" "WFDB Applications Guide"
+.SH NAME
+wfdb2mat \- convert WFDB-compatible signal file to Matlab .mat file
+.SH SYNOPSIS
+\fBwfdb2mat -i\fR \fIrecord\fR [ \fIoptions\fR ... ]
+.SH DESCRIPTION
+.PP
+This program converts the signals of any PhysioBank record (or one in
+any compatible format) into a \fIrecord\fB.mat\fR file that can be
+read directly using any version of Matlab, and a short
+\fIrecord\fB.hea\fR text file containing information about the signals
+(names, gains, baselines, units, sampling frequency, and start
+time/date if known).  In addition, \fBwfdb2mat\fR writes a brief
+summary of this information to the standard output.
+.PP
+The \fB.mat\fR and \fB.hea\fR output files can also be read by
+any WFDB application as record \fIRECm\fR.
+.PP
+This program does not convert annotation files; for that task,
+\fBrdann\fR(1) is recommended.
+.PP
+The output \fB.mat\fR file contains a single matrix named \fBval\fR,
+containing raw (unshifted, unscaled) samples from the selected \fIrecord\fR.
+Using various options (below), one can select any time interval within a
+record, or any subset of the signals, which can be rearranged as
+desired within the rows of the matrix.  Since \fB.mat\fR files are written
+in column-major order (i.e., all of column \fIn\fR precedes all of column
+\fIn+1\fR), each vector of samples is written as a column rather than as a
+row, so that the column number in the \fB.mat\fR file equals the sample
+number in the input record.  If this seems odd, transpose your matrix
+after reading it!
+.PP
+This program writes version 4 MAT-file format output files (see
+http://www.mathworks.com/access/helpdesk/help/pdf_doc/matlab/matfile_format.pdf
+for details).
+The samples are written as 32-bit signed integers in little-endian format
+if the record contains any format 24 or format 32 signals, as 8-bit unsigned
+integers if the record contains only 8-bit unsigned samples, or as 16-bit
+signed integers in little-endian format otherwise.
+Although version 5 and newer versions of Matlab normally use a different (less
+compact and more complex) format, they can read these files without difficulty.
+The advantage of version 4 MAT-file format, apart from compactness and
+portability, is that files in these formats are still WFDB-compatible, given
+the \fB.hea\fR file constructed by this program.
+.PP
+Options for \fBwfdb2mat\fR include:
+.TP
+\fB-f\fR \fItime\fR
+Begin at the specified \fItime\fR.  By default, \fBwfdb2mat\fR starts at the
+beginning of the record.
+.TP
+\fB-h\fR
+Print a brief usage summary.
+.TP
+\fB-H\fR
+Read the signal files in high-resolution mode (default: standard mode).
+These modes are identical for ordinary records.  For multifrequency records,
+the standard decimation of oversampled signals to the frame rate is suppressed
+in high-resolution mode (rather, all other signals are resampled at the highest
+sampling frequency).
+.TP
+\fB-l\fR \fIinterval\fR
+Limit the amount of output to the specified time \fIinterval\fR (in standard
+time format;  default: no limit).  If both \fB-l\fR and \fB-t\fR are used,
+\fBwfdb2mat\fR stops at the earlier of the two limits.
+.TP
+\fB-s\fR \fIsignal-list\fR
+Convert only the signals named in the \fIsignal-list\fR (one or more
+input signal numbers or names, separated by spaces; default: print all
+signals).  This option may be used to re-order or duplicate signals.
+.TP
+\fB-S\fR \fIsignal\fR
+Search for the first valid sample of the specified \fIsignal\fR (a signal name
+or number) at or following the time specified with \fB-f\fR (or the beginning of
+the record if the \fB-f\fR option is not present), and begin converting at that
+time.
+.TP
+\fB-t\fR \fItime\fR
+Stop at the specified \fItime\fR.  By default, \fBwfdb2mat\fR stops at the end
+of the record.
+.SS Example
+.PP
+To convert record \fBmitdb/200\fR, use this command:
+.br
+	\fBwfdb2mat -r mitdb/200\fR
+.PP
+This works even if the input files have not been downloaded;  in this case,
+\fBwfdb2mat\fR reads them directly from the PhysioNet server.
+.PP
+The output files are \fBmitdb/200m.mat\fR and \fBmitdb/200m.hea\fR.  Note that
+if a subdirectory of the current directory named \fBmitdb\fR did not exist
+already, it would be created by \fBwfdb2mat\fR.  In addition, if the standard
+output of \fBwfdb2mat\fR has been saved in a file named \fBmitdb/200m.info\fR,
+then the converted data can be read and plotted in Matlab or Octave from within
+the \fBmitdb\fR directory by running the command:
+.br
+	\fBplotATM('200m.mat', '200m.info')\fR
+.br
+(Download \fBhttp://physionet.org/physiotools/matlab/plotATM.m\fR and install
+it in your Matlab or Octave environment first.)
+.PP
+Note that when EDF (or EDF+, BDF, or BDF+) files are used as input, they may
+have empty 'physical dimension' (units) fields, which imply that the associated
+signals are dimensionless (for example, they may be event markers or categorical
+variables).  In such cases, \fBwfdb2mat\fR records the signal units as \fBnd\fR
+(no dimension).
+
+.SH ENVIRONMENT
+.PP
+It may be necessary to set and export the shell variable \fBWFDB\fR (see
+\fBsetwfdb\fR(1)).
+.SH AVAILABILITY
+This program is provided in the \fIconvert\fR directory of the WFDB Software
+Package.  Run \fBmake\fR in that directory to compile and install it if it
+has not been installed already.
+.PP
+The PhysioNet ATM (http://physionet.org/cgi-bin/ATM) provides web access to
+\fBwfdb2mat\fR (select \fBExport signals as .mat\fR from the Toolbox). 
+
+.SH SEE ALSO
+\fBa2m\fR(1), \fBedf2mit\fR, \fBsnip\fR(1), \fBwav2mit\fR(1), \fBxform\fR(1),
+\fBwfdb\fR(3), \fBheader\fR(5)
+.br
+\fBhttp://physionet.org/physiotools/matlab/plotATM.m\fR
+
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCES
+http://www.physionet.org/physiotools/wfdb/convert/wfdb2mat.c

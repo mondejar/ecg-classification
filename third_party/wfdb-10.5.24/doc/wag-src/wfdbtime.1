@@ -1,0 +1,63 @@
+.TH WFDBTIME 1 "1 March 2009" "WFDB 10.4.16" "WFDB Applications Guide"
+.SH NAME
+wfdbtime \- convert time to sample number, elapsed, and absolute time
+.SH SYNOPSIS
+\fBwfdbtime\fR \fB-r\fR \fIrecord\fR \fItime\fR [ \fItime\fR ... ]
+.SH DESCRIPTION
+.PP
+Using the specified \fIrecord\fR as a reference for determining the
+length of a sample interval and the absolute time represented by
+sample number 0, this program accepts one or more \fItime\fR arguments
+(in WFDB standard time format) and produces one line on the standard
+output for each such argument.  In each output line, the corresponding
+\fItime\fR is written as a sample number (in the form s\fInnn\fR), as
+an elapsed time interval in hours, minutes, and seconds from the
+beginning of the \fIrecord\fR (in the form \fIhh:mm:ss.sss\fR), and as
+an absolute time and date (in the form [\fIhh:mm:ss.sss
+DD/MM/YYYY\fR]).  If the base time for the record is undefined, the
+absolute time cannot be calculated, and in this case the elapsed time
+appears (a second time) instead.
+.PP
+Additional \fB-r\fI record\fR arguments may be given in the same command,
+to reset the sample interval length and base time for any subsequent \fItime\fR
+arguments.
+.SH EXAMPLES
+.PP
+The command
+.IP
+wfdbtime -r mimicdb/237/237 0 10:0 s20 "[14:0:0 20/7/1995]" e
+.LP
+produces the output
+.IP
+.br
+             s0	       0:00.000	[12:40:38.000 20/07/1995]
+.br
+         s75000	      10:00.000	[12:50:38.000 20/07/1995]
+.br
+            s20	       0:00.160	[12:40:38.160 20/07/1995]
+.br
+        s595250	    1:19:22.000	[14:00:00.000 20/07/1995]
+.br
+      s19199992	   42:39:59.936	[07:20:37.936 22/07/1995]
+.PP
+Note that the input arguments need not be zero-padded, that an
+input argument in absolute time format must be quoted to protect
+the brackets from the shell, and that the input argument \fBe\fR
+is evaluated as the time of the last sample in the input record.
+.SH ENVIRONMENT
+.PP
+It may be necessary to set and export the shell variable \fBWFDB\fR (see
+\fBsetwfdb\fR(1)).
+.SH FILES
+.TP 22
+\fIrecord\fR.hea
+header file
+.SH SEE ALSO
+\fBtime2sec\fR(1)
+.br
+http://www.physionet.org/physiotools/wpg/strtim.htm (for further
+details about standard time format and additional examples)
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCE
+http://www.physionet.org/physiotools/wfdb/app/wfdbtime.c

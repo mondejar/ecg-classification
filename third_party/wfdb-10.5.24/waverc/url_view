@@ -1,0 +1,60 @@
+#!/bin/sh
+# file: url_view		G. Moody	16 April 1997
+#				Last revised:	 4 May 2006
+
+# Use this script to view an HTML document or any other URL (specified by
+# the command-line argument to this script).  Set the environment variable
+# URLV to specify your favorite web browser; if you have not done so,
+# url_view will attempt to use Firefox.
+
+if [ $# -lt 1 ]; then
+  echo usage: url_view URL; exit
+fi
+
+if [ "x$URLV" = "x" ]; then
+  URLV=firefox
+else
+  case $URLV in
+    Fir*) URLV=firefox ;;
+    Gal*) URLV=galeon ;;
+    Kfm*) URLV=konqueror ;;
+    Kon*) URLV=konqueror ;;
+    Moz*) URLV=mozilla ;;
+    Net*) URLV=netscape ;;	
+    Ope*) URLV=opera ;;
+  esac
+fi
+
+case $URLV in
+  gal*)		$URLV -x $1 2>/dev/null & ;;
+  konq*|kfm*)	kfmclient openURL 2>/dev/null $1 ;;
+  fir*|moz*|net*|ope*) ( $URLV -remote "openURL($1)" 2>/dev/null || $URLV $1 ) & ;;
+  *)		$URLV $1 & ;;
+esac
+
+exit
+
+# For supported browsers (Galeon, Konqueror (kfm), Mozilla, Netscape, and
+# Opera), url_view avoids launching a new instance of the browser if one
+# is already running.  For all of these except Konqueror, url_view reuses
+# an already-open browser window if possible.
+
+# Note that early versions of these browsers may not support the remote
+# control features of current versions.  All versions of Netscape since 1.1
+# will work properly, but remote control was added to Mozilla and Galeon
+# relatively recently.  It is likely that all versions of Konqueror will
+# work, but only Konqueror 2.2.2 has been tested.  Opera has not been tested.
+
+# If URLVIEWER specifies an unsupported browser, url_view invokes it in the
+# background, passing the URL as the first (and only) command-line argument.
+
+# If you are still using Mosaic, you are invited to add Mosaic support (see
+# http://archive.ncsa.uiuc.edu/SDG/Software/Mosaic/Docs/remote-control.html).
+
+# If you want to port url_view to MS-Windows, you may be able to use IE with
+# the command "rundll32.exe url.dll,FileProtocolHandler $1" (where $1 is the
+# URL, as above).  According to http://www.jsifaq.com/SUBI/tip4100/rh4162.htm,
+# you will need to convert .htm to .ht%6D (and presumably .html to .ht%6D%6C)
+# if $1 ends in .htm or .html, because rundll32 chokes otherwise.  Note that
+# the remote control features of the other browsers may work differently or
+# may be unsupported under MS-Windows.

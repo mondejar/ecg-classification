@@ -1,0 +1,87 @@
+.TH WAV2MIT 1  "12 February 2003" "WFDB 10.3.2" "WFDB Applications Guide"
+.SH NAME
+wav2mit, mit2wav \- convert between .wav and WFDB-compatible formats
+.SH SYNOPSIS
+\fBwav2mit -i\fR \fIfile\fR\fB.wav\fR [ \fIoptions\fR ... ]
+.br
+\fBmit2wav -o\fR \fIfile\fR\fB.wav\fR \fB-r\fR \fIrecord\fR [ \fIoptions\fR ... ]
+.SH DESCRIPTION
+.PP
+These programs convert files in the widely-used \fB.wav\fR audio file
+format into WFDB format files (as used in PhysioBank) and vice versa.
+Most \fB.wav\fR files are already written in a WFDB-compatible format,
+although the reverse is not true.  (An embedded header is required
+by \fB.wav\fR format, and is allowed but is not usually present in WFDB-format
+signal files.)
+.PP
+\fBwav2mit\fR creates a WFDB record from \fIfile\fR\fB.wav\fR.
+If the input file is written in an MIT-compatible signal file format,
+all that is required in this case is to create a suitable
+WFDB-format \fB.hea\fR header file that describes the \fB.wav\fR file's format.
+Some \fB.wav\fR files are written using variants of the format that are not
+readable by the WFDB library;  the current version of \fBwav2mit\fR does not
+attempt to convert such files, but warns that they are not compatible.
+Options for \fBwav2mit\fR include:
+.TP
+\fB-h\fR
+Print a brief usage summary.
+.TP
+\fB-r\fR \fIrecord\fR
+Create the specified \fIrecord\fR (default: use the base name of the input
+file as the record name).
+.PP
+\fBmit2wav\fR reads the specified WFDB-format \fIrecord\fR (header and signal
+files) and creates a \fB.wav\fR file containing the same data.  Note that
+much of the data description contained in the WFDB-format header file cannot
+be preserved in the \fB.wav\fR file.  Options for \fBmit2wav\fR include:
+.TP
+\fB-h\fR
+Print a brief usage summary.
+.TP
+\fB-n\fR \fIrecord\fR
+Create a header file for the output (\fB.wav\fR) signal file, so that it
+can be read by WFDB applications as the specified \fIrecord\fR.
+
+.PP
+It may be possible to create analog signals by playing the .wav file through
+a sound card, but you should be aware of the following potential pitfalls:
+.IP
+Your sound card, and the software that comes with it, may not be able to
+play \fB.wav\fR files containing three or more signals.  If this is a problem,
+you will need to extract one or two signals to include in the \fB.wav\fR file
+from your original recording (for example, using \fBxform\fR(1)).
+.IP
+Your sound card and its software may be unable to play \fB.wav\fR files at
+other than certain fixed sampling frequencies (typically 11025, 22050, and
+44100 Hz).  If this is a problem, you will need to resample the input at one of
+the frequencies supported by your sound card (for example, using
+\fBxform\fR(1)) before converting it to \fB.wav\fR format using this program.
+.IP
+Your sound card may not be able to reproduce the frequencies present in
+the input.  This is \fIvery\fR likely if you are trying to recreate physiologic
+signals such as ECGs (with most of the useful information in the 0.1 to 30
+Hz band) using a consumer sound card (which probably does not reproduce
+frequencies below the lower limit of human hearing (around 30 Hz).  One
+possible solution to this problem is to create a digital signal containing
+a higher-frequency carrier signal, amplitude-modulated by the signal of
+interest, and to convert this AM signal into a \fB.wav\fR file;  on playback,
+an analog AM demodulator would then recover the original low-frequency
+signal of interest.  If you successfully implement this solution, please
+send details to the author.
+.SH ENVIRONMENT
+.PP
+It may be necessary to set and export the shell variable \fBWFDB\fR (see
+\fBsetwfdb\fR(1)).
+.SH AVAILABILITY
+These programs are provided in the \fIconvert\fR directory of the WFDB Software
+Package.  Run \fBmake\fR in that directory to compile and install them if they
+have not been installed already.
+.SH SEE ALSO
+\fBa2m\fR(1), \fBedf2mit\fR, \fBsnip\fR(1), \fBxform\fR(1), \fBwfdb\fR(3),
+\fBheader\fR(5)
+.SH AUTHOR
+George B. Moody (george@mit.edu)
+.SH SOURCES
+http://www.physionet.org/physiotools/wfdb/convert/wav2mit.c
+.br
+http://www.physionet.org/physiotools/wfdb/convert/mit2wav.c

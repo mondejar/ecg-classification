@@ -1,0 +1,25 @@
+multi/3 2 360 45000
+100s 21600
+null 1800
+100s 21600
+
+# This header file is a sample of a multi-segment record.  The first line
+# contains the record name ("multi"), the number of segments (3), the number
+# of signals (2; this must be the same in each segment), the sampling frequency
+# (360), and the total length of the record in sample intervals (45000;  this
+# must be the sum of the segment lengths).
+#
+# The second line contains the record name ("100s") of the first segment of the
+# record, and its length in sample intervals (21600).  The third and fourth
+# lines contain the record names and lengths of the remaining segments.  The
+# remaining lines are comments.
+
+# Note that a segment may appear more than once in a multi-segment record, as
+# in this sample, and that storage formats may vary between segments (the
+# second segment is a "null" record, containing format 0 "signals", and the
+# others are written in format 8).
+#
+# This record may be read by any WFDB application built using WFDB library
+# version 9.1 or later;  the application need not be aware that this is a
+# multi-segment record.  Earlier versions of the WFDB library do not support
+# multi-segment records (or format 0 signals).

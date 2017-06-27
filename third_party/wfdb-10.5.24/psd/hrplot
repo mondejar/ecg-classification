@@ -1,0 +1,99 @@
+#! /bin/sh
+# file: hrplot		G. Moody	14 June 1995
+#			Last revised: 19 February 2003
+#
+# -----------------------------------------------------------------------------
+# Derive a heart rate time series (using ihr) and plot it
+# Copyright (C) 2003 George B. Moody
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+# Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+# You may contact the author by e-mail (george@mit.edu) or postal mail
+# (MIT Room E25-505A, Cambridge, MA 02139 USA).  For updates to this software,
+# please visit PhysioNet (http://www.physionet.org/).
+# _____________________________________________________________________________
+
+while [ $# -gt 1 ]
+do
+  case $1 in
+    -a) ANNOTATOR=$2 ;;
+    -f) START=$2 ;;
+    -p) PLOT=$2 ;;
+    -r) RECORD=$2 ;;
+    -t) END=$2 ;; 
+    -T) DEVICE=$2 ;;
+  esac
+  shift
+  shift
+done
+
+if [ x$PLOT = x ]; then
+  if [ -x BINDIR/plt ]; then
+    PLOT=BINDIR/plt
+  elif [ -x /usr/local/bin/plt ]; then
+    PLOT=/usr/local/bin/plt
+  elif [ -x /usr/bin/plt ]; then
+    PLOT=/usr/bin/plt
+  elif [ -x BINDIR/plot2d ]; then
+    PLOT=BINDIR/plot2d
+  elif [ -x /usr/local/bin/plot2d ]; then
+    PLOT=/usr/local/bin/plot2d
+  elif [ -x /usr/bin/plot2d ]; then
+    PLOT=/usr/bin/plot2d
+  else
+    echo "No plot utility found -- exiting"
+    exit 1
+  fi
+fi
+
+echo -n >/tmp/echo.$$
+if [ -s echo.$$ ]
+then
+   P1=""
+   P2="\\c"
+else
+   P1="-n"
+   P2=""
+fi
+rm -f /tmp/echo.$$
+
+if [ x$RECORD = x ]; then
+  echo $P1 "Enter the record name: " $P2
+  read RECORD
+fi
+
+if [ x$ANNOTATOR = x ]; then
+  echo $P1 "Enter the annotator name: " $P2
+  read ANNOTATOR
+fi
+
+if [ x$START = x ]; then
+  START=0
+fi
+
+if [ x$END = x ]; then
+  END=e
+fi
+
+if [ x$DEVICE = x ]; then
+  PLOTOUT=""
+else
+  PLOTOUT="-T $DEVICE"
+fi
+
+ihr -r $RECORD -a $ANNOTATOR -f $START -t $END -x | \
+ $PLOT 0 1 -x "Time (sec)" -y "Heart Rate (bpm)" \
+  -t "Record $RECORD ($START - $END): Heart rate time series" \
+  $PLOTOUT

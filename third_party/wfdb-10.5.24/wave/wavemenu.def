@@ -1,0 +1,222 @@
+# file: wavemenu.def	G. Moody	17 August 1990
+#			Last revised:  27 November 2001
+# WAVE analysis menu
+# -----------------------------------------------------------------------------
+# WAVE: Waveform analyzer, viewer, and editor
+# Copyright (C) 2001 George B. Moody
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+# Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+# You may contact the author by e-mail (george@mit.edu) or postal mail
+# (MIT Room E25-505A, Cambridge, MA 02139 USA).  For updates to this software,
+# please visit PhysioNet (http://www.physionet.org/).
+# _____________________________________________________________________________
+
+# This is the default analysis menu for WAVE.  If you wish to use a
+# customized version, copy this file to another directory, edit it,
+# and set the value of the environment variable WAVEMENU to the name of
+# the edited version before starting WAVE.  The contents of this file,
+# or of your customized version of it, determine the appearance of the
+# window that WAVE displays when you select its `Analyze' button, and the
+# actions that are taken when you select a button in the `Analyze' window.
+
+# Comment lines begin with `#', and may appear anywhere in this file.
+# Lines that specify menu items contain a button label, followed by
+# one or more tab characters, followed by the action to be taken when the
+# button is selected.  The action may be any command acceptable to your
+# shell.  Note that several strings found in commands are interpreted by
+# WAVE before they are passed to the shell;  these are:
+#	$RECORD		the current record name
+#	$ANNOTATOR	the current input annotator name
+#	$START		the current `Start' time as shown in the Analyze window
+#			 (the time of the `<' marker, if any)
+#	$END		the current `End' time as shown in the Analyze window
+#			 (the time of the `>' marker, if any)
+#	$DURATION	the time interval between $END and $START
+#	$LEFT		the time of the left edge of the signal display window
+#	$RIGHT		the time of the right edge of the signal display window
+#	$WIDTH		the time interval between $RIGHT and $LEFT
+#	$SIGNAL		the number of the selected signal
+#	$SIGNALS	the signal list
+#	$LOG		the name of the current log file
+#	$WFDB		the WFDB path (from the Load window)
+#	$WFDBCAL	the name of the WFDB calibration file (from the Load
+#			 window)
+#	$TSCALE		the time scale, in mm/sec
+#	$VSCALE		the amplitude scale, in mm/mV
+#	$DISPMODE	0: annotations displayed in center, no marker bars
+#		        1: annotations displayed in center, long marker bars
+#			2: annotations attached to signals, no bars
+#			3: annotations attached to signals, short bars
+#			4: annotations displayed as a signal, no bars
+#			5: annotations displayed as a signal, long bars
+#	$PSPRINT	the command for printing PostScript data from the
+#			 standard input, as shown in the Print Setup window
+#	$TEXTPRINT	the command for printing text from the standard input,
+#			 as shown in the Print Setup window
+#	$URL		the URL specified by the most recently selected link
+# Other strings that begin with `$' are passed to the shell unchanged.
+# The character `\', if immediately followed by a newline, causes the
+# next line to be treated as a continuation of the current line.  Any
+# initial whitespace on a continuation line is ignored.
+
+# Default menu entries.  Delete or change any of these as you wish.
+# If `lpr' is not the proper command for printing a PostScript file on your
+# system, be sure to set PSPRINT (in the Print Setup window).
+
+# Button labels		Commands
+# -------------		--------
+Mark QRS complexes	sqrs -r $RECORD -f $START -t $END -s $SIGNAL
+Calibrate		calsig -r $RECORD -f $START -t $END -s $SIGNALS
+Extract segment		snip -i $RECORD -f $START -t $END -n n_$RECORD \
+			 -a $ANNOTATOR
+List annotations	rdann -r $RECORD -a $ANNOTATOR -f $START -t $END
+List samples		rdsamp -r $RECORD -f $START -t $END -s $SIGNALS
+Print chart		echo $RECORD $START-$END | \
+			 pschart -a $ANNOTATOR -g -l -R -s $SIGNALS - | \
+			 $PSPRINT
+Print full disclosure	echo $RECORD $START-$END | \
+			 psfd -a $ANNOTATOR -g -l -R -s $SIGNALS - | $PSPRINT
+
+# Here are alternate versions of the two previous entries, for some BSD systems
+# that have small /tmp partitions.  These assume that `lpr' prints PostScript.
+#Print chart		echo $RECORD $START-$END | pschart -a $ANNOTATOR -g \
+#			 -l -R -s $SIGNALS - >~/.pschart.$$; \
+#			 lpr -r -s ~/.pschart.$$
+#Print full disclosure	echo $RECORD $START-$END | psfd -a $ANNOTATOR -g \
+#			 -l -R -s $SIGNALS - >~/.psfd.$$; \
+#			 lpr -r -s ~/.psfd.$$
+
+# Use the following entry to export WAVE's variables to your shell environment.
+# This version is usable if your shell is 'ash', `bash', `ksh', 'sh', or 'zsh':
+Set variables		RECORD=$RECORD; ANNOTATOR=$ANNOTATOR; START=$START; \
+			 END=$END; DURATION=$DURATION; LEFT=$LEFT; \
+			 RIGHT=$RIGHT; WIDTH=$WIDTH; SIGNAL=$SIGNAL; \
+			 SIGNALS="$SIGNALS"; LOG=$LOG; WFDB=$WFDB; \
+			 WFDBCAL=$WFDBCAL; TSCALE=$TSCALE; VSCALE=$VSCALE; \
+			 DISPMODE=$DISPMODE; PSPRINT="$PSPRINT"; \
+			 TEXTPRINT="$TEXTPRINT"; URL=$URL; \
+			 export RECORD ANNOTATOR START END DURATION LEFT \
+			 RIGHT WIDTH SIGNAL SIGNALS LOG WFDB WFDBCAL TSCALE \
+			 VSCALE DISPMODE PSPRINT TEXTPRINT URL
+
+# Here is an alternate version of the previous entry, for use with `csh' or
+# `tcsh':
+#Set variables		setenv RECORD $RECORD; setenv ANNOTATOR $ANNOTATOR; \
+#			 setenv START $START; setenv END $END; \
+#			 setenv DURATION $DURATION; setenv LEFT $LEFT; \
+#			 setenv RIGHT $RIGHT; setenv WIDTH $WIDTH; \
+#			 setenv SIGNAL $SIGNAL; setenv SIGNALS "$SIGNALS"; \
+#			 setenv LOG $LOG; setenv WFDB $WFDB; \
+#                        setenv WFDBCAL $WFDBCAL; \
+#			 setenv TSCALE $TSCALE; setenv VSCALE $VSCALE; \
+#			 setenv DISPMODE $DISPMODE; setenv PSPRINT "$PSPRINT";\
+#			 setenv TEXTPRINT "$TEXTPRINT"; setenv URL $URL
+
+
+# The label `<Print>' defines the command that is executed when the `Print'
+# button in the File menu is selected.  If you wish to have a button with the
+# same function appear in the Analysis menu, copy the command and use a
+# different button label (for example, `Print window').
+<Print>			echo $RECORD $LEFT-$RIGHT | pschart -a $ANNOTATOR -g \
+			 -l -L -n 0 -R -s $SIGNALS -t 20 -v 2 - | $PSPRINT
+
+# The alternate <Print> definition below makes charts at scales that match
+# whatever is currently selected for WAVE (rather than the fixed scales used
+# in the standard definition above).  If you wish to use the alternate
+# definition, uncomment the next entry and comment out the previous one.
+# <Print>		echo $RECORD $LEFT-$RIGHT | pschart -a $ANNOTATOR -g \
+#			 -l -L -M$DISPMODE -n 0 -R -s $SIGNALS -t $TSCALE \
+#			 -v $VSCALE - | $PSPRINT
+
+# The label `<Open URL>' defines the command that is executed when a follow-
+# link command is given in the signal window.  (To give a follow-link command,
+# select a link annotation and press ENTER.)  `url_view' is itself a script
+# that you may customize for your web browser.  The version of `url_view'
+# supplied with WAVE uses Netscape (1.1 or any later version) to direct an
+# already-running Netscape process to open the specified URL; if Netscape is
+# not already running, `url_view' starts it.  If you prefer to use a different
+# web browser, either change the action associated with `<Open URL>' below, or
+# (preferably) replace the last command in `url_view' with one that invokes
+# your browser (unfortunately, the syntax for doing so is not standard;
+# consult your browser's documentation).
+<Open URL>		url_view $URL
+
+# The remainder of this file contains more examples of how to create analysis
+# buttons.  These examples are commented out to avoid cluttering up the
+# default Analyze window.  To try any of them out, simply remove the '#'
+# characters at the beginning of the lines that define them, then reread the
+# menu within WAVE.
+
+# The next two buttons use a file created using WAVE's Log window.  Typically,
+# the file contains the times of interesting events selected by the user,
+# with optional comments about each event.  The log is maintained in pschart
+# script format.
+# Print log (text)	$TEXTPRINT $LOG
+# Print log with charts	pschart -a $ANNOTATOR -g -l -R -s $SIGNALS $LOG | \
+#			 $PSPRINT
+
+# The next entry can be used if you wish to relabel a segment in the currently
+# open annotation file using an automated detector (sqrs in this example).  Any
+# existing annotations before $START or after $END are unaffected;  any
+# existing annotations between $START and $END are replaced by those produced
+# by the automated detector.  To retain existing annotations between $START and
+# $END (merging them with the new annotations), change `-m1' to `-m3' below.
+# The current version of the annotation file (before merging) is saved as the
+# backup version (with a prefixed `_' in the annotator name);  any existing
+# backup with the same name is overwritten by this process.
+# Mark QRSs & merge	mv -f $ANNOTATOR.$RECORD _$ANNOTATOR.$RECORD; \
+#			 sqrs -r $RECORD -f $START -t $END -s $SIGNAL; \
+#			 mv qrs.$RECORD a$$.$RECORD; \
+#			 mrgann -r $RECORD -i a$$ _$ANNOTATOR -o $ANNOTATOR \
+#			  -m2 0 -m1 $START -m2 $END; \
+#			 rm -f a$$.$RECORD
+
+# The next several entries illustrate how `wave' can be used to select data
+# to be plotted by `gnuplot' (in these examples, via the `plot2d' and `plot3d'
+# scripts provided in the WFDB Software Package).
+
+# This entry derives a uniformly sampled instantaneous heart rate signal from
+# the open annotation file (using `tach'), and displays it on-screen.
+# Plot HR (tach)	tach -r $RECORD -a $ANNOTATOR -f $START -t $END -Vm | \
+#			 plot2d 0 1 -x "Time (minutes)" -y "HR (bpm)" \
+#			  -t "Record $RECORD ($START - $END)"
+
+# The next entry prints the same plot that the previous entry displays.  Note
+# that PRINTER is an ordinary environment variable (not interpreted by `wave');
+# set it so that `lpr -P$PRINTER' prints on the desired printer.
+# Print HR (tach)	tach -r $RECORD -a $ANNOTATOR -f $START -t $END -Vm | \
+#			 plot2d 0 1 -x "Time (minutes)" -y "HR (bpm)" \
+#			  -t "Record $RECORD ($START - $END)" -T $PRINTER
+
+# The next two entries make plots resembling VCGs (vectorcardiograms), by
+# plotting the first signal in the signal list vs. the second one.  To obtain
+# the proper plot titles, and for efficiency, be sure that the signal list
+# contains only two signals.
+# VCG			rdsamp -r $RECORD -f $LEFT -t $RIGHT -s $SIGNALS -p | \
+#			 plot2d 1 2 -x "Amplitude (mV)" -y "Amplitude (mV)" -t \
+#			 "Record $RECORD, Signals: $SIGNALS ($LEFT - $RIGHT)"
+
+# VCG (with time axis)	rdsamp -r $RECORD -f $LEFT -t $RIGHT -s $SIGNALS -p | \
+#			 plot3d 0 1 2 -x "Time (seconds)" -y "Amplitude (mV)" \
+#			  -z "Amplitude (mV)" -rx 60 -rz 30 -t \
+#			  "Record $RECORD, Signals: $SIGNALS ($LEFT - $RIGHT)"
+
+# The previous entry can be modified easily to plot a 3D VCG (just change
+# `0 1 2' to '1 2 3', correct the x-axis label, and make sure that the signal
+# list contains three signals).  Adjust the -rx and -rz options to obtain the
+# desired viewpoint.
+
+# Add additional entries below.

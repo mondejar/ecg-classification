@@ -1,0 +1,2 @@
+#!/bin/sh
+wave -xrm OpenWindows.3DLook.Color:false $*

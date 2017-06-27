@@ -1,0 +1,142 @@
+.TH LWCAT 1 "28 October 2009" "plt 2.5" "WFDB Applications Guide"
+.SH NAME
+lwcat \- postprocess output of plt to make PostScript, EPS, PDF or PNG
+.SH SYNOPSIS
+\fBplt -T lw\fR ... \fB| lwcat\fR [ \fIoptions ...\fR ]
+.SH DESCRIPTION
+.PP
+\fBlwcat\fR collects the PostScript output of \fBplt\fR(1) and adds a prolog
+and epilog to create a complete PostScript document (or another format, if
+appropriate options have been selected).  It is possible to concatenate
+the outputs of two or more \fBplt\fR runs to be processed as a single
+job by \fBlwcat\fR;  see the \fIplt Tutorial and Cookbook\fR for details.
+.SS Output format
+.PP
+By default, \fBlwcat\fR sends its output directly to the default printer
+via \fBlpr\fR.  These options may be used to modify this behavior:
+.TP
+\fB-no\fR
+Send the output to the printer, but don't eject the page (use this option
+if you wish to overlay the output with additional material to be produced by
+another program).
+.TP
+\fB-ps\fR
+Write PostScript to the standard output (not to the printer).
+.TP
+\fB-psv\fR
+Write PostScript to a temporary file and view it with \fBgv\fR (ghostscript).
+.TP
+\fB-gv\fR
+Same as \fB-psv\fR.
+.TP
+\fB-eps\fR
+Write EPSF (encapsulated PostScript format) to the standard output.  Note
+that this is only a close approximation to EPSF;  it is acceptable to LaTeX's
+epsfig package, at least.
+.TP
+\fB-pdf\fR
+Write PDF (portable document format) to the standard output.
+.TP
+\fB-png\fR
+Write PNG (portable network graphics) format to the standard output.
+
+.SS Window options
+.PP
+By default, the output appears within a 6.75x6 inch (171x152 mm) window,
+the lower left corner of which is positioned 1 inch (25.4 mm) from the
+left edge and 3.5 inches (89 mm) from the bottom edge of the page.  The
+following options may be used to modify the size, location, and orientation
+of the output:
+.TP
+\fB-landscape\fR
+Use landscape mode (rotate plot 90 degrees counterclockwise).
+.TP
+\fB-sq\fR
+Plot in a 6x6 inch (152x152 mm) square window, 1.25 inches (32 mm) from the
+left edge and 3.5 inches (89 mm) from the bottom edge of the page.
+.TP
+\fB-t\fR
+Plot in a 6.25x6.25 inch (159x159 mm) square window, positioned as for
+\fB-sq\fR.
+.TP
+\fB-t2\fR
+Plot in a 6.25x4 inch (159x102 mm) window, positioned as for \fB-sq\fR.
+.TP
+\fB-CinC\fR
+Plot in a 4.75x3.15 inch (121x80 mm) window, positioned as for \fB-sq\fR.
+.TP
+\fB-sq2\fR
+Plot in a 4.5x5.5 inch (114x140 mm) window, 2.5 inches (63 mm) from the left
+and bottom edges of the page.
+.TP
+\fB-v\fR
+Plot in a 7x9.5 inch (178x241 mm) window, 0.75 inches (19 mm) from the left
+and bottom edges of the page (centered on a US letter sheet).
+.TP
+\fB-v2\fR
+Plot in a 7x8.5 inch (178x216 mm) window, positioned as for \fB-v\fR.
+.TP
+\fB-va4\fR
+Plot in a 190x275 mm window, centered on an A4 sheet.
+.TP
+\fB-full\fR
+Plot in a 7.5x10 inch (191x254 mm) window, centered on a US letter sheet.
+.TP
+\fB-slide\fR
+Plot in a 7.5x5 inch (191x127 mm) window, 0.5 inches (12.7 mm) from the left
+edge and 3 inches (76 mm) from the bottom edge of the page (3:2 aspect ratio,
+as for 35 mm slides).
+.TP
+\fB-screen\fR
+Plot in a 7.5x5.625 inch (191x143 mm) window, 0.5 inches (12.7 mm) from the
+left edge and 2.375 inches (60 mm) from the bottom edge of the page (4:3
+screen aspect ratio).
+.TP
+\fB-golden\fR
+Plot in a 7.5x4.635 inch (191x118 mm) window, 0.5 inches (12.7 mm) from the
+left edge and 3.365 inches (85 mm) from the bottom edge of the page
+(the aspect ratio is approximately the "golden ratio",
+(1+sqrt(5))/2 = 1.61803 ...).
+.TP
+\fB-strip\fR
+Plot in an 8x0.8 inch (203x20 mm) window.
+.TP
+\fB-custom\fR \fIwidth height left-margin bottom-margin font_scale\fR
+Plot in a custom window. The \fB-custom\fR option reads up to 5
+arguments that follow it.  If one of the 5 arguments immediately
+following \fB-custom\fR begins with '\fB-\fR', it and any remaining
+arguments are treated as ordinary options, and default values are used
+for any missing options.  The units of width, height, and margins are
+inches, and the font scale is a dimensionless factor with a default
+value of 1 that can be used to enlarge or shrink any text in the plot.
+The defaults for \fIwidth\fR and \fIleft-margin\fR are 5 and 0 respectively,
+and the defaults for \fIheight\fR and \fIbottom-margin\fR are the values
+assigned to \fIwidth\fR and \fIleft-margin\fR (whether explicitly or
+by default).
+        
+.PP
+Other window options can be easily added;  see the source for \fBlwcat\fR
+for details.
+
+.SS Copies
+.PP
+By default, \fBlwcat\fR prints a single copy.  Multiple copies can be
+produced using the options \fB-c2\fR, \fB-c3\fR, \fB-c4\fR, \fB-c5\fR, and
+\fB-c6\fR;  when using a PostScript printer, this will almost always be much
+faster than rerunning \fBlwcat\fR, since the document is downloaded and
+rasterized only once when using these options.  To print more than 6 copies,
+repeat or combine these options as needed.
+.SH FILES
+.TP
+\fB/usr/lib/ps/plt.pro\fR
+PostScript prolog
+.SH SEE ALSO
+.PP
+\fBplt\fR(1)
+.SH AVAILABILITY
+\fBlwcat\fR is available as part of the \fBplt\fR package in
+PhysioToolkit (see \fBSOURCE\fR below) under the GPL.
+.SH AUTHORS
+Paul Albrecht and George B. Moody (\fBgeorge@mit.edu\fR)
+.SH SOURCE
+\fBhttp://www.physionet.org/physiotools/plt/src/lwcat\fR

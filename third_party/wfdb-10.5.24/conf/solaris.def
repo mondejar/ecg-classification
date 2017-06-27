@@ -1,0 +1,183 @@
+# file: solaris.def		G. Moody	31 May 2000
+#				Last revised:  13 August 2014
+# 'make' definitions for compiling the WFDB Software Package under Solaris
+
+# Choose a value for WFDBROOT to determine where the WFDB Software Package will
+# be installed.  One of the following is usually a reasonable choice.
+# Installing in /usr generally requires root permissions, but will be easiest
+# for future software development (no special -I or -L options will be needed
+# to compile software with the WFDB library, since the *.h files and the
+# library will be installed in the standard directories).
+WFDBROOT = /usr
+# Installing in /usr/local usually requires root permissions.  On a multi-user
+# system where it is desirable to keep the OS vendor's software separate from
+# other software, this is a good choice.  Another common choice in such cases
+# is /opt .
+# WFDBROOT = /usr/local
+# To install without root permissions, a good choice is to set WFDBROOT to the
+# name of your home directory, as in the example below (change as needed).
+# WFDBROOT = /home/frodo
+# WFDBROOT = /home/frodo
+
+# LC and LL are used to determine C compiler and linker options needed to
+# enable NETFILES (code that allows applications linked to the WFDB library to
+# read input from HTTP and FTP servers, in addition to the standard filesystem
+# support available without NETFILES).  The WFDB library can use either
+# libcurl (recommended) or libwww to provide NETFILES support.  To use libcurl,
+# set LC to `curl-config --cflags` (note the backquotes) and LL to
+# `curl-config --libs`.  Otherwise, to use libwww, set LC to
+# `libwww-config --cflags` and LL to `libwww-config --libs`.  If neither
+# libcurl nor libwww is available, LC and LL should be empty (and NETFILES
+# will be disabled).
+LC =
+LL =
+
+# BINDIR specifies the directory in which the applications will be installed;
+# it should be a directory in the PATH of those who will use the applications.
+BINDIR = $(WFDBROOT)/bin
+
+# DBDIR specifies the name of a directory in which to install the contents
+# of the `data' directory.
+DBDIR = $(WFDBROOT)/database
+
+# INCDIR specifies the name of a directory in which to install the WFDB
+# library's #include <...> files.
+INCDIR = $(WFDBROOT)/include
+
+# Note: if you have both gcc and a vendor-supplied C compiler, and if INCDIR
+# is /usr/include, CFLAGS should *not* contain -I$(INCDIR) (if it does, gcc may
+# read the wrong version of files such as stdio.h when compiling WFDB
+# applications).
+
+# INFODIR is the GNU info directory (optional, needed to `make info').
+INFODIR = $(WFDBROOT)/info
+
+# LIBDIR specifies the name of a directory in which to install the WFDB
+# library.
+LIBDIR = $(WFDBROOT)/lib
+
+# MANDIR is the root of the man page directory tree.  On most systems, this is
+# something like /usr/man or /usr/local/man (type 'man man' to find out).
+MANDIR = $(WFDBROOT)/man
+
+# PSPDIR specifies the name of a directory in which to install the PostScript
+# prolog (*.pro) files from the 'app' directory.
+PSPDIR = $(WFDBROOT)/lib/ps
+
+# CC is the name of your C compiler.
+CC = gcc
+
+# CCDEFS is the set of C compiler options needed to set preprocessor variables
+# while compiling the WFDB Software Package.  CCDEFS should always include
+# VDEFS.
+CCDEFS = $(VDEFS)
+
+# MFLAGS is the set of architecture-dependent (-m*) compiler options, which
+# is usually empty.  See the gcc manual for information about gcc's -m options.
+MFLAGS =
+
+# CFLAGS is the set of C compiler options.  CFLAGS should always include
+# CCDEFS.  With the exception of `gcc', most C compilers do not allow you to
+# use -g and -O simultaneously.  MFLAGS is gcc-specific.
+# CFLAGS = -O $(CCDEFS) $(LC) -I$(INCDIR)
+# `gcc' users may comment out the previous line, and uncomment the next one.
+CFLAGS = $(MFLAGS) -g -O $(CCDEFS) $(LC) -I$(INCDIR)
+
+# RPATHFLAGS is a set of C compiler options that cause the program to
+# search for shared libraries in a non-standard location at run-time.
+# These options are not needed or useful when using a static library.
+RPATHFLAGS = -R$(LIBDIR)
+
+# LDFLAGS is appended to the C compiler command line to specify loading the
+# WFDB library.
+LDFLAGS = -L$(LIBDIR) -lwfdb $(LL)
+
+# WFDBLIB is the name of the standard WFDB library.  In order to access it via
+# `-lwfdb', WFDBLIB should be `libwfdb.a'.
+WFDBLIB = libwfdb.a
+
+# BUILDLIB is the command that creates the static WFDB library once its
+# components have been compiled separately;  the list of *.o files that
+# make up the library will be appended to BUILDLIB.
+BUILDLIB = $(AR) $(ARFLAGS) $(WFDBLIB)
+
+# PRINT is the name of the program used to produce listings (including any
+# options for the desired formatting).
+PRINT = lpr
+
+# SETPERMISSIONS is the command needed to make the installed files accessible
+# to those who will use them.  The value given below makes them readable by
+# everyone, and writeable by the owner only.  (If you perform the installation
+# as `root', `root' is the owner of the installed files.)
+SETPERMISSIONS = chmod 644
+
+# SETDPERMISSIONS is similarly used to make directories created during the
+# installation accessible.
+SETDPERMISSIONS = chmod 755
+
+# SETLPERMISSIONS is the command needed to make the WFDB library usable by
+# programs linked to it.
+SETLPERMISSIONS = chmod 644
+
+# SETXPERMISSIONS is the command needed to make the applications accessible.
+SETXPERMISSIONS = chmod 755
+
+# STRIP is the command used to compact the compiled binaries by removing their
+# symbol tables.
+STRIP = strip
+# To retain the symbol tables for debugging, comment out the previous line, and
+# uncomment the next line.
+# STRIP = :
+
+# ...........................................................................
+# This section of definitions is used only when compiling WAVE, which is
+# possible only if the XView and Xlib libraries and include files have been
+# installed.
+
+# OPENWINHOME specifies the root directory of the OpenWindows hierarchy.
+# This is usually /usr/openwin.
+OPENWINHOME = /usr/openwin
+
+# OWINCDIR is the directory in which the `xview' directory containing XView
+# *.h files is found.
+OWINCDIR = $(OPENWINHOME)/include
+
+# OWLIBDIR is the directory in which the XView library is found.
+OWLIBDIR = $(OPENWINHOME)/lib
+
+# XHOME specifies the root directory of the X11 hierarchy.
+# This is usually /usr/X11R6 (or /usr/X11).
+XHOME = /usr/X11R6
+
+# XINCDIR is the directory in which the 'X11' directory containing X11 *.h
+# files is found.  This is usually /usr/X11R6/include, although there is often
+# a link connecting /usr/include/X11 to this directory.
+XINCDIR = $(XHOME)/include
+
+# XLIBDIR is the directory in which the X11 libraries are found.
+XLIBDIR = $(XHOME)/lib
+
+# WCFLAGS is the set of C compiler options to use when compiling WAVE.
+WCFLAGS = $(CFLAGS) -I$(OWINCDIR) -DOWTOOLKIT_WARNING_DISABLED -I$(XINCDIR)
+
+# HELPOBJ can be set to "help.o" if you wish to recompile the XView spot help
+# functions in "wave/help.c" (recommended under Linux).
+# HELPOBJ = help.o
+# Otherwise, use the version in libxview by uncommenting the next line:
+HELPOBJ =
+
+# WLDFLAGS is the set of loader options appended to the C compiler command line
+# to specify loading the WFDB, XView, and Xlib libraries.
+WLDFLAGS = $(LDFLAGS) -L$(OWLIBDIR) -L$(XLIBDIR) -lxview -lolgx -lX11
+# ...........................................................................
+
+# `make' (with no target specified) will be equivalent to `make all'.
+make-all:	all
+
+# `make lib-post-install' should be run after installing the WFDB library.
+lib-post-install:
+
+lib-post-uninstall:
+	echo "Nothing to be done for lib-post-uninstall"
+# _____________________________________________________________________________
+

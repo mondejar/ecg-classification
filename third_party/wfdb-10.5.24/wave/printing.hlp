@@ -1,0 +1,17 @@
+There are three ways to print annotated signals from WAVE:
+
+1. From the File menu, select `Print'.  This produces a `chart recorder' format
+   copy of the contents of the Signal window.
+2. From the File menu, select `Analyze...' and then `Print chart' from the
+   Analyze window.
+3. From the File menu, select `Analyze...' and then `Print full disclosure'
+   from the Analyze window.
+
+If you choose either of the last two methods, you should first select the
+portion of the record you wish to print, either by entering the times directly
+in the `Start' and `End' fields of the Analyze window, or by inserting `<' and
+`>' markers at the beginning and end of the segment to be printed.
+
+Printing is performed by spawning a `pschart' or `psfd' process (after saving
+any edits).  In general, the output has higher resolution than is possible on
+screen.

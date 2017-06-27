@@ -1,0 +1,60 @@
+# file: Makefile	G. Moody	24 June 1989
+#			Last revised: 20 December 2001
+# `make' description file for the WFDB Applications Guide
+#
+# -----------------------------------------------------------------------------
+# WFDB applications: programs for working with annotated signals
+# Copyright (C) 2001 George B. Moody
+#
+# These programs are free software; you can redistribute them and/or modify
+# them under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
+#
+# These programs are distributed in the hope that they will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# these programs; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+# You may contact the author by e-mail (george@mit.edu) or postal mail
+# (MIT Room E25-505A, Cambridge, MA 02139 USA).  For updates to this software,
+# please visit PhysioNet (http://www.physionet.org/).
+# _____________________________________________________________________________
+#
+# This file is used with the UNIX `make' command to create and install on-line
+# versions of the WFDB Applications Guide, and also to print it.  Before using
+# this file for the first time, check that the site-specific variables below
+# are appropriate for your system.
+
+# The WFDB Applications Guide documents the application programs provided in
+# the app, convert, psd, wave (briefly), and wview subdirectories of wfdb, as
+# well as the file formats supported by the WFDB Software Package. It also
+# includes a tutorial on evaluation of arrhythmia and ischemia detectors using
+# this software and standard databases.
+
+# The most recent version of this guide is always available on PhysioNet
+# (follow the links from http://www.physionet.org/physiotools/manuals.shtml).
+# Use any web browser to read it.
+
+# If you follow the instructions for a standard installation of the WFDB
+# Software Package, the man pages from this directory will be installed so they
+# can be read using 'man', 'xman', etc.  The individual pages will be
+# accessible to the UNIX `man' command, and to similar commands such as `xman',
+# provided that MANDIR (see below) is in your MANPATH (type `man man' for
+# further information).
+
+# If you have the necessary formatting software, these man pages and the
+# remainder of the WFDB Applications Guide can be produced in a wide variety of
+# formats from the sources in in this directory.  Here is a brief list of
+# available formats and the commands needed to produce them:
+
+# HTML		'make wag.html'(requires rman, latex2html, and perl)
+# man pages	'make wag.man'
+# PDF		'make wag.pdf' (requires troff, tbl, pdflatex, ps2pdf, pdftk)
+# PostScript	'make wag.ps'  (requires the above tools plus pdftops)
+# printed copy	'make wag-book'(requires the above tools plus a printer)
+# _____________________________________________________________________________

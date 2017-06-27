@@ -1,0 +1,15 @@
+#  Use this record to read or write 12 signals via standard I/O.
+
+8x12 12
+- 8
+- 8
+- 8
+- 8
+- 8
+- 8
+- 8
+- 8
+- 8
+- 8
+- 8
+- 8

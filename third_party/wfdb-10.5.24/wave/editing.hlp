@@ -1,0 +1,184 @@
+Annotations may be edited if you have enabled editing from the Edit menu. If
+you have specified an existing annotator on the command line or in the Load
+window (accessible from the File menu), you can modify the annotations assigned
+to that annotator.  You may also specify a new annotator name and create the
+annotation set from scratch.  If you do not specify an annotator name, WAVE
+creates an output annotation file for you if you insert any annotations;  the
+annotator name in this case is the name by which you invoked WAVE (normally
+`wave').
+
+If you have chosen to have annotations displayed by WAVE attached to signals
+(using the `Show annotations' menu button on WAVE's View panel), be sure to
+read the comments on `Multi-edit mode' at the end of this help topic, since
+editing operations in that mode are slightly different.
+
+Move the mouse so that the pointer enters the signal window (the portion of the
+main window in which the signals are drawn), and click the left mouse button.
+(While within the signal window, the shape of the pointer changes to a pair of
+crosshairs, which intersect at the "hot spot".)  The Annotation Template window
+appears; it shows the attributes given to any annotations that are inserted.
+The `Type' item shows the annotation mnemonic; if this field is `.', existing
+annotations will be deleted rather than changed.  You may change the type
+either by pulling down the type menu using the right mouse button, or by typing
+the mnemonic while the pointer is in the signal window.  Other fields may be
+set as desired.  You may remove the Annotation Template window from the screen
+by pressing the "Dismiss" button, but you may prefer to leave it on-screen as
+a reminder of its current contents.
+
+To INSERT an annotation, type its mnemonic while the pointer is in the signal
+display area (or select the desired type and other attributes in the Annotation
+Template window).  Move the pointer's hot spot to the spot where you wish to
+insert the annotation, and click the middle mouse button.  If you wish, you may
+"drag" the fiducial line (which appears when you press the middle button) to
+the exact location desired, then release the button to insert the annotation.
+
+To SELECT an existing annotation (in preparation for moving, changing, or
+deleting it), click the left or right mouse buttons to move the pointer one
+annotation at a time left or right.  The annotation under the pointer is
+"selected" by this operation and may be moved, changed, or deleted while it is
+marked with a rectangle.  WAVE recenters the display on the selected annotation
+if the pointer would otherwise move past the left or right edge of the signal
+window.
+
+To COPY an existing annotation, select it, then press <Copy> (or <F6> if your
+keyboard does not have a <Copy> key).  This action copies the selected
+annotation into the Annotation Template.  Now insert the copy at the desired
+location.
+
+To MOVE an existing annotation, select it using the left or right mouse button,
+drag its marker bars to the desired location, then release the button.
+Until the button is released, the rectangle stays in its original position;
+if you decide not to move the annotation, simply move the pointer back into
+the rectangle before releasing the button.  To move an annotation by an amount
+less than the width of the rectangle, simply drag the pointer above or below
+the rectangle to the desired position.
+
+To CHANGE an existing annotation, set the desired attributes in the Annotation
+Template window as described above.  Select the annotation to be changed using
+the left or right mouse buttons.  While the pointer is within the rectangle,
+click the middle mouse button.  The previous annotation at the same time is
+overwritten by the new one.  Thus this operation is just like inserting a new
+annotation, except that you select an existing annotation first.
+
+To DELETE an annotation, type "." while the pointer is in the signal window, or
+select the ". (deleted annotation)" item from the Type menu within the
+Annotation Template window.  Select the annotation to be deleted using the left
+or right mouse buttons as above, then click the middle button to delete the
+annotation.  The previous annotation is removed, and a "." appears in its place
+(thus this operation is exactly like changing an annotation).  The "." marks
+remain until the annotation file is closed; until that time, they can be
+selected in the same way as ordinary annotations, but they are not written to
+the output annotation file.
+
+If you perform the deletion operation on an annotation that is marked as
+deleted, the annotation is "undeleted" (i.e., restored to its original state).
+
+To perform the same operation repeatedly it is not necessary to retype the
+annotation mnemonic (or ".") each time.  Type the mnemonic only when you wish
+to change the type of editing operation.
+
+The operations above, with the exception of moving an annotation, may also be
+performed using the keyboard.  The `Num Lock' indicator must be off (press the
+`Num Lock' key to turn off the indicator if necessary), and the pointer must
+be in the signal window (as indicated by a crosshair pointer replacing the
+normal arrow pointer).  In this context, keys <4>, <5>, and <6> (left-arrow,
+unmarked, and right-arrow) on the numeric keypad behave in the same way as the
+left, middle, and right mouse buttons respectively (except that <shift> cannot
+be used with the keypad as with the mouse buttons; <control> and <meta> do
+work, however).  You can move the pointer left or right using the <=> and <*>
+keys on the keypad (useful for inserting annotations);  the pointer accelerates
+while these keys are depressed.
+
+To change or delete all annotations in a specified interval:
+ 1. mark the beginning of the interval with the `<' (begin analysis) marker
+ 2. mark the end of the interval with the `>' (end analysis marker)
+ 3. set the Type, Text, Subtype, Chan, and Num fields of the Annotation
+    Template as desired
+ 4. press the `Change all in range' button in the Annotation Template window
+Since this operation can have far-reaching consequences, WAVE asks for
+confirmation before performing it if either of the `<' or `>' markers is not
+on-screen.
+
+During editing, the current state of the annotation buffer is saved frequently
+to avoid the possibility of data loss.  The output annotation file is given
+the name of the input annotation file.  Since input annotation files are not
+necessarily found in the current directory, it may not be necessary to create
+a backup file for the input in order to avoid overwriting it.  If, however,
+the input file is found in the directory in which the output file is to be
+written, it is renamed by appending a tilde (`~') to the annotator name.  Only
+one level of backup is preserved, so you will overwrite the original
+annotation file if it is in the current directory and you open the same
+annotator more than once.
+
+Markers (displayed as `<', `:', and `>') may be edited just as for annotations,
+but they are not saved in output annotation files.  It is not necessary to
+enable editing from the Edit menu in order to be able to edit markers.  Note
+that there can be at most one `<' (beginning of analysis) and one `>' (end of
+analysis) marker in the annotation buffer at any time;  inserting one of these
+markers has the effect of deleting any other marker of the same type.  You may
+have as many `:' (index) markers as you wish.  It is also possible to insert
+`<' and `>' markers by entering the time directly into the `Start' and `End'
+fields in the Analyze window (obtained from the File menu).  Markers are not
+affected by use of the `Change all in range' button.
+
+For information on defining new annotation types, see the help topic called
+`Resources'.
+
+
+Multi-edit mode
+---------------
+
+Using the `Show annotations' menu button on WAVE's View panel, you may choose
+to have annotations displayed attached to signals.  In this case, the `chan'
+field of each annotation specifies the signal number of the signal to which it
+is attached.  If annotation editing is enabled when annotations are displayed
+in this way, WAVE is in `multi-edit mode'.
+
+WAVE draws the signals in order of signal number from the top to the bottom of
+the signal window, beginning with signal number 0 at the top of the signal
+window.  When annotations are attached to signals, WAVE draws them about 2 mm
+above the center of the range of the attached signal (except for special
+annotations that are displaced above or below the usual level).  Although this
+presentation usually helps to avoid the visual confusion that might result from
+drawing annotations directly on the associated signals, it may contribute to
+confusion if the spacing between signals is too small (as may happen if the
+signal window is reduced in height, or if many signals are displayed).  If this
+becomes a problem, try increasing the height of the signal window (by dragging
+on the resize handles on the window frame), or displaying only a subset of the
+signals (by specifying which signals are to be shown in the `Signal list' field
+of WAVE's Analyze panel, and selecting `Draw: listed signals only' in WAVE's
+View panel).
+
+In multi-edit mode, annotation editing operations are slightly different from
+those described above.  The most important difference is that you must always
+point to the desired signal when inserting or moving annotations.  In this
+mode, the `chan' field in the Annotation Template window does not determine the
+`chan' field of an inserted annotation; rather, the signal to which you point
+determines the `chan' field, and the `chan' field in the Annotation Template
+window is updated accordingly after each insertion.  To move an annotation to a
+different signal, simply select it and drag the pointer to the desired time and
+signal.  If you wish to change the `chan' field of an annotation without
+changing its time, select the annotation and use the up-arrow and down-arrow
+keys (keys <2> and <8> on the numeric keypad; `Num Lock' must be off) to move
+it to the desired signal.  Hold down the <control> key during these operations
+to copy the annotation, rather than to move it (simultaneous annotations are
+permitted if their `chan' fields differ).
+
+
+Changing the display scales ("zooming")
+---------------------------------------
+
+While editing, it may be helpful to change the time or amplitude scales.
+You may do so either using the controls on the View panel, or by using
+these keyboard commands while the focus is in the signal window:
+
+  <Ctrl>+<(>   Zoom in (show more detail by expanding the time axis)
+  <Ctrl>+<)>   Zoom out (show more context by compressing the time axis)
+  <Ctrl>+<+>   Increase the amplitude of the signal(s)
+  <Ctrl>+<->   Decrease the amplitude of the signal(s)
+  <Ctrl>+<*>   Invert the signal(s)
+  <Ctrl>+<=>   Restore the scales selected on the View panel
+
+If you have selected a signal (by <Shift>+<left click> near the signal of
+interest), amplitude changes will be applied to that signal only.  Otherwise,
+they will be applied to all signals.

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+CPUOS=`uname -m`-`uname -s`
+ARCH=`echo $CPUOS | tr -d " "`
+echo $ARCH

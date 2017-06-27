@@ -1,0 +1,83 @@
+.TH DFA 1  "31 July 2002" "DFA 4.2" "WFDB Applications Guide"
+.SH NAME
+dfa \- detrended fluctuation analysis
+.SH SYNOPSIS
+\fBdfa\fR  [ \fIoption\fR ... ]
+.SH DESCRIPTION
+.PP
+The method of detrended fluctuation analysis (DFA) has proven useful in
+revealing the extent of long-range correlations in seemingly irregular
+time series. 
+.PP
+Briefly, the time series to be analyzed is first integrated.  Next,
+the integrated time series is divided into boxes of equal length,
+\fIn\fR. In each box of length \fIn\fR, a least squares line (or
+polynomial curve of order \fIk\fR) is fit to the data (representing
+the trend in that box).  Next, we detrend the integrated time series
+by subtracting the local trend in each box. The root-mean-square
+fluctuation of this integrated and detrended time series is calculated
+and denoted as \fIF(n)\fR.
+.PP
+This computation is repeated over all time scales (box sizes), from
+\fIn = minbox\fR to \fIn = maxbox\fR, to characterize the relationship
+between \fIF(n)\fR, the average fluctuation, and \fIn\fR, the box size.
+Typically, \fIF(n)\fR will increase with box size \fIn\fR.  A linear
+relationship on a log-log plot indicates the presence of power law
+(fractal) scaling.  Under such conditions, the fluctuations can be
+characterized by a scaling exponent, i.e., the slope of the line
+relating \fIlog[F(n)]\fR to \fIlog[n]\fR.
+.PP
+This program performs detrended fluctuation analysis on a sequence of data
+read from the standard input (which should contain a single column of numbers
+in text format).  The standard output contains two columns of numbers, which
+are the base 10 logarithms of \fIn\fR and \fIF(n)\fR.  Note that \fBdfa\fR
+does \fInot\fR compute a scaling exponent;  to do so, fit the output to
+a line and measure its slope.
+.PP
+\fIOptions\fR may include:
+.TP
+\fB-d\fR \fIk\fR
+Detrend the data using a polynomial of degree \fIk\fR (1: linear, 2: quadratic,
+etc.).  Default: \fIk\fR = 1 (linear detrending).
+.TP
+\fB-h\fR
+Print a usage summary and exit.
+.TP
+\fB-i\fR
+Do not integrate the input series.  Use this option if the input series is
+already integrated (for example, if it represents times of occurrence rather
+than intervals).
+.TP
+\fB-l\fR \fIminbox\fR
+Set the smallest box width.  The default, and the minimum allowed value for
+\fIminbox\fR, is \fI2k + 2\fR (where \fIk\fR is determined by the \fB-d\fR
+option, see above).
+.TP
+\fB-s\fR
+Perform a sliding window DFA (measure the fluctuations using all possible
+boxes at each box size).  By default, fluctuations are measured using
+non-overlapping boxes only.  Using the \fB-s\fR option will make the
+calculation much slower.
+.TP
+\fB-u\fR \fImaxbox\fR
+Set the largest box width.  The default, and the maximum allowed value for
+\fImaxbox\fR, is one-fourth the length of the input series.
+.SH SEE ALSO
+.PP
+The DFA method was first proposed in Peng C-K, Buldyrev SV,
+Havlin S, Simons M, Stanley HE, Goldberger AL. Mosaic organization of
+DNA nucleotides. \fIPhys Rev E\fR 1994;\fB49\fR:1685-1689.
+.PP
+A detailed description of the algorithm and its application to
+physiologic signals can be found in Peng C-K, Havlin S, Stanley HE,
+Goldberger AL. Quantification of scaling exponents and crossover
+phenomena in nonstationary heartbeat time series.
+\fIChaos\fR 1995;\fB5\fR:82-87.
+.SH AVAILABILITY
+\fBdfa\fR is available as part of PhysioToolkit under the GPL (see
+\fBSOURCE\fR below).
+.SH AUTHORS
+JE Mietus (joe@physionet.org), C-K Peng, and GB Moody, based on C-K Peng's
+original Fortran implementation.
+.SH SOURCE
+http://www.physionet.org/physiotools/dfa/dfa.c

@@ -1,0 +1,149 @@
+# file: cygwin-slib.def	I. Henry and G. Moody	19 November 2002
+#				Last revised:	 6 August 2014
+
+# This section contains settings suitable for generating a DLL (shared library)
+# under MS Windows using the free Cygwin/gcc ANSI C compiler, available from
+# http://www.cygwin.com/.  To use this successfully, you need to have installed
+# Cygwin 1.x or later.
+
+# Choose a value for WFDBROOT to determine where the WFDB Software Package will
+# be installed.  One of the following is usually a reasonable choice.
+# Installing in /usr generally requires root permissions, but will be easiest
+# for future software development (no special -I or -L options will be needed
+# to compile software with the WFDB library, since the *.h files and the
+# library will be installed in the standard directories).
+WFDBROOT = /usr
+# Installing in /usr/local usually requires root permissions.  On a multi-user
+# system where it is desirable to keep the OS vendor's software separate from
+# other software, this is a good choice.  Another common choice in such cases
+# is /opt .
+# WFDBROOT = /usr/local
+# To install without root permissions, a good choice is to set WFDBROOT to the
+# name of your home directory, as in the example below (change as needed).
+# WFDBROOT = /home/frodo
+
+# LC and LL are used to determine C compiler and linker options needed to
+# enable NETFILES (code that allows applications linked to the WFDB library to
+# read input from HTTP and FTP servers, in addition to the standard filesystem
+# support available without NETFILES).  The WFDB library can use either
+# libcurl (recommended) or libwww to provide NETFILES support.  To use libcurl,
+# set LC to `curl-config --cflags` (note the backquotes) and LL to
+# `curl-config --libs`.  Otherwise, to use libwww, set LC to
+# `libwww-config --cflags` and LL to `libwww-config --libs`.  If neither
+# libcurl nor libwww is available, LC and LL should be empty (and NETFILES
+# will be disabled).
+LC =
+LL =
+
+# BINDIR specifies the name of a directory in which to install the WFDB
+# DLL and the WFDB applications.
+BINDIR = $(WFDBROOT)/bin
+
+# DBDIR specifies the name of a directory in which to install the contents
+# of the `data' directory.
+DBDIR = $(WFDBROOT)/database
+
+# INCDIR specifies the name of a directory in which to install the WFDB
+# library's #include <...> files.
+INCDIR = $(WFDBROOT)/include
+
+# LIBDIR specifies the name of a directory in which to install the WFDB
+# library.  Under Windows, this is the same as BINDIR (above).
+LIBDIR = $(WFDBROOT)/bin
+
+# LDFLAGS is appended to the C compiler command line to specify loading the
+# WFDB library.
+LDFLAGS = -L$(LIBDIR) -lwfdb
+
+# CC is the name of your C compiler.
+CC = gcc
+
+# CCDEFS is the set of C compiler options needed to set preprocessor variables
+# while compiling the WFDB Software Package.  CCDEFS should always include
+# VDEFS.
+CCDEFS = $(VDEFS) -DNOVALUES_H
+
+# MFLAGS is the set of architecture-dependent (-m*) compiler options, which
+# is usually empty.  See the gcc manual for information about gcc's -m options.
+MFLAGS =
+
+# CFLAGS is the set of C compiler options used when compiling the shared
+# library.  CFLAGS should always include CCDEFS.
+CFLAGS = $(MFLAGS) -g -O $(CCDEFS) $(LC) -I$(INCDIR)
+
+# WFDBLIB_BASENAME is the name, without version numbers, of the alternate
+# library.  WFDBLIB_SONAME is the shared object name ("soname") of the
+# alternate library; normally, this includes the base name and the major
+# version number only. WFDBLIB is the complete name, including the minor
+# version number.  Symbolic links from WFDBLIB to WFDBLIB_BASENAME and
+# WFDBLIB_SONAME will be created as the final step in building the alternate
+# library.
+WFDBLIB_DLLNAME  = cygwfdb-$(MAJOR)-$(MINOR).dll
+WFDBLIB_BASENAME = libwfdb.dll.a
+WFDBLIB_SONAME = $(WFDBLIB_BASENAME).$(MAJOR)
+WFDBLIB = $(WFDBLIB_SONAME).$(MINOR)
+# For a shared library, the soname is significant for proper run-time binding.
+# If you change function interfaces in the library, change its soname by
+# incrementing the major version number;  when you do this, set the minor
+# version number to zero.  If you change the library without changing the
+# function interfaces, increment the minor version number; this allows existing
+# binaries to use the new version without recompilation, since the soname is
+# unchanged in this case.
+
+# BUILDLIB is the command that creates the shared WFDB library once its
+# components have been compiled separately;  the list of *.o files that
+# make up the library will be appended to BUILDLIB.
+BUILDLIB = gcc -shared -o $(WFDBLIB_DLLNAME) \
+  -Wl,--out-implib=$(WFDBLIB) \
+  -Wl,--export-all-symbols \
+  -Wl,--enable-auto-import
+
+# BUILDLIB_LDFLAGS is a list of arguments appended to BUILDLIB following
+# the list of *.o files.
+BUILDLIB_LDFLAGS = $(LL)
+
+# LDCONFIG is the name of the program needed to refresh the system's cached
+# index of shared libraries.
+LDCONFIG = /sbin/ldconfig
+
+# PRINT is the name of the program used to produce listings (including any
+# options for the desired formatting).
+PRINT = lpr
+
+# SETPERMISSIONS is the command needed to make the installed files accessible
+# to those who will use them.  The value given below makes them readable by
+# everyone, and writeable by the owner only.  (If you perform the installation
+# as `root', `root' is the owner of the installed files.)
+SETPERMISSIONS = chmod 644
+
+# SETDPERMISSIONS is similarly used to make directories created during the
+# installation accessible.
+SETDPERMISSIONS = chmod 755
+
+# SETLPERMISSIONS is the command needed to make the WFDB library usable by
+# programs linked to it.
+SETLPERMISSIONS = chmod 755
+
+# `make' (with no target specified) will be equivalent to `make all'.
+make-all:	all
+
+# `make lib-post-install' should be run after installing the WFDB library.
+lib-post-install:
+	cd $(LIBDIR); ln -sf $(WFDBLIB) $(WFDBLIB_BASENAME)
+	cd $(LIBDIR); ln -sf $(WFDBLIB) $(WFDBLIB_SONAME)
+	test -d $(BINDIR) || \
+	 ( mkdir -p $(BINDIR); $(SETDPERMISSIONS) $(BINDIR) )
+	test /usr/bin = $(BINDIR) || \
+ 	 ( cp -p /usr/bin/cygwin1.dll $(BINDIR); \
+	   cp -p /usr/bin/cygz.dll $(BINDIR) )
+	cp $(WFDBLIB_DLLNAME) $(BINDIR)
+	cd $(BINDIR); $(SETLPERMISSIONS) *.dll
+	test $(BINDIR) = $(LIBDIR) && \
+	 ( mkdir $(WFDBROOT)/lib; ln -sf $(BINDIR)/$(WFDBLIB_BASENAME) $(WFDBROOT)/lib )
+
+lib-post-uninstall:
+	rm -f $(LIBDIR)/$(WFDBLIB_BASENAME)
+	rm -f $(LIBDIR)/$(WFDBLIB_SONAME)
+	rm -f $(BINDIR)/$(WFDBLIB_DLLNAME)
+	
+#______________________________________________________________________________

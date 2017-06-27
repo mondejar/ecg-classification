@@ -1,0 +1,42 @@
+file: README		G. Moody	7 September 1989
+			Last revised:	26 October 2002
+
+This directory contains the TeX (texinfo) source for the WFDB Programmer's
+Guide.  Under Unix, Linux, or under MS-Windows with the Cygwin toolkit,
+this guide can be printed or installed on-line by following the instructions
+in `Makefile', provided that you have the necessary formatting software.
+Here is a brief list of available formats and the commands needed to produce
+them:
+
+WFDB Programmer's Guide
+  printed copy	'make wpg-book'(requires troff, texi2dvi, dvips, and a printer)
+  Windows help	'make wpg.hlp' (requires makertf and hcrtf)
+  HTML		'make wpg.html'(requires texi2html and perl)
+  info		'make wpg.info'(requires makeinfo or GNU emacs)
+  PDF		'make wpg.pdf' (requires texi2dvi)
+  PostScript	'make wpg.ps'  (requires texi2dvi and dvips)
+
+All of these, with the exception of printed copies, can be downloaded from
+PhysioNet (look in http://www.physionet.org/physiotools/manuals.shtml).
+
+
+The following files will be found in this directory:
+
+Makefile	UNIX `make' description file for printing the WFDB Programmer's
+		 Guide and installing it on-line
+Makefile.top	Used by ../configure to construct Makefile (comments only)
+Makefile.tpl	Used by ../configure to construct Makefile (portable section)
+README		this file
+
+ctotexi.c	formats a C program as texinfo (used to format programs from
+		 ../../examples for inclusion in the WFDB Programmer's Guide)
+dir.top		Template for top-level `info' menu
+dir.wpg		Text to be added (by `make info') to the top-level `info' menu
+fixpg.sh	Script for postprocessing WFDB Programmer's Guide HTML files
+makeinfo.sh	Script for converting dbu.tex to `info' hypertext files using
+		 GNU emacs (if you don't have `makeinfo')
+wpg0.tex	TeX (texinfo) source for the WFDB Programmer's Guide
+wpg.cover	troff source for the cover of the WFDB Progammer's Guide
+wpg.hlp		Programmer's Guide in MS-Windows help file format (this may not
+		 be up-to-date;  see 'Makefile' for information on updating it)
+wpg.ht0		HTML-format introduction for the WFDB Programmer's Guide

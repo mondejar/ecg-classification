@@ -1,0 +1,539 @@
+#!/bin/sh
+# file: appcheck		G. Moody       7 September 2001
+#                               Last revised:    8 March 2014
+#
+# This script checks the basic functionality of most of the WFDB applications
+# in the 'app' directory.  These programs are not (yet) tested by this script:
+#     calsig, epicmp, mxm, nst, plotstm, pscgen, skewedit, sqrs125
+#
+# Suggestions for additional checks are welcome;  please send them to the
+# author (george@mit.edu).
+
+cp -pr ../data .
+
+WFDB=". data http://www.physionet.org/physiobank/database"
+export WFDB
+
+INCDIR=$1
+BINDIR=$2
+LIBDIR=$3
+
+PASS=0
+FAIL=0
+TESTS=0
+
+PATH=$BINDIR:$PATH
+export PATH
+
+case `uname` in
+    Darwin*)
+	if [ "x$DYLD_LIBRARY_PATH" = x ]
+	    then
+	    DYLD_LIBRARY_PATH=$LIBDIR:$DYLD_LIBRARY_PATH
+	else
+	    DYLD_LIBRARY_PATH=$LIBDIR
+	fi
+	export DYLD_LIBRARY_PATH
+	;;
+    *)
+	if [ "x$LD_LIBRARY_PATH" = x ]
+	    then
+	    LD_LIBRARY_PATH=$LIBDIR:$LD_LIBRARY_PATH
+	else
+	    LD_LIBRARY_PATH=$LIBDIR
+	fi
+	export LD_LIBRARY_PATH
+	;;
+esac
+
+echo Testing wfdbwhich ...
+F=wfdbwhich.out
+wfdbwhich 100s.atr >$F 2>&1
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 1`
+
+echo Testing wfdbcat ...
+F=wfdbcat.out
+wfdbcat 100s.atr >$F 2>&1
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 1`
+
+echo Testing rdann ...
+F=rdann.out
+rdann -r 100s -a atr >$F
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    cp $F wrann.in
+    rm -f $F
+else
+    FAIL=`expr $FAIL + 1`
+    cp expected/rdann.out wrann.in
+fi
+TESTS=`expr $TESTS + 1`
+
+echo Testing wrann ...
+F=100s.wra
+wrann -r 100s -a wra <wrann.in
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 1`
+rm -f wrann.in
+
+echo Testing rdsamp ...
+F=rdsamp.out
+rdsamp -r 100s -f 10 -t 11 -p -v >$F
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    cp $F wrsamp.in
+    rm -f $F
+else
+    FAIL=`expr $FAIL + 1`
+    cp expected/rdsamp.out wrsamp.in
+fi
+TESTS=`expr $TESTS + 1`
+
+echo Testing wrsamp ...
+F=100w.dat
+wrsamp -o 100w -F 360 -O 212 -x 200 1 2 <wrsamp.in
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 1`
+F=100w.hea
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 1`
+rm -f wrsamp.in
+
+echo Testing ann2rr ...
+F=ann2rr.out
+ann2rr -r 100s -a atr >$F
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    cp $F rr2ann.in
+    rm -f $F
+else
+    FAIL=`expr $FAIL + 1`
+    cp expected/ann2rr.out rr2ann.in
+fi
+TESTS=`expr $TESTS + 1`
+
+echo Testing rr2ann ...
+F=100s.a2r
+rr2ann -r 100s -a a2r <rr2ann.in
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 1`
+rm -f rr2ann.in
+
+echo Testing sqrs ...
+F=100s.qrs
+sqrs -r 100s 2>sqrs.log
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    cp $F 100s.ann
+    rm -f $F sqrs.log
+else
+    FAIL=`expr $FAIL + 1`
+    cp expected/$F 100s.ann
+fi
+TESTS=`expr $TESTS + 1`
+
+echo Testing ecgeval ...
+F=ecgeval.out
+rm -f qrs-mit.bat qrs-mit.out
+ecgeval <input/ecgeval >$F 2>&1
+grep -v file: qrs-mit.bat >>$F
+grep -v file: qrs-mit.out >>$F
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F qrs-mit.bat qrs-mit.out bxb.out sd.out
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 1`
+
+echo Testing bxb ...
+F=bxb.out
+E=bxb.err
+bxb -r 100s -a atr ann -f 0 >$F 2>$E
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+else
+    FAIL=`expr $FAIL + 1`
+fi
+if ( ./checkfile $E )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $E
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 2`
+
+echo Testing rxr ...
+F=rxr.out
+E=rxr.err
+rxr -r 100s -a atr ann -f 0 >$F 2>$E
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+else
+    FAIL=`expr $FAIL + 1`
+fi
+if ( ./checkfile $E )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $E
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 2`
+rm 100s.ann
+
+echo Testing fir ...
+fir -i 100s -n fir -f 10 -t 15 -c -1 1
+for F in fir.dat fir.hea
+do
+  if ( ./checkfile $F )
+  then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+  else
+    FAIL=`expr $FAIL + 1`
+  fi
+  TESTS=`expr $TESTS + 1`
+done
+
+echo Testing ihr ...
+F=ihr.out
+ihr -r 100s -a atr >$F
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 1`
+
+echo Testing mfilt ...
+mfilt -l 5 -i 100s -n mfilt -f 10 -t 15 2>mfilt.log
+for F in mfilt.dat mfilt.hea
+do
+  if ( ./checkfile $F )
+  then
+    PASS=`expr $PASS + 1`
+    rm -f $F mfilt.log
+  else
+    FAIL=`expr $FAIL + 1`
+  fi
+  TESTS=`expr $TESTS + 1`
+done
+
+echo Testing mrgann ...
+F=100s.mrg
+cp expected/100s.qrs expected/100s.wqrs .
+mrgann -r 100s -i qrs wqrs -o mrg -m0 10 -m1 20 -m2 30 -m3 40
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F 100s.qrs 100s.wqrs
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 1`
+
+echo Testing nguess ...
+F=100a.nguess
+nguess -r 100a -a atr
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 1`
+
+echo Testing pschart ...
+F=pschart.ps
+pschart -a atr -c "" -g -l -T Test - >$F <<EOF
+100s 10-15
+EOF
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 1`
+
+echo Testing psfd ...
+F=psfd.ps
+psfd -a atr -c "" -g -l -T Test - >$F <<EOF
+100s 0-e
+EOF
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 1`
+
+echo Testing sampfreq ...
+F=sampfreq.out
+sampfreq 100s >$F
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 1`
+
+echo Testing sigamp ...
+F=sigamp.out
+sigamp -r 100s -a atr >$F
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 1`
+
+echo Testing sigavg ...
+F=100s.sigavg
+sigavg -r 100s -a atr -v>$F
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 1`
+
+echo Testing snip ...
+snip -i 100s -n snip -a atr -f 10 -t 15
+for F in snip.atr snip.dat snip.hea
+do
+  if ( ./checkfile $F )
+  then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+  else
+    FAIL=`expr $FAIL + 1`
+  fi
+  TESTS=`expr $TESTS + 1`
+done
+
+echo Testing sortann ...
+rdann -r 100s -a atr -f 30 >foo
+rdann -r 100s -a atr -t 30 >>foo
+( WFDBANNSORT=0; export WFDBANNSORT; \
+  wrann -r 100s -a mix <foo 2>wrann.log )
+rm -f foo
+sortann -r 100s -a mix
+F=100s.mix
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F wrann.log
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 1`
+
+echo Testing sumann ...
+F=sumann.out
+sumann -r 100s -a atr >$F
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 1`
+
+echo Testing sumstats ...
+F=sumstats.out
+sumstats input/sumstats >$F
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 1`
+
+echo Testing tach ...
+F=tach.out
+tach -r 100s -a atr >$F
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 1`
+
+echo Testing wfdbcollate ...
+wfdbcollate -s 100s -o wfd -l 30 2>wfdbcollate.log
+for F in wfd*hea wfd*dat
+do
+  if ( ./checkfile $F )
+  then
+    PASS=`expr $PASS + 1`
+    rm -f $F wfdbcollate.log
+  else
+    FAIL=`expr $FAIL + 1`
+  fi
+  TESTS=`expr $TESTS + 1`
+done
+
+echo Testing wfdbdesc ...
+F=wfdbdesc.out
+wfdbdesc 100s >$F
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 1`
+
+echo Testing wabp ...
+F=xform.wabp
+cp expected/xform.hea expected/xform.dat .
+wabp -r xform 2>wabp.log
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F wabp.log xform.dat xform.hea
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 1`
+
+echo Testing wqrs ...
+F=100s.wqrs
+wqrs -r 100s -j 2>wqrs.log
+if ( ./checkfile $F )
+then
+    PASS=`expr $PASS + 1`
+    rm -f $F wqrs.log
+else
+    FAIL=`expr $FAIL + 1`
+fi
+TESTS=`expr $TESTS + 1`
+
+echo Testing parsescp ...
+parsescp -o test -w <input/test.scp
+for F in test.dat test.des test.ecg test.hea test.key
+do
+  if ( ./checkfile $F )
+  then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+  else
+    FAIL=`expr $FAIL + 1`
+  fi
+  TESTS=`expr $TESTS + 1`
+done
+
+echo Testing xform ...
+xform -i 100s -a atr -n 100x -o input/100x >xform-1.out 2>&1
+for F in xform-1.out 100x.atr 100x.dat 100x.hea
+do
+  if ( ./checkfile $F )
+  then
+    PASS=`expr $PASS + 1`
+    rm -f $F
+  else
+    FAIL=`expr $FAIL + 1`
+  fi
+  TESTS=`expr $TESTS + 1`
+done
+
+if ( grep "WFDB_NETFILES 1" $INCDIR/wfdb/wfdb.h >grep.out 2>&1 )
+then
+  echo "Testing xform (with NETFILES) ..."
+  xform -i mimicdb/237/237 -s 1 2 0 3 -a all -M -n xform -f 9:19:45 \
+   -t "[22:01:23 20/07/1995]" -S input/xform >xform-2.out 2>&1
+  for F in xform-2.out xform.hea xform.dat xform.all
+  do
+    if ( ./checkfile $F )
+    then
+	PASS=`expr $PASS + 1`
+	rm -f $F
+    else
+	FAIL=`expr $FAIL + 1`
+    fi
+    TESTS=`expr $TESTS + 1`
+  done 
+fi
+rm -f grep.out
+
+rm -rf data
+
+( if [ $PASS = $TESTS ]
+then
+    echo "`basename $0`: all $TESTS tests passed."
+else
+    if [ $FAIL = 1 ]
+    then
+	echo "`basename $0`: $PASS of $TESTS tests passed, $FAIL test failed."
+    else
+	echo "`basename $0`: $PASS of $TESTS tests passed, $FAIL tests failed."
+    fi
+fi ) >appcheck.out
