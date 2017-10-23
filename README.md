@@ -105,12 +105,13 @@ Total instances: 49691 (window size 90,90)
 | SVM Configuration                            |N (R/P/FPR)        | S (R/P/FPR)         |  V (R/P/FPR)        | F (R/P/FPR)         |  Acc  | 
 |----------------------------------------------|-------            |------               |------               |------               |-------|
 |My SVM_W_RR_AVG_RR_wavelets_z_score  C (0.001)|0.7860 0.9944 0.036| 0.8977 0.3308 0.0697| 0.8174 0.7766 0.0163| 0.7010 0.0429 0.1230| 0.7915|
-|LD [Chazal-2004]                              |0.87   0.99        | 0.76   0.38         | 0.77   0.82         |                     | 0.83  |
+|LD [Chazal-2004]                              |0.87   0.99        | 0.76   0.38         | 0.77   0.82        |                     | 0.83  |
 
 
-My SVM_W_RR_AVG_RR_wavelets_z_score  C (0.001)
-CMatrix
+BEST SCORE AT MAR PAPER Ijk: **0.649** (2011)
 
+My SVM_W_RR_AVG_RR_wavelets_z_score  C (0.001) (OLD)
+---------------
 |  |n    |   s |   v | f   |  
 |--|-----|-----|-----|-----|
 |N |**34778**| 3093|  648| 5727|
@@ -119,11 +120,60 @@ CMatrix
 |F |  104|    3|    9|  **272**|
 
 
+MY TOP SCORE 14 Jul 2017  C(0.01) Mar scores Ijk: 0.610082
+-----------------------------------------
+wi lin HOS RR AVG_RR std max_RR
 
+|  |n    |   s |   v | f   |  
+|--|-----|-----|-----|-----|
+|N |**37165**| 3445|  1090| 2546|
+|S |   53|**1714**|  61|   9|
+|V |   19|  244| **2817**|  140|
+|F |  102|    1|    87|  **198**|
+Ij: 2.834990 (max 4)
+Cohen Kappa Values: 0.511416
+   
+
+MY TOP SCORE 14 Jul 2017  C(0.01) Mar scores Ijk: 0.611094
+-----------------------------------------
+wi lin HOS RR AVG_RR max_RR
+
+|  |n    |   s |   v | f   |  
+|--|-----|-----|-----|-----|
+|N |**34758**| 3229| 116 |6143|
+|S |49| **1683**| 83| 22|
+|V |25| 159| **2905**| 131|
+|F |15| 3| 33| **337**|
+
+
+C 2 Ijk: 0.621
+wi lin HOS RR AVG_RR std max_RR
+Confussion Matrix 
+37391 3600 706 2549
+83 1695 53 6
+25 273 2822 100
+95 1 98 194
+
+Ij: 3.085922 (max 4)
+Cohen Kappa Values: 0.450707
+
+C 0.0004 Ijk: 0.664
+HOS + MyMorph + RR + AVG_RR
+Confussion Matrix 
+38918 2812 162 2354
+177 1558 62 40
+25 194 2878 123
+133 3 16 236
+
+
+ 
 Total instances: 50424
 
 NOTE: if some configuration uses C 100 or C 0.0001 a higher/lower value must be tested
 (OLD)
+
+LA MEDIDA FLEISS KAPPA NO CONVENCE, INCLUSO EN RESULTADOS MUY MALOS 
+
 | SVM Configuration                            |  N   | SVEB | VEB  | F    | |AVG_class | Acc    | AVG_class * ACC|
 |----------------------------------------------|------|------|------|------|-|----------|--------|----------------|
 |My SVM_W_RR_AVG_RR_wavelets          C (0.1)  |0.7930|0.9042|0.8390|0.6392| |0.7938    |0.7990  |**0.6342**|
@@ -136,9 +186,12 @@ NOTE: if some configuration uses C 100 or C 0.0001 a higher/lower value must be 
 |My SVM_RR                            C (100)  |0.9842|0.1013|0.7694|0.2784| |0.5333    |0.93    |0.49   |
 |My SVM_w_RR_unit                     C (0.01) |0.8216|0.6668|0.7676|0.0129| |0.5672    |0.8060  |0.4571 |
 |My SVM_w_avg_RR                      C (0.1)  |0.7946|0.5879|0.799 |0.0206| |0.5505    |0.7814  |0.4301 |
-|My SVM_w_HOS                         C ()     |      |      |      |      | |          |        |       |     |My SVM_w_wavelets_db1                C ()     |0.6102|0.6603|0.2321|0.7139| |0.5541    |        |       |
+|My SVM_w_HOS                         C ()     |      |      |      |      | |          |        |       |     
+|My SVM_w_wavelets_db1                C ()     |0.6102|0.6603|0.2321|0.7139| |0.5541    |        |       |
 |My SVM_w_wavelets_db8                C (10)   |0.0   |0.854 |0.8129|0.0   | |0.4169    |        |       |
 |My SVM_w_LIN_50                               |0.75  | 0.82 |0.79  |0.67  | |0.7500    |        |       |
+|                                              |      |      |      |       ||        |       |       |
+|My SVM My descriptor               C (0.1)   |       |     |   |     |     |   |     |   |
 
 My SVM_W_RR_AVG_RR_wavelets_z_score_RBF C(1) gamma(0.05) 
 0.8816      0.3136    0.8831      0.0438      0.5305     0.8546

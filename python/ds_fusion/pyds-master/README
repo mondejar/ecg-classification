@@ -1,0 +1,12 @@
+A Python library for performing calculations in the Dempster-Shafer theory of evidence.
+
+Features:
+Support for normalized as well as unnormalized belief functions
+Different Monte-Carlo algorithms for combining belief functions
+Various methods related to the generalized Bayesian theorem
+Measures of uncertainty
+Methods for constructing belief functions from data
+
+Both Python 2.7 and Python 3.x are supported.
+
+See examples.py for how to use it.

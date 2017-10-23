@@ -94,10 +94,10 @@ for(s=1:size(signals,2))
      % Salvo algunas señales raras va bien
      % Display R
      %clf;
-     %subplot(1,1,1);
-     %plot(signal);
-     %hold on;
-     %scatter(qrs_i_raw, signal(qrs_i_raw),'r');       
+     subplot(1,1,1);
+     plot(signal);
+     hold on;
+     scatter(qrs_i_raw, signal(qrs_i_raw),'r');       
      for(r=1:length(qrs_i_raw)) % for each beat 
         if(qrs_i_raw(r) > window_r_beat && qrs_i_raw(r) + window_r_beat < length(signal) )
                 
