@@ -6,10 +6,10 @@ Code for training and test **MIT-BIH Arrhythmia Database** with:
 2. [Support Vector Machine (**SVM**) on MATLAB (*old*)](matlab/README.md).
 3. [Artificial Neural Networks (**ANNs**) on TensorFlow (*old*)](tensorflow/README.md)
 
-The data is splited following the **inter-patient** scheme proposed by Chazal et al [Chazal *et al*](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1306572)., i.e the training and eval set not contain any patient in common.
+The data is splited following the **inter-patient** scheme proposed by [Chazal *et al*](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1306572)., i.e the training and eval set not contain any patient in common.
 
 ## Method
-This code analyzes the state of the beats with the four classes of the [AAMI recomendation](### AAMI recomendation form MIT)). 
+This code analyzes the state of the beats with the four classes of the [AAMI recomendation](### AAMI recomendation for MIT)). 
 
 ### 1 Beat Detection
 In this work the annotations of the MIT-BIH arrhyhtmia was used for the R-peak positions. However it can be detected using the following software: 
@@ -176,7 +176,7 @@ rsync -Cavz physionet.org::incartdb /home/mondejar/dataset/ECG/incartdb
 |(VFL|	Ventricular flutter|
 |(VT|	    Ventricular tachycardia
 
-### AAMI recomendation form MIT 
+### AAMI recomendation for MIT 
 There are 15 recommended classes for arrhythmia that are classified into 5 superclasses: 
 
 | SuperClass| | | | | | 
