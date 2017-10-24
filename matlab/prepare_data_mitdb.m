@@ -13,7 +13,7 @@ function [dataset] = prepare_data_mitdb(window_l, window_t, compute_RR_interval_
 compute_HB_intervals = false;
 
 
-% max_RR 
+% max_RR
 % = 0 % no
 % = 1 max RR
 % = 2 min RR
@@ -88,19 +88,19 @@ for r = 1:length(records)
     % This dataset contains two samples for the same record
     
     patient =  str2num(filename{1}(length(filename{1})-6:length(filename{1})-4));
-
+    
     if patient == 114 %change MLII V5
         signal{1} = full_signals(:, 3); % Modified Lead II (L II) (Derivacion II)
         signal{2} = full_signals(:, 2); % V1, V2, V5....
         
         raw_signals{1,r} = full_signals(:, 3);
-        raw_signals{2,r} = full_signals(:, 2);       
+        raw_signals{2,r} = full_signals(:, 2);
     else
         signal{1} = full_signals(:, 2); % Modified Lead II (L II) (Derivacion II)
         signal{2} = full_signals(:, 3); % V5 NOTE: is not always V5, is V1, V2 and V5....
-
+        
         raw_signals{1,r} = full_signals(:, 2);
-        raw_signals{2,r} = full_signals(:, 3); 
+        raw_signals{2,r} = full_signals(:, 3);
         
     end
     
@@ -114,23 +114,23 @@ for r = 1:length(records)
     % Time   Sample #  Type  Sub Chan  Num	Aux
     tline = fgets(fileID);
     annotations = textscan(fileID, '%s');
-    annotations = annotations{1};  
+    annotations = annotations{1};
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% NOTE: preprocess before RR intervals? (if used annotation doesnt matter, but if we use Max_RR yes!)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     for s=1:2
-        if(remove_baseline)       
+        if(remove_baseline)
             %% FIRST MEDIAN FILTER
             % Each signal was processed with a median filter of 200-ms width to remove QRS complexes and P-waves.
             % 200ms at 360Hz = 72
             baseline = medfilt1(signal{s}, 72); %medfilt1(db.signals{s}, 72);
-
+            
             %% SECOND MEDIAN FILTER
             %The resulting signal was then processed with a median filter of 600 ms width to remove T-waves.
             % 600ms at 360Hz =
             baseline = medfilt1(baseline, 216); %medfilt1(baseline, 216);
-
+            
             %% REMOVE BASELINE
             % The signal resulting from the second filter operation contained the baseline of the ECG signal, which was
             % then subtracted from the original signal to produce the baseline corrected ECG signal.
@@ -145,17 +145,17 @@ for r = 1:length(records)
             %a = [3];  % Desired amplitudes
             %b = firpm(n,f,a);
             %Y = filtfilt(b, a, X);
-
-            %% NOTE: this step may shift the signal x-pose 
+            
+            %% NOTE: this step may shift the signal x-pose
             cut_off = 35;
             order = 12;
             [b,a] = butter(order , cut_off/(fs/2));
-
-            signal{s} = filter(b, a, signal{s});        
+            
+            signal{s} = filter(b, a, signal{s});
             %d1 = designfilt('lowpassiir','FilterOrder', 12, 'HalfPowerFrequency',0.15,'DesignMethod','butter');
             %signal1 = filtfilt(d1, baseline_substract);
         end
-    end   
+    end
     
     for i = 1:length(annotations)
         if((findstr(annotations{i}, ':') > 0))
@@ -177,7 +177,7 @@ for r = 1:length(records)
                 end
                 pos = (pos-size_RR_max) + max_pos;
             end
-                       
+            
             peak_type = 0;
             pos = pos-1;
             
@@ -199,22 +199,22 @@ for r = 1:length(records)
             R_poses{r} = [R_poses{r} pos];
             Original_R_poses{r} = [Original_R_poses{r}, unchanged_pos];
         end
-    end   
-
+    end
+    
     
     %% Display signal and R-peaks
     %if(display_R_peaks)
     %    plot(signal1);
     %    hold on;
-        
-        %% 
-   %     if ecgpuwave 
-   %         scatter([fiducial_points{r}.pos], signal1([fiducial_points{r}.pos]), 'b');
-   %     end
-        
+    
+    %%
+    %     if ecgpuwave
+    %         scatter([fiducial_points{r}.pos], signal1([fiducial_points{r}.pos]), 'b');
+    %     end
+    
     %    scatter(R_poses{r}, signal1(R_poses{r}), 'r');
-
-   % end
+    
+    % end
     
     %% ATENTION: for compute RR intervals values we must consider all the R-peaks, not use only the labeled R-peaks!!
     % Compute RR interval features at patients level!
@@ -273,7 +273,7 @@ for r = 1:length(records)
         temporal_features{r}.local_R = local_R(selected_R{r} == 1);
         temporal_features{r}.global_R = global_R(selected_R{r} == 1);
     end
-          
+    
     R_poses{r} = R_poses{r}(selected_R{r} == 1);
     
 end

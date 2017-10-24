@@ -12,6 +12,8 @@ def main(args):
 
 # Load signal
 
+# save as equivalent to .mat in a auxiliary directory...
+
 # Compute features
 
 # Train

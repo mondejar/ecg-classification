@@ -9,7 +9,7 @@ Mondejar Guerra, Victor M.
 """
 
 def main(args):
-    
+
 # Load signal
 
 # Compute features
@@ -17,3 +17,8 @@ def main(args):
 # Test
 
 # Evaluation the performances!
+
+
+if __name__ == '__main__':
+    import sys
+    main(sys.argv[1:])

@@ -2,14 +2,18 @@
 
 ## Description
 Code for training and test **MIT-BIH Arrhythmia Database** with:
-1. [Artificial Neural Networks (**ANNs**) on TensorFlow](tensorflow/README.md)
-2. [Support Vector Machine (**SVM**) on MATLAB](matlab/README.md).
+1. [Support Vector Machine (**SVM**) on Python](matlab/README.md).
+2. [Support Vector Machine (**SVM**) on MATLAB (*old*)](matlab/README.md).
+3. [Artificial Neural Networks (**ANNs**) on TensorFlow (*old*)](tensorflow/README.md)
 
-The data is splited in training and eval sets in an **inter-patient** way, i.e the training and eval set not contain any patient in common, as proposed in the work of [Chazal *et al*](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1306572).
+The data is splited following the **inter-patient** scheme proposed by Chazal et al [Chazal *et al*](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1306572)., i.e the training and eval set not contain any patient in common.
 
+DS1 = [101, 106, 108, 109, 112, 114, 115, 116, 118, 119, 122, 124, 201, 203, 205, 207, 208, 209, 215, 220, 223, 230]
+
+DS2 = [100, 103, 105, 111, 113, 117, 121, 123, 200, 202, 210, 212, 213, 214, 219, 221, 222, 228, 231, 232, 233, 234]
 
 ## Method
-This code analyzes the state of the beats with 5, 2 classes (see [AAMI recomendation form MIT](### AAMI recomendation form MIT)). 
+This code analyzes the state of the beats with the four classes of the [AAMI recomendation](### AAMI recomendation form MIT)). 
 
 ### 1 Beat Detection
 The *R peak* is know by the dataset (MIT-DB) or can be detected using the following software: 
