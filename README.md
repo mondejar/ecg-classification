@@ -9,7 +9,7 @@ Code for training and test **MIT-BIH Arrhythmia Database** with:
 The data is splited following the **inter-patient** scheme proposed by [Chazal *et al*](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1306572)., i.e the training and eval set not contain any patient in common.
 
 ## Method
-This code classifies the signal at beat-level following the class labeling of the [AAMI recomendation](###AAMI-recomendation-for-MIT)). 
+This code classifies the signal at beat-level following the class labeling of the [AAMI recomendation](###aami-recomendation-for-mit). 
 
 ### 1 Preprocess:
 First, the baseline of the signal is substracted. Additionally, some noise removal can be done.
@@ -34,7 +34,7 @@ The signal resulting from the second filter operation contains the baseline wand
 ```
 
 ### 2 Beat Detection
-In this work the annotations of the MIT-BIH arrhyhtmia was used in order to detect the R-peak positions. However, in practise they can be detected using the following software (see [Software references: Beat Detection](#Software-references:-Beat-Detection)). 
+In this work the annotations of the MIT-BIH arrhyhtmia was used in order to detect the R-peak positions. However, in practise they can be detected using the following software (see [Software references: Beat Detection](#software-references:-beat-detection)). 
 
 ### 3 Feature Descriptor
 In order to describe the beats for classification purpose, we employ the following  features:
@@ -140,12 +140,7 @@ rsync -Cavz physionet.org::incartdb /home/mondejar/dataset/ECG/incartdb
 47 Patients:
 
 * 100 series: 23 samples
-  
-  100, 101, 103, 104, ..., 124
-
 * 200 series: 25 samples. **Contains uncommon but clinically important arrhythmias**
-
-  200, 201, 203, 205, ..., 234
 
 | Symbol|   Meaning                                   |
 |-------|---------------------------------------------|
@@ -245,12 +240,14 @@ NOTE:*The beats whose Q and S points were not detected are considered as outlier
 
 # References
 
-S. Osowski and T. H. Linh, “Ecg beat recognition using fuzzy hybrid neural network,” IEEE Transactions on Biomedical Engineering, vol. 48, no. 11, pp. 1265–1271, Nov 2001.
+* S. Osowski and T. H. Linh, “Ecg beat recognition using fuzzy hybrid neural network,” IEEE Transactions on Biomedical Engineering, vol. 48, no. 11, pp. 1265–1271, Nov 2001.
 
-de Lannoy G., François D., Delbeke J., Verleysen M. (2011) Weighted SVMs and Feature Relevance Assessment in Supervised Heart Beat Classification. In: Fred A., Filipe J., Gamboa H. (eds) Biomedical Engineering Systems and Technologies. BIOSTEC 2010. Communications in Computer and Information Science, vol 127. Springer, Berlin, Heidelberg
+* de Lannoy G., François D., Delbeke J., Verleysen M. (2011) Weighted SVMs and Feature Relevance Assessment in Supervised Heart Beat Classification. In: Fred A., Filipe J., Gamboa H. (eds) Biomedical Engineering Systems and Technologies. BIOSTEC 2010. Communications in Computer and Information Science, vol 127. Springer, Berlin, Heidelberg
 
-E. J. da S. Luz, W. R. Schwartz, G. Cmara-Chvez, and D. Menotti, “Ecg-based heartbeat classification for arrhythmia detection: A survey,” Computer Methods and Programs in Biomedicine, vol. 127, no. Supplement C, pp. 144 – 164, 2016
+* E. J. da S. Luz, W. R. Schwartz, G. Cmara-Chvez, and D. Menotti, “Ecg-based heartbeat classification for arrhythmia detection: A survey,” Computer Methods and Programs in Biomedicine, vol. 127, no. Supplement C, pp. 144 – 164, 2016
 
-P. de Chazal, M. O’Dwyer, and R. B. Reilly, “Automatic classification
+* P. de Chazal, M. O’Dwyer, and R. B. Reilly, “Automatic classification
 of heartbeats using ecg morphology and heartbeat interval features,”
 IEEE Transactions on Biomedical Engineering, vol. 51, no. 7, pp. 1196–1206, July 2004.
+
+* Z. Zhang, J. Dong, X. Luo, K.-S. Choi, and X. Wu, “Heartbeat classification using disease-specific feature selection,” Computers in Biology and Medicine, vol. 46, no. Supplement C, pp. 79 – 89, 2014

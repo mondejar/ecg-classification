@@ -1,3 +1,5 @@
 matlab/*
 matlab/results/*
 third_party/*
+
+python/*.pyc

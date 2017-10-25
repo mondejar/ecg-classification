@@ -24,6 +24,10 @@ from mit_db import *
 
 # Load the data with the configuration and features selected
 def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_morph):
+
+    # TODO export features,labels .csv? 
+    # If exist the same configuration and features selected load the .csv file!
+
     print("Loading MIT BIH arr (" + DS + ") ...")
 
     DS1 = [101, 106, 108, 109, 112, 114, 115, 116, 118, 119, 122, 124, 201, 203, 205, 207, 208, 209, 215, 220, 223, 230]
@@ -94,6 +98,7 @@ def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_m
 
     # Wavelets
     if 'wavelets' in compute_morph:
+        print("Wavelets ...")
         f_wav = np.empty((0,23))
 
         for p in range(len(my_db.beat)):
@@ -109,6 +114,7 @@ def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_m
     
     # HOS
     if 'HOS' in compute_morph:
+        print("HOS ...")
         n_intervals = 6
         lag = int(round( (winL + winR )/ n_intervals))
 
@@ -116,7 +122,7 @@ def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_m
 
         for p in range(len(my_db.beat)):
             for b in my_db.beat[p]:
-                hos_b = np.empty((0,10))
+                hos_b = np.zeros((10))
                 for i in range(0, n_intervals-1):
                     pose = (lag * i)
                     interval = b[pose:(pose + lag - 1)]
@@ -129,12 +135,51 @@ def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_m
         features = np.column_stack((features, f_HOS))  if features.size else f_HOS
 
     # My morphological descriptor
-    #if 'myMorph' in compute_morph:
+    if 'myMorph' in compute_morph:
+        print("My Descriptor ...")
+
+        R_pos = 90
+        f_myMorhp = np.empty((0,4))
+        for p in range(len(my_db.beat)):
+            for b in my_db.beat[p]:
+                my_morph = np.zeros((4))
+
+                # Obtain (max/min) values and index from the intervals
+                [y_values[0], x_values[0]] = max(enumerate(b[0:40]), key=operator.itemgetter(1))
+                [y_values[1], x_values[1]] = min(enumerate(b[75:85]), key=operator.itemgetter(1))
+                [y_values[2], x_values[2]] = min(enumerate(b[95:105]), key=operator.itemgetter(1))
+                [y_values[3], x_values[3]] = max(enumerate(b[150:180]), key=operator.itemgetter(1))
+    
+                x_values[1] = x_values[1] + 75
+                x_values[2] = x_values[2] + 95
+                x_values[3] = x_values[3] + 150
+    
+                # Norm data before compute distance
+                x_max = max( [x_values, R_pos])
+                y_max = max( [y_values, R_value])
+                x_min = min( [x_values, R_pos])
+                y_min = min( [y_values, R_value])
+    
+                R_pos = (R_pos - x_min) / (x_max - x_min)
+                R_value = (R_value - y_min) / (y_max - y_min)
+                
+                for n in range(0,4):
+                    x_values[n] = (x_values[n] - x_min) / (x_max - x_min)
+                    y_values[n] = (y_values[n] - y_min) / (y_max - y_min)
+                    x_diff = (R_pos - x_values[n]) 
+                    y_diff = R_value - y_values[n]
+                    my_morph[n] = norm([x_diff, y_diff])
+    
+                if np.isnan(my_morph[n]):
+                    my_morph[n] = 0.0
+
+                f_myMorhp = np.vstack((f_myMorhp, my_morph))
+
+                                   
+        features = np.column_stack((features, f_myMorhp))  if features.size else f_myMorhp
 
 
-        #features = np.column_stack((features, f_myMorhp))  if features.size else f_myMorhp
-
-
+    print("labels")
     # Set labels array!
 
     # TODO Save as: ?
