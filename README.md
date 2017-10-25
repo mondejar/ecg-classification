@@ -9,78 +9,92 @@ Code for training and test **MIT-BIH Arrhythmia Database** with:
 The data is splited following the **inter-patient** scheme proposed by [Chazal *et al*](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1306572)., i.e the training and eval set not contain any patient in common.
 
 ## Method
-This code analyzes the state of the beats with the four classes of the [AAMI recomendation](### AAMI recomendation for MIT)). 
+This code classifies the signal at beat-level following the class labeling of the [AAMI recomendation](###AAMI-recomendation-for-MIT)). 
 
-### 1 Beat Detection
-In this work the annotations of the MIT-BIH arrhyhtmia was used for the R-peak positions. However it can be detected using the following software: 
-
-1. *third_party/pan_tompkin.m*. 
-
-2. [*ecgpuwave*](third_party/README.md) Also gives QRS onset, ofset, T-wave and P-wave
-NOTE:*The beats whose Q and S points were not detected are considered as outliers and automatically rejected from our datasets.*
-
-3. [ex_ecg_sigprocessing](https://es.mathworks.com/help/dsp/examples/real-time-ecg-qrs-detection.html)
-
-4. osea
-
-Then, once the signal is spllited into beats, several features can be computed: 
-
-### 2 Preprocess:
-Usually involves some band-pass filtering to remove noise from signal. 
-It will depends on the frecuency sampling.
+### 1 Preprocess:
+First, the baseline of the signal is substracted. Additionally, some noise removal can be done.
 
 Two median filters are applied for this purpose, of 200-ms and 600-ms.
+Note that this values depend on the frecuency sampling of the signal.
+
+```python
+    from scipy.signal import medfilt
+    ...
+    
+    # median_filter1D
+    baseline = medfilt(MLII, 71) 
+    baseline = medfilt(baseline, 215) 
+```
+            
 The signal resulting from the second filter operation contains the baseline wanderings and can be subtracted from the original signal.
+```python        
+    # Remove Baseline
+    for i in range(0, len(MLII)):
+        MLII[i] = MLII[i] - baseline[i]
+```
+
+### 2 Beat Detection
+In this work the annotations of the MIT-BIH arrhyhtmia was used in order to detect the R-peak positions. However, in practise they can be detected using the following software (see [Software references: Beat Detection](#Software-references:-Beat-Detection)). 
 
 ### 3 Feature Descriptor
+In order to describe the beats for classification purpose, we employ the following  features:
 
-The inputs of the machine learning methods are form by a combinations of these features:
+1. **Morphological**: for this features a window of [-90, 90] is centred along the R-peak:
 
-1. **Morphological**: for this features typically a window is centered along the R-peak:
-
-    0. **RAW** signal
+    0. **RAW-Signal** (180): is the most simplier descriptor. Just employ the amplitude values from the signal delimited by the window.
     
-    1. **Wavelets** (25): The signal is decomposed using *wave_decomposition* function using family *db8*  and 4 levels. 
+    1. **Wavelets** (23): The wavelet transforms have the capability to allow information extraction from both frequency and time domains, which make them suitable for ECG description. The signal is decomposed using *wave_decomposition* function using family *db1*  and 3 levels. 
 
-    3. **HOS** (): extracted from 2-3-4th order cumulant.
-    Python: https://docs.scipy.org/doc/scipy-0.19.0/reference/generated/scipy.stats.kstat.html
+    ```python
+        import pywt
+        ...
+
+        db1 = pywt.Wavelet('db1')
+        coeffs = pywt.wavedec(beat, db1, level=3)
+        wavel = coeffs[0]
+    ```
+
+    3. **HOS** (10): extracted from 3-4th order cumulant.
+    ```python
+        import scipy.stats
+        ...
+        
+        n_intervals = 6
+        lag = int(round( (winL + winR )/ n_intervals))
+        ...
+        # For each beat 
+        for i in range(0, n_intervals-1):
+            pose = (lag * i)
+            interval = beat[pose:(pose + lag - 1)]
+            # Skewness  
+            hos_b[i] = scipy.stats.skew(interval, 0, True)
+            # Kurtosis
+            hos_b[5+i] = scipy.stats.kurtosis(interval, 0, False, True)
+    ```
+
+    4. **My Descriptor**: computed from the Euclidean distance of some points against the R-peak
 
 
-2. **Interval RR** (4): information extracted about the rhythm 
+2. **Interval RR** (4): intervals computed from the time between consequent beats. There are the most common feature employed for ECG classification. 
     1. pre_RR
     2. post_RR
     3. local_RR
     4. global_RR
 
-3. **Normalized RR** (4): normalized the RR by division with the AVG value from the patient.
+3. **Normalized RR** (4): RR interval normalized by the division with the AVG value from each patient.
     1. pre_RR / AVG(pre_RR)
     2. post_RR / AVG(post_RR)
     3. local_RR / AVG(local_RR) 
     4. global_RR / AVG(global_RR)   
 
- ***NOTA** TODO: Beats having a R–R interval smaller than 150 ms or higher than 2 s most probably involve segmentation errors and are discarded. Extracted from: Weighted Conditional Random Fields for Supervised Interpatient Heartbeat Classification* 
+ **TODO**: 
+ *Beats having a R–R interval smaller than 150 ms or higher than 2 s most probably involve segmentation errors and are discarded*. Extracted from: Weighted Conditional Random Fields for Supervised Interpatient Heartbeat Classification* 
 
 
-### Normalization of the features
+### 4 Normalization of the features
 
-
-
-## Top-Papers:
-
-### [Weighted SVMs and Feature Relevance Assessment in Supervised Heart Beat Classification] 2010
-
-### [Electrocardiogram Classification Using Reservoir Computing With Logistic Regression] 2015
-(http://ieeexplore.ieee.org/document/6840304/)
-Cites: 10   (RETIRADO DE LA REVISTA)
-        
-        Best method in the survey: *ECG-based heartbeat classification for arrhythmia detection: A survey*
-
-### [ECG-based heartbeat classification for arrhythmia detection: A survey] 2016
-(http://www.sciencedirect.com/science/article/pii/S0169260715003314) Cites: 18
-
-
-### [Automatic Classification of Heartbeats Using ECG Morphology and Heartbeat Interval Features] 2004
-(http://www.sciencedirect.com/science/article/pii/S0169260715003314) Cites 740
+Before train the models. All the input data was standardized with [z-score](https://en.wikipedia.org/wiki/Standard_score), i.e the values
+of each dimension are divided by its standard desviation and substracted by its mean.
 
 
 # About datasets:
@@ -179,13 +193,13 @@ rsync -Cavz physionet.org::incartdb /home/mondejar/dataset/ECG/incartdb
 ### AAMI recomendation for MIT 
 There are 15 recommended classes for arrhythmia that are classified into 5 superclasses: 
 
-| SuperClass| | | | | | 
-|------|--------|---|---|---|---|
-| N  (Normal)  | N      | L | R | e | j |
-| SVEB (Supraventricular ectopic beat) | A      | a | J | S |   |
-| VEB  (Ventricular ectopic beat)| V      | E |   |   |   |
-| F    (Fusion beat) | F      |   |   |   |   |
-| Q   (Unknown beat)  | P      | / | f | u |   |   
+| SuperClass| | | | | | | 
+|------|--------|---|---|---|---|-|
+| N  (Normal)  | N      | L | R |  |  | |
+| SVEB (Supraventricular ectopic beat) | A      | a | J | S |  e | j |
+| VEB  (Ventricular ectopic beat)| V      | E |   |   |   | |
+| F    (Fusion beat) | F      |   |   |   |   | |
+| Q   (Unknown beat)  | P      | / | f | u |   |    |
 
 ### Inter-patient train/test split ([Chazal *et al*](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1306572)):
 DS_1 Train: 101, 106, 108, 109, 112, 114, 115, 116, 118, 119, 122, 124, 201, 203, 205, 207, 208, 209, 215, 220, 223, 230
@@ -213,3 +227,30 @@ Gains for each record are specified in its .hea file.
 The reference annotation files contain over 175,000 beat annotations in all.
 
 The original records were collected from patients undergoing tests for coronary artery disease (17 men and 15 women, aged 18-80; mean age: 58). None of the patients had pacemakers; most had ventricular ectopic beats. In selecting records to be included in the database, preference was given to subjects with ECGs consistent with ischemia, coronary artery disease, conduction abnormalities, and arrhythmias;observations of those selected included:
+
+
+
+# Software references: Beat Detection
+1. [*Pan Tompkins*](https://es.mathworks.com/matlabcentral/fileexchange/45840-complete-pan-tompkins-implementation-ecg-qrs-detector)
+    
+    [third_party/Pan_Tompkins_ECG_v7/pan_tompkin.m](third_party/Pan_Tompkins_ECG_v7/pan_tompkin.m)
+
+2. [*ecgpuwave*](third_party/README.md) Also gives QRS onset, ofset, T-wave and P-wave
+NOTE:*The beats whose Q and S points were not detected are considered as outliers and automatically rejected from our datasets.*
+
+3. [ex_ecg_sigprocessing](https://es.mathworks.com/help/dsp/examples/real-time-ecg-qrs-detection.html)
+
+4. osea
+
+
+# References
+
+S. Osowski and T. H. Linh, “Ecg beat recognition using fuzzy hybrid neural network,” IEEE Transactions on Biomedical Engineering, vol. 48, no. 11, pp. 1265–1271, Nov 2001.
+
+de Lannoy G., François D., Delbeke J., Verleysen M. (2011) Weighted SVMs and Feature Relevance Assessment in Supervised Heart Beat Classification. In: Fred A., Filipe J., Gamboa H. (eds) Biomedical Engineering Systems and Technologies. BIOSTEC 2010. Communications in Computer and Information Science, vol 127. Springer, Berlin, Heidelberg
+
+E. J. da S. Luz, W. R. Schwartz, G. Cmara-Chvez, and D. Menotti, “Ecg-based heartbeat classification for arrhythmia detection: A survey,” Computer Methods and Programs in Biomedicine, vol. 127, no. Supplement C, pp. 144 – 164, 2016
+
+P. de Chazal, M. O’Dwyer, and R. B. Reilly, “Automatic classification
+of heartbeats using ecg morphology and heartbeat interval features,”
+IEEE Transactions on Biomedical Engineering, vol. 51, no. 7, pp. 1196–1206, July 2004.

@@ -11,28 +11,144 @@ Mondejar Guerra, Victor M.
 import os
 import csv
 import operator
+import gc
+import cPickle as pickle
+
+import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import medfilt
-import numpy as np
+import scipy.stats
+import pywt
 
 from mit_db import *
 
-# Following the inter-patient scheme division by [] DS1 / DS2
-def main(args):
-    print("Main example of load_MITBIH database")
+# Load the data with the configuration and features selected
+def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_morph):
+    print("Loading MIT BIH arr (" + DS + ") ...")
 
     DS1 = [101, 106, 108, 109, 112, 114, 115, 116, 118, 119, 122, 124, 201, 203, 205, 207, 208, 209, 215, 220, 223, 230]
     DS2 = [100, 103, 105, 111, 113, 117, 121, 123, 200, 202, 210, 212, 213, 214, 219, 221, 222, 228, 231, 232, 233, 234]
 
-    do_preprocess = True
-    maxRR = True
+    db_path = '/home/mondejar/dataset/ECG/mitdb/'
 
-    winL = 90
-    winR = 90
+    mit_pickle_name = db_path + 'm_learning/python_mit'
+    if do_preprocess:
+        mit_pickle_name = mit_pickle_name + '_rm_bsline'
+    if maxRR:
+        mit_pickle_name = mit_pickle_name + '_max_RR'
+    mit_pickle_name = mit_pickle_name + '_wL_' + str(winL) + '_wR_' + str(winR)
+    mit_pickle_name = mit_pickle_name + '_' + DS + '.p'
 
-    load_signal(DS1, winL, winR, do_preprocess, maxRR)
+    # If the data with that configuration has been already computed Load pickle
+    if os.path.isfile(mit_pickle_name):
+        f = open(mit_pickle_name, 'rb')
+        # disable garbage collector       
+        gc.disable()# this improve the required loading time!
+        my_db = pickle.load(f)
+        gc.enable()
+        f.close()
 
-# Compute features RR interval for each  beat
+    else: # Load data and compute de RR features 
+        if DS == 'DS1':
+            my_db = load_signal(DS1, winL, winR, do_preprocess, maxRR)
+        else:
+            my_db = load_signal(DS2, winL, winR, do_preprocess, maxRR)
+
+        print("Saving signal processed data ...")
+        # Save data
+        # Protocol version 0 is the original ASCII protocol and is backwards compatible with earlier versions of Python.
+        # Protocol version 1 is the old binary format which is also compatible with earlier versions of Python.
+        # Protocol version 2 was introduced in Python 2.3. It provides much more efficient pickling of new-style classes.
+        f = open(mit_pickle_name, 'wb')
+        pickle.dump(my_db, f, 2)
+
+    features = np.array([], dtype=float)
+    labels = np.array([], dtype=np.int32)
+
+    # RR features
+    if use_RR:
+        f_RR = np.empty((0,4))
+        for p in range(len(my_db.RR)):
+            row = np.column_stack((my_db.RR[p].pre_R, my_db.RR[p].post_R, my_db.RR[p].local_R, my_db.RR[p].global_R))
+            f_RR = np.vstack((f_RR, row))
+
+        features = np.column_stack((features, f_RR))  if features.size else f_RR
+    
+    if norm_RR:
+        f_RR_norm = np.empty((0,4))
+        for p in range(len(my_db.RR)):
+            # Compute avg values!
+            avg_pre_R = np.average(my_db.RR[p].pre_R)
+            avg_post_R = np.average(my_db.RR[p].post_R)
+            avg_local_R = np.average(my_db.RR[p].local_R)
+            avg_global_R = np.average(my_db.RR[p].global_R)
+
+            row = np.column_stack((my_db.RR[p].pre_R / avg_pre_R, my_db.RR[p].post_R / avg_post_R, my_db.RR[p].local_R / avg_local_R, my_db.RR[p].global_R / avg_global_R))
+            f_RR_norm = np.vstack((f_RR_norm, row))
+
+        features = np.column_stack((features, f_RR_norm))  if features.size else f_RR_norm
+
+    #########################################################################################
+    # Compute morphological features
+    print("Computing morphological features (" + DS + ") ...")
+
+    # Wavelets
+    if 'wavelets' in compute_morph:
+        f_wav = np.empty((0,23))
+
+        for p in range(len(my_db.beat)):
+            for b in my_db.beat[p]:
+                db1 = pywt.Wavelet('db1')
+                coeffs = pywt.wavedec(b, db1, level=3)
+                wav = coeffs[0]
+                
+                f_wav = np.vstack((f_wav, wav))
+
+        features = np.column_stack((features, f_wav))  if features.size else f_wav
+
+    
+    # HOS
+    if 'HOS' in compute_morph:
+        n_intervals = 6
+        lag = int(round( (winL + winR )/ n_intervals))
+
+        f_HOS = np.empty((0,10))
+
+        for p in range(len(my_db.beat)):
+            for b in my_db.beat[p]:
+                hos_b = np.empty((0,10))
+                for i in range(0, n_intervals-1):
+                    pose = (lag * i)
+                    interval = b[pose:(pose + lag - 1)]
+                    # Skewness  
+                    hos_b[i] = scipy.stats.skew(interval, 0, True)
+                    # Kurtosis
+                    hos_b[5+i] = scipy.stats.kurtosis(interval, 0, False, True)
+               
+                f_HOS = np.vstack((f_HOS, hos_b))
+        features = np.column_stack((features, f_HOS))  if features.size else f_HOS
+
+    # My morphological descriptor
+    #if 'myMorph' in compute_morph:
+
+
+        #features = np.column_stack((features, f_myMorhp))  if features.size else f_myMorhp
+
+
+    # Set labels array!
+
+    # TODO Save as: ?
+    # feature_00, feature_0M, labels_0
+    # ....
+    # feature_N0, feature_NM, labels_N
+    
+    # Return features and labels
+    return features, labels
+
+
+
+
+# Compute features RR interval for each beat 
 def compute_RR_intervals(R_poses):
     features_RR = RR_intervals()
 
@@ -88,6 +204,9 @@ def compute_RR_intervals(R_poses):
     return features_RR
 
 # DS: contains the patient list for load
+# winL, winR: indicates the size of the window centred at R-peak at left and right side
+# do_preprocess: indicates if preprocesing of remove baseline on signal is performed
+# maxRR: indicates if the beats selected are centred exactly on the max value from R mountain
 def load_signal(DS, winL, winR, do_preprocess, maxRR):
 
     class_ID = [[] for i in range(len(DS))]
@@ -142,6 +261,8 @@ def load_signal(DS, winL, winR, do_preprocess, maxRR):
     #for r, a in zip(fRecords, fAnnotations):
     for r in range(0, len(fRecords)):
 
+        print("Processing signal " + str(r) + " / " + str(len(fRecords)) + "...")
+
         # 1. Read signalR_poses
         filename = pathDB + DB_name + "/csv/" + fRecords[r]
         print filename
@@ -154,7 +275,7 @@ def load_signal(DS, winL, winR, do_preprocess, maxRR):
 
         MLII = []
         for row in reader:
-            MLII.append(float(row[1]))
+            MLII.append(int(row[1]))
             #V1.append(row[2])
         f.close()
 
@@ -173,9 +294,10 @@ def load_signal(DS, winL, winR, do_preprocess, maxRR):
         f.close
         # 3. Preprocessing signal!
         if do_preprocess:
+            #scipy.signal
             # median_filter1D
-            baseline = medfilt(MLII, 71) #scipy.signal
-            baseline = medfilt(baseline, 215) #scipy.signal
+            baseline = medfilt(MLII, 71) 
+            baseline = medfilt(baseline, 215) 
 
             # Remove Baseline
             for i in range(0, len(MLII)):
@@ -246,7 +368,3 @@ def load_signal(DS, winL, winR, do_preprocess, maxRR):
     my_db.orig_R_pos = Original_R_poses
     
     return my_db
-
-if __name__ == '__main__':
-    import sys
-    main(sys.argv[1:])

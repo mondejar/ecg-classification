@@ -9,23 +9,23 @@ Mondejar Guerra, Victor M.
 """
 
 from load_MITBIH import *
-import pickle
 
 def main(args):
+    print("Train SVM !")
 
-# Load signal
+    # Define configuration
+    winL = 90
+    winR = 90
+    do_preprocess = True
+    maxRR = True
+    use_RR = True
+    norm_RR = True
+    compute_morph = {'wavelets', 'HOS', 'myMorph'}
+    
+    # Load data 
+    [features, labels] = load_mit_db('DS1', winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_morph)
 
-# save as equivalent to .mat in a auxiliary directory...
-
-#    pickle.dump(mit_db, open(output_path + 'mit_db_' + str(window_size) + '.p', 'wb'), 2)
-#else:
-# Load data
-#    mit_db  = pickle.load(open(output_path + 'mit_db_' + str(window_size) + '.p', 'rb'))
-
-# Compute features
-
-# Train
-
+    # Train
 
 if __name__ == '__main__':
     import sys

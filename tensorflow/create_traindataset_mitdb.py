@@ -166,7 +166,7 @@ if not os.path.exists(output_path + 'mit_db_' + str(window_size) + '.p'):
                     if np.size(signal_II_w[r]) == 0:
                         signal_II_w[r] = beat
                     else:
-                        signal_II_w[r] = np.vstack([signal_II_w[r], beat])
+                        signamit_pickle_namel_II_w[r] = np.vstack([signal_II_w[r], beat])
                         
                     classes[r].append(type)
                     selected_R[r] = np.append(selected_R[r], 1)
