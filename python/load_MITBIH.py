@@ -23,7 +23,7 @@ import pywt
 from mit_db import *
 
 # Load the data with the configuration and features selected
-def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_morph):
+def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_morph, db_path):
 
     # TODO export features,labels .csv? 
     # If exist the same configuration and features selected load the .csv file!
@@ -33,9 +33,7 @@ def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_m
     DS1 = [101, 106, 108, 109, 112, 114, 115, 116, 118, 119, 122, 124, 201, 203, 205, 207, 208, 209, 215, 220, 223, 230]
     DS2 = [100, 103, 105, 111, 113, 117, 121, 123, 200, 202, 210, 212, 213, 214, 219, 221, 222, 228, 231, 232, 233, 234]
 
-    db_path = '/home/mondejar/dataset/ECG/mitdb/'
-
-    mit_pickle_name = db_path + 'm_learning/python_mit'
+    mit_pickle_name = db_path + 'python_mit'
     if do_preprocess:
         mit_pickle_name = mit_pickle_name + '_rm_bsline'
     if maxRR:
@@ -111,7 +109,6 @@ def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_m
 
         features = np.column_stack((features, f_wav))  if features.size else f_wav
 
-    
     # HOS
     if 'HOS' in compute_morph:
         print("HOS ...")
@@ -119,8 +116,10 @@ def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_m
         lag = int(round( (winL + winR )/ n_intervals))
 
         f_HOS = np.empty((0,10))
-
+        aux = 0
         for p in range(len(my_db.beat)):
+            aux = aux+1
+            print(aux)
             for b in my_db.beat[p]:
                 hos_b = np.zeros((10))
                 for i in range(0, n_intervals-1):
@@ -138,27 +137,30 @@ def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_m
     if 'myMorph' in compute_morph:
         print("My Descriptor ...")
 
-        R_pos = 90
         f_myMorhp = np.empty((0,4))
         for p in range(len(my_db.beat)):
             for b in my_db.beat[p]:
-                my_morph = np.zeros((4))
+                R_pos = int((winL + winR) / 2)
 
+                R_value = b[R_pos]
+                my_morph = np.zeros((4))
+                y_values = np.zeros(4)
+                x_values = np.zeros(4)
                 # Obtain (max/min) values and index from the intervals
-                [y_values[0], x_values[0]] = max(enumerate(b[0:40]), key=operator.itemgetter(1))
-                [y_values[1], x_values[1]] = min(enumerate(b[75:85]), key=operator.itemgetter(1))
-                [y_values[2], x_values[2]] = min(enumerate(b[95:105]), key=operator.itemgetter(1))
-                [y_values[3], x_values[3]] = max(enumerate(b[150:180]), key=operator.itemgetter(1))
+                [x_values[0], y_values[0]] = max(enumerate(b[0:40]), key=operator.itemgetter(1))
+                [x_values[1], y_values[1]] = min(enumerate(b[75:85]), key=operator.itemgetter(1))
+                [x_values[2], y_values[2]] = min(enumerate(b[95:105]), key=operator.itemgetter(1))
+                [x_values[3], y_values[3]] = max(enumerate(b[150:180]), key=operator.itemgetter(1))
     
                 x_values[1] = x_values[1] + 75
                 x_values[2] = x_values[2] + 95
                 x_values[3] = x_values[3] + 150
     
                 # Norm data before compute distance
-                x_max = max( [x_values, R_pos])
-                y_max = max( [y_values, R_value])
-                x_min = min( [x_values, R_pos])
-                y_min = min( [y_values, R_value])
+                x_max = max(x_values)
+                y_max = max(np.append(y_values, R_value))
+                x_min = min(x_values)
+                y_min = min(np.append(y_values, R_value))
     
                 R_pos = (R_pos - x_min) / (x_max - x_min)
                 R_value = (R_value - y_min) / (y_max - y_min)
@@ -168,7 +170,8 @@ def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_m
                     y_values[n] = (y_values[n] - y_min) / (y_max - y_min)
                     x_diff = (R_pos - x_values[n]) 
                     y_diff = R_value - y_values[n]
-                    my_morph[n] = norm([x_diff, y_diff])
+                    my_morph[n] =  np.linalg.norm([x_diff, y_diff])
+                    # TODO test with np.sqrt(np.dot(x_diff, y_diff))
     
                 if np.isnan(my_morph[n]):
                     my_morph[n] = 0.0
@@ -178,19 +181,19 @@ def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_m
                                    
         features = np.column_stack((features, f_myMorhp))  if features.size else f_myMorhp
 
-
+    
+    labels = np.array(sum(my_db.class_ID, [])).flatten()
     print("labels")
     # Set labels array!
 
     # TODO Save as: ?
+    # input_data = np.column_stack((features, labels))
     # feature_00, feature_0M, labels_0
     # ....
     # feature_N0, feature_NM, labels_N
     
     # Return features and labels
     return features, labels
-
-
 
 
 # Compute features RR interval for each beat 

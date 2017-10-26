@@ -9,30 +9,126 @@ Mondejar Guerra, Victor M.
 """
 
 from load_MITBIH import *
+from evaluation_AAMI import *
+
+import sklearn
+from sklearn.externals import joblib
+from sklearn.preprocessing import StandardScaler
+from sklearn import svm
+
+def create_svm_model_name(model_svm_path, winL, winR, do_preprocess, use_RR, norm_RR, compute_morph, use_weight_class):
+
+    if do_preprocess:
+        model_svm_path = model_svm_path + '_rm_bsln'
+    
+    if use_RR:
+        model_svm_path = model_svm_path + '_RR'
+    
+    if norm_RR:
+        model_svm_path = model_svm_path + '_norm_RR'
+    
+    if 'wavelets' in compute_morph:
+        model_svm_path = model_svm_path + '_wvlt'
+
+    if 'HOS' in compute_morph:
+        model_svm_path = model_svm_path + '_HOS'
+
+    if 'myMorph' in compute_morph:
+        model_svm_path = model_svm_path + '_myMorph'
+
+    if use_weight_class:
+        model_svm_path = model_svm_path + '_weighted'
+
+    return model_svm_path
 
 def main(args):
-    print("Train SVM !")
+    print("Runing train_SVM.py!")
+
+    db_path = '/home/mondejar/dataset/ECG/mitdb/m_learning/'
 
     # Define configuration
     winL = 90
     winR = 90
     do_preprocess = True
+    use_weight_class = True
     maxRR = True
     use_RR = True
     norm_RR = True
-    compute_morph = {'wavelets', 'HOS', 'myMorph'}
+    compute_morph = {} # 'wavelets', 'HOS'
     
-    # Load data 
-    [features, labels] = load_mit_db('DS1', winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_morph)
+    # Load train data 
+    [tr_features, tr_labels] = load_mit_db('DS1', winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_morph, db_path)
+    # np.savetxt('mit_db/DS1_labels.csv', tr_labels.astype(int), '%.0f') 
+    # Do oversampling?
 
-    # Train
+    # Normalization of the input data
+    # scaled: zero mean unit variance ( z-score )
+    scaler = StandardScaler()
+    scaler.fit(tr_features)
+    tr_features_scaled = scaler.transform(tr_features)
+    # NOTE for cross validation use: 
+    # pipeline = Pipeline([('transformer', scalar), ('estimator', clf)]) instead of "StandardScaler()"
 
+    ##############################
+    # Train SVM model
 
-    # Export model
+    model_svm_path = db_path + 'svm_models_py/rbf'
+    model_svm_path = create_svm_model_name(model_svm_path, winL, winR, do_preprocess, use_RR, norm_RR, compute_morph, use_weight_class)
+    model_svm_path = model_svm_path + '.joblib.pkl' # add extension
 
-    # Test model?
+    print("Training model on MIT-BIH DS1: " + model_svm_path + "...")
 
+    if os.path.isfile(model_svm_path):
+        # Load the trained model!
+        svm_model = joblib.load(model_svm_path)
 
+    else:
+        svm_model = svm.SVC(C=1.0, kernel='rbf', degree=3, gamma='auto', 
+            coef0=0.0, shrinking=True, probability=True, tol=0.001, 
+            cache_size=200, class_weight='balanced', verbose=False, max_iter=-1, 
+            decision_function_shape='ovo', random_state=None)
+        
+        # Let's Train!
+        svm_model.fit(tr_features_scaled, tr_labels) 
+        # TODO assert that the class_ID appears with the desired order, 
+        # with the goal of ovo make the combinations properly
+        print("Trained completed!\n\t" + model_svm_path)
+
+        # Export model: save/write trained SVM model
+        joblib.dump(svm_model, model_svm_path)
+    
+    ##############################
+    ## Test SVM model
+    print("Testing model on MIT-BIH DS2: " + model_svm_path + "...")
+
+    [eval_features, eval_labels] = load_mit_db('DS2', winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_morph, db_path)
+    #np.savetxt('mit_db/DS2_labels.csv', eval_labels.astype(int), '%.0f') 
+
+    # Normalization of the input data
+    # scaled: zero mean unit variance ( z-score )
+    eval_features_scaled = scaler.transform(eval_features)
+
+    # Let's test new data!
+    #predicts_ovo        = svm_model.decision_function(eval_features_scaled)
+    # TODO combine these values to get a final prediction!
+    #predicts_log_proba  = svm_model.predict_log_proba(eval_features_scaled)
+    #predicts_proba      = svm_model.predict_proba(eval_features_scaled)
+
+    predicts            = svm_model.predict(eval_features_scaled)
+
+    print("Evaluation")
+    perf_measures = compute_AAMI_performance_measures(predicts, eval_labels)
+    
+    perf_measures_filename = create_svm_model_name('results/conf', winL, winR, do_preprocess, use_RR, norm_RR, compute_morph, use_weight_class)
+    # Write results and also predictions on DS2
+    write_AAMI_results( perf_measures, perf_measures_filename + '_Ijk_' + str(format(perf_measures.Ijk, '.2f')) + '.txt')
+    
+    # Array to .csv
+    np.savetxt(perf_measures_filename + '_predicts.csv', predicts.astype(int), '%.0f') 
+
+    print("Results writed at " )
+
+    
 if __name__ == '__main__':
     import sys
     main(sys.argv[1:])

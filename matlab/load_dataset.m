@@ -337,7 +337,7 @@ if(sum(morphology_type == 4))
     db_features = db.features_wave;
     features_wave = [];
     
-        R_pos = 91;
+        
         %% NOTE:
         % Usar mas puntos en comparaciones? algun criterio basado en
         % distribuciones, en general.. poder definir este descriptor de una
@@ -360,6 +360,8 @@ if(sum(morphology_type == 4))
                 for s=1:2
                     if signals_used(s)
     
+                        R_pos = 91;
+                        
                         % clean high freq noise
                         features = zeros(4, 1);
                         R_value = db.signals{s, p}(91, b);
