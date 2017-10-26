@@ -16,28 +16,28 @@ from sklearn.externals import joblib
 from sklearn.preprocessing import StandardScaler
 from sklearn import svm
 
-def create_svm_model_name(model_svm_path, winL, winR, do_preprocess, use_RR, norm_RR, compute_morph, use_weight_class):
+def create_svm_model_name(model_svm_path, winL, winR, do_preprocess, use_RR, norm_RR, compute_morph, use_weight_class, delimiter):
 
     if do_preprocess:
-        model_svm_path = model_svm_path + '_rm_bsln'
+        model_svm_path = model_svm_path + delimiter + 'rm_bsln'
     
     if use_RR:
-        model_svm_path = model_svm_path + '_RR'
+        model_svm_path = model_svm_path + delimiter + 'RR'
     
     if norm_RR:
-        model_svm_path = model_svm_path + '_norm_RR'
+        model_svm_path = model_svm_path + delimiter + 'norm_RR'
     
     if 'wavelets' in compute_morph:
-        model_svm_path = model_svm_path + '_wvlt'
+        model_svm_path = model_svm_path + delimiter + 'wvlt'
 
     if 'HOS' in compute_morph:
-        model_svm_path = model_svm_path + '_HOS'
+        model_svm_path = model_svm_path + delimiter + 'HOS'
 
     if 'myMorph' in compute_morph:
-        model_svm_path = model_svm_path + '_myMorph'
+        model_svm_path = model_svm_path + delimiter + 'myMorph'
 
     if use_weight_class:
-        model_svm_path = model_svm_path + '_weighted'
+        model_svm_path = model_svm_path + delimiter + 'weighted'
 
     return model_svm_path
 
@@ -71,10 +71,11 @@ def main(args):
 
     ##############################
     # Train SVM model
+    C_value = 1.0
 
     model_svm_path = db_path + 'svm_models_py/rbf'
-    model_svm_path = create_svm_model_name(model_svm_path, winL, winR, do_preprocess, use_RR, norm_RR, compute_morph, use_weight_class)
-    model_svm_path = model_svm_path + '.joblib.pkl' # add extension
+    model_svm_path = create_svm_model_name(model_svm_path, winL, winR, do_preprocess, use_RR, norm_RR, compute_morph, use_weight_class, '_')
+    model_svm_path = model_svm_path + '_C_' +  str(C_value) + '.joblib.pkl' # add extension
 
     print("Training model on MIT-BIH DS1: " + model_svm_path + "...")
 
@@ -83,7 +84,7 @@ def main(args):
         svm_model = joblib.load(model_svm_path)
 
     else:
-        svm_model = svm.SVC(C=1.0, kernel='rbf', degree=3, gamma='auto', 
+        svm_model = svm.SVC(C=C_value, kernel='rbf', degree=3, gamma='auto', 
             coef0=0.0, shrinking=True, probability=True, tol=0.001, 
             cache_size=200, class_weight='balanced', verbose=False, max_iter=-1, 
             decision_function_shape='ovo', random_state=None)
@@ -119,12 +120,15 @@ def main(args):
     print("Evaluation")
     perf_measures = compute_AAMI_performance_measures(predicts, eval_labels)
     
-    perf_measures_filename = create_svm_model_name('results/conf', winL, winR, do_preprocess, use_RR, norm_RR, compute_morph, use_weight_class)
+    perf_measures_path = create_svm_model_name('results', winL, winR, do_preprocess, use_RR, norm_RR, compute_morph, use_weight_class, '/')
     # Write results and also predictions on DS2
-    write_AAMI_results( perf_measures, perf_measures_filename + '_Ijk_' + str(format(perf_measures.Ijk, '.2f')) + '.txt')
+    if not os.path.exists(perf_measures_path):
+        os.makedirs(perf_measures_path)
+
+    write_AAMI_results( perf_measures, perf_measures_path + '/C_' + str(C_value) + '_score_Ijk_' + str(format(perf_measures.Ijk, '.2f')) + '.txt')
     
     # Array to .csv
-    np.savetxt(perf_measures_filename + '_predicts.csv', predicts.astype(int), '%.0f') 
+    np.savetxt(perf_measures_path + '/C_' + str(C_value) + '_predicts.csv', predicts.astype(int), '%.0f') 
 
     print("Results writed at " )
 
