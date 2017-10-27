@@ -116,10 +116,7 @@ def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_m
         lag = int(round( (winL + winR )/ n_intervals))
 
         f_HOS = np.empty((0,10))
-        aux = 0
         for p in range(len(my_db.beat)):
-            aux = aux+1
-            print(aux)
             for b in my_db.beat[p]:
                 hos_b = np.zeros((10))
                 for i in range(0, n_intervals-1):

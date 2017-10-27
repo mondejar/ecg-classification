@@ -76,7 +76,7 @@ def compute_AAMI_performance_measures(predictions, gt_labels):
 
         if i == 2: # V 
             # Exceptions for AAMI recomendations:
-            # 1 do not reward or penalize a classifier for the classification of ventricular fusion (F) as VEBs
+            # 1 do not reward or penalize a classifier for the classification of (F) as (V)
             FP = FP - conf_mat[i][3]
         
         pf_ms.Recall[i]       = TP / (TP + FN)

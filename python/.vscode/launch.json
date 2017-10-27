@@ -7,7 +7,7 @@
             "request": "launch",
             "stopOnEntry": true,
             "pythonPath": "${config:python.pythonPath}",
-            "program": "/home/mondejar/Dropbox/ECG/code/ecg_classification/python/train_SVM.py",
+            "program": "/home/mondejar/Dropbox/ECG/code/ecg_classification/python/run_train_SVM.py",
             "cwd": "${workspaceRoot}",
             "env": {},
             "envFile": "${workspaceRoot}/.env",
