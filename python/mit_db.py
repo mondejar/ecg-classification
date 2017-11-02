@@ -37,6 +37,5 @@ class mit_db:
         self.beat = []
         self.class_ID = []   
         self.valid_R = []       
-        self.RR = []
         self.R_pos = []
         self.orig_R_pos = []

@@ -10,7 +10,6 @@ Mondejar Guerra, Victor M.
 
 import os
 import csv
-import operator
 import gc
 import cPickle as pickle
 
@@ -20,7 +19,8 @@ from scipy.signal import medfilt
 import scipy.stats
 import pywt
 
-from mit_db import *
+from features_ECG import *
+
 
 # Load the data with the configuration and features selected
 def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_morph, db_path):
@@ -36,8 +36,7 @@ def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_m
     mit_pickle_name = db_path + 'python_mit'
     if do_preprocess:
         mit_pickle_name = mit_pickle_name + '_rm_bsline'
-    if maxRR:
-        mit_pickle_name = mit_pickle_name + '_max_RR'
+
     mit_pickle_name = mit_pickle_name + '_wL_' + str(winL) + '_wR_' + str(winR)
     mit_pickle_name = mit_pickle_name + '_' + DS + '.p'
 
@@ -52,9 +51,9 @@ def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_m
 
     else: # Load data and compute de RR features 
         if DS == 'DS1':
-            my_db = load_signal(DS1, winL, winR, do_preprocess, maxRR)
+            my_db = load_signal(DS1, winL, winR, do_preprocess)
         else:
-            my_db = load_signal(DS2, winL, winR, do_preprocess, maxRR)
+            my_db = load_signal(DS2, winL, winR, do_preprocess)
 
         print("Saving signal processed data ...")
         # Save data
@@ -67,25 +66,46 @@ def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_m
     features = np.array([], dtype=float)
     labels = np.array([], dtype=np.int32)
 
-    # RR features
+
+    # Compute RR features
+    if use_RR or norm_RR:
+        if DS == 'DS1':
+            RR = [RR_intervals() for i in range(len(DS1))]
+        else:
+            RR = [RR_intervals() for i in range(len(DS2))]
+
+        print("Computing RR intervals ...")
+
+        for p in range(len(my_db.beat)):
+            if maxRR:
+                RR[p] = compute_RR_intervals(my_db.R_pos[p])
+            else:
+                RR[p] = compute_RR_intervals(my_db.orig_R_pos[p])
+                
+            RR[p].pre_R = RR[p].pre_R[(my_db.valid_R[p] == 1)]
+            RR[p].post_R = RR[p].post_R[(my_db.valid_R[p] == 1)]
+            RR[p].local_R = RR[p].local_R[(my_db.valid_R[p] == 1)]
+            RR[p].global_R = RR[p].global_R[(my_db.valid_R[p] == 1)]
+
+
     if use_RR:
         f_RR = np.empty((0,4))
-        for p in range(len(my_db.RR)):
-            row = np.column_stack((my_db.RR[p].pre_R, my_db.RR[p].post_R, my_db.RR[p].local_R, my_db.RR[p].global_R))
+        for p in range(len(RR)):
+            row = np.column_stack((RR[p].pre_R, RR[p].post_R, RR[p].local_R, RR[p].global_R))
             f_RR = np.vstack((f_RR, row))
 
-        features = np.column_stack((features, f_RR))  if features.size else f_RR
+        features = np.column_stack((features, f_RR)) if features.size else f_RR
     
     if norm_RR:
         f_RR_norm = np.empty((0,4))
-        for p in range(len(my_db.RR)):
+        for p in range(len(RR)):
             # Compute avg values!
-            avg_pre_R = np.average(my_db.RR[p].pre_R)
-            avg_post_R = np.average(my_db.RR[p].post_R)
-            avg_local_R = np.average(my_db.RR[p].local_R)
-            avg_global_R = np.average(my_db.RR[p].global_R)
+            avg_pre_R = np.average(RR[p].pre_R)
+            avg_post_R = np.average(RR[p].post_R)
+            avg_local_R = np.average(RR[p].local_R)
+            avg_global_R = np.average(RR[p].global_R)
 
-            row = np.column_stack((my_db.RR[p].pre_R / avg_pre_R, my_db.RR[p].post_R / avg_post_R, my_db.RR[p].local_R / avg_local_R, my_db.RR[p].global_R / avg_global_R))
+            row = np.column_stack((RR[p].pre_R / avg_pre_R, RR[p].post_R / avg_post_R, RR[p].local_R / avg_local_R, RR[p].global_R / avg_global_R))
             f_RR_norm = np.vstack((f_RR_norm, row))
 
         features = np.column_stack((features, f_RR_norm))  if features.size else f_RR_norm
@@ -101,11 +121,7 @@ def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_m
 
         for p in range(len(my_db.beat)):
             for b in my_db.beat[p]:
-                db1 = pywt.Wavelet('db1')
-                coeffs = pywt.wavedec(b, db1, level=3)
-                wav = coeffs[0]
-                
-                f_wav = np.vstack((f_wav, wav))
+                f_wav = np.vstack((f_wav, compute_wavelet_descriptor(b, 'db1', 3)))
 
         features = np.column_stack((features, f_wav))  if features.size else f_wav
 
@@ -118,16 +134,8 @@ def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_m
         f_HOS = np.empty((0,10))
         for p in range(len(my_db.beat)):
             for b in my_db.beat[p]:
-                hos_b = np.zeros((10))
-                for i in range(0, n_intervals-1):
-                    pose = (lag * i)
-                    interval = b[pose:(pose + lag - 1)]
-                    # Skewness  
-                    hos_b[i] = scipy.stats.skew(interval, 0, True)
-                    # Kurtosis
-                    hos_b[5+i] = scipy.stats.kurtosis(interval, 0, False, True)
-               
-                f_HOS = np.vstack((f_HOS, hos_b))
+                f_HOS = np.vstack((f_HOS, compute_hos_descriptor(b, n_intervals, lag)))
+
         features = np.column_stack((features, f_HOS))  if features.size else f_HOS
 
     # My morphological descriptor
@@ -137,45 +145,8 @@ def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_m
         f_myMorhp = np.empty((0,4))
         for p in range(len(my_db.beat)):
             for b in my_db.beat[p]:
-                R_pos = int((winL + winR) / 2)
-
-                R_value = b[R_pos]
-                my_morph = np.zeros((4))
-                y_values = np.zeros(4)
-                x_values = np.zeros(4)
-                # Obtain (max/min) values and index from the intervals
-                [x_values[0], y_values[0]] = max(enumerate(b[0:40]), key=operator.itemgetter(1))
-                [x_values[1], y_values[1]] = min(enumerate(b[75:85]), key=operator.itemgetter(1))
-                [x_values[2], y_values[2]] = min(enumerate(b[95:105]), key=operator.itemgetter(1))
-                [x_values[3], y_values[3]] = max(enumerate(b[150:180]), key=operator.itemgetter(1))
-    
-                x_values[1] = x_values[1] + 75
-                x_values[2] = x_values[2] + 95
-                x_values[3] = x_values[3] + 150
-    
-                # Norm data before compute distance
-                x_max = max(x_values)
-                y_max = max(np.append(y_values, R_value))
-                x_min = min(x_values)
-                y_min = min(np.append(y_values, R_value))
-    
-                R_pos = (R_pos - x_min) / (x_max - x_min)
-                R_value = (R_value - y_min) / (y_max - y_min)
-                
-                for n in range(0,4):
-                    x_values[n] = (x_values[n] - x_min) / (x_max - x_min)
-                    y_values[n] = (y_values[n] - y_min) / (y_max - y_min)
-                    x_diff = (R_pos - x_values[n]) 
-                    y_diff = R_value - y_values[n]
-                    my_morph[n] =  np.linalg.norm([x_diff, y_diff])
-                    # TODO test with np.sqrt(np.dot(x_diff, y_diff))
-    
-                if np.isnan(my_morph[n]):
-                    my_morph[n] = 0.0
-
-                f_myMorhp = np.vstack((f_myMorhp, my_morph))
-
-                                   
+                f_myMorhp = np.vstack((f_myMorhp, compute_my_own_descriptor(b, winL, winR)))
+                   
         features = np.column_stack((features, f_myMorhp))  if features.size else f_myMorhp
 
     
@@ -193,74 +164,17 @@ def load_mit_db(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_m
     return features, labels
 
 
-# Compute features RR interval for each beat 
-def compute_RR_intervals(R_poses):
-    features_RR = RR_intervals()
-
-    pre_R = np.array([], dtype=int)
-    post_R = np.array([], dtype=int)
-    local_R = np.array([], dtype=int)
-    global_R = np.array([], dtype=int)
-
-    # Pre_R and Post_R
-    pre_R = np.append(pre_R, 0)
-    post_R = np.append(post_R, R_poses[1] -R_poses[0])
-
-    for i in range(1, len(R_poses)-1):
-        pre_R = np.append(pre_R, R_poses[i] - R_poses[i-1])
-        post_R = np.append(post_R, R_poses[i+1] - R_poses[i])
-
-    pre_R[0] = pre_R[1]
-    pre_R = np.append(pre_R, R_poses[-1] - R_poses[-2])  
-
-    post_R = np.append(post_R, post_R[-1])
-
-    # Local_R: AVG from last 10 pre_R values
-    for i in range(0, len(R_poses)):
-        num = 0
-        avg_val = 0
-        for j in range(-9, 0):
-            if j+i >= 0:
-                avg_val = avg_val + pre_R[i+j]
-                num = num +1
-        if num > 0:
-            local_R = np.append(local_R, avg_val / float(num))
-        else:
-            local_R = np.append(local_R, 0.0)
-
-	# Global R AVG: from full past-signal
-	global_R = np.append(global_R, pre_R[0])
-    for i in range(1, len(R_poses)):
-        num = 0
-        avg_val = 0
-        for j in range( 0, i):
-            avg_val = avg_val + pre_R[j]
-        num = i
-        global_R = np.append(global_R, avg_val / float(num))
-
-    for i in range(0, len(R_poses)):
-        features_RR.pre_R = np.append(features_RR.pre_R, pre_R[i])
-        features_RR.post_R = np.append(features_RR.post_R, post_R[i])
-        features_RR.local_R = np.append(features_RR.local_R, local_R[i])
-        features_RR.global_R = np.append(features_RR.global_R, global_R[i])
-
-        #features_RR.append([pre_R[i], post_R[i], local_R[i], global_R[i]])
-            
-    return features_RR
 
 # DS: contains the patient list for load
 # winL, winR: indicates the size of the window centred at R-peak at left and right side
 # do_preprocess: indicates if preprocesing of remove baseline on signal is performed
-# maxRR: indicates if the beats selected are centred exactly on the max value from R mountain
-def load_signal(DS, winL, winR, do_preprocess, maxRR):
+def load_signal(DS, winL, winR, do_preprocess):
 
     class_ID = [[] for i in range(len(DS))]
     beat = [[] for i in range(len(DS))]
     R_poses = [ np.array([]) for i in range(len(DS))]
     Original_R_poses = [ np.array([]) for i in range(len(DS))]   
     valid_R = [ np.array([]) for i in range(len(DS))]
-    features_RR = [ [] for i in range(len(DS))]
-    fRR = [RR_intervals() for i in range(len(DS))]
     my_db = mit_db()
     patients = []
 
@@ -320,7 +234,7 @@ def load_signal(DS, winL, winR, do_preprocess, maxRR):
 
         MLII = []
         for row in reader:
-            MLII.append(int(row[1]))
+            MLII.append(int(row[MLII_index]))
             #V1.append(row[2])
         f.close()
 
@@ -357,7 +271,7 @@ def load_signal(DS, winL, winR, do_preprocess, maxRR):
             pos = int(aS[1])
             originalPos = int(aS[1])
             classAnttd = aS[2]
-            if maxRR and pos > size_RR_max and pos < (len(MLII) - size_RR_max):
+            if pos > size_RR_max and pos < (len(MLII) - size_RR_max):
                 index, value = max(enumerate(MLII[pos - size_RR_max : pos + size_RR_max]), key=operator.itemgetter(1))
                 pos = (pos - size_RR_max) + index
 
@@ -385,19 +299,8 @@ def load_signal(DS, winL, winR, do_preprocess, maxRR):
             R_poses[r] = np.append(R_poses[r], pos)
             Original_R_poses[r] = np.append(Original_R_poses[r], originalPos)
         
-        # Compute RR-intervals
-        # [pre_R, post_R, local_R, global_R]
-        features_RR[r] = compute_RR_intervals(R_poses[r])
-        #features_RR[r] = np.asarray(f_RR)
-        
-        # Only keep information of beats that class annotation is valid (valid_R)
-        features_RR[r].pre_R = features_RR[r].pre_R[(valid_R[r] == 1)]
-        features_RR[r].post_R = features_RR[r].post_R[(valid_R[r] == 1)]
-        features_RR[r].local_R = features_RR[r].local_R[(valid_R[r] == 1)]
-        features_RR[r].global_R = features_RR[r].global_R[(valid_R[r] == 1)]
-
-        R_poses[r] = R_poses[r][(valid_R[r] == 1)]
-        Original_R_poses[r] = Original_R_poses[r][(valid_R[r] == 1)]
+        #R_poses[r] = R_poses[r][(valid_R[r] == 1)]
+        #Original_R_poses[r] = Original_R_poses[r][(valid_R[r] == 1)]
 
         
     # Set the data into a bigger struct that keep all the records!
@@ -405,11 +308,9 @@ def load_signal(DS, winL, winR, do_preprocess, maxRR):
 
     my_db.raw_signal = RAW_signals
     my_db.beat = beat
-    my_db.RR = features_RR
-
     my_db.class_ID = class_ID
     my_db.valid_R = valid_R
     my_db.R_pos = R_poses
     my_db.orig_R_pos = Original_R_poses
-    
+
     return my_db

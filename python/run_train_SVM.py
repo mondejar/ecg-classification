@@ -17,13 +17,19 @@ winL = 90
 winR = 90
 do_preprocess = True
 use_weight_class = True
-maxRR = True
+maxRR = False
 use_RR = True
 norm_RR = True
 compute_morph = {''} # 'wavelets', 'HOS', 'myMorph'
 
-main(90, 90, do_preprocess, use_weight_class, maxRR, use_RR, norm_RR, compute_morph)
+#main(90, 90, do_preprocess, use_weight_class, maxRR, use_RR, norm_RR, compute_morph)
 #################################################################################### 
+
+maxRR = True
+
+#RR maxRR
+#main(90, 90, do_preprocess, use_weight_class, maxRR, use_RR, norm_RR, compute_morph)
+
 
 use_RR = False
 norm_RR = False
