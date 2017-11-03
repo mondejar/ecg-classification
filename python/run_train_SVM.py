@@ -22,23 +22,23 @@ use_RR = True
 norm_RR = True
 compute_morph = {''} # 'wavelets', 'HOS', 'myMorph'
 
-#main(90, 90, do_preprocess, use_weight_class, maxRR, use_RR, norm_RR, compute_morph)
+main(90, 90, do_preprocess, use_weight_class, maxRR, use_RR, norm_RR, compute_morph)
 #################################################################################### 
 
 maxRR = True
 
 #RR maxRR
-#main(90, 90, do_preprocess, use_weight_class, maxRR, use_RR, norm_RR, compute_morph)
+main(90, 90, do_preprocess, use_weight_class, maxRR, use_RR, norm_RR, compute_morph)
 
 
 use_RR = False
 norm_RR = False
 compute_morph = {'wavelets'} # 'wavelets', 'HOS', 'myMorph'
 
-main(90, 90, do_preprocess, use_weight_class, maxRR, use_RR, norm_RR, compute_morph)
+#main(90, 90, do_preprocess, use_weight_class, maxRR, use_RR, norm_RR, compute_morph)
 ####################################################################################
 
 compute_morph = {'HOS', 'myMorph'} # 'wavelets', 'HOS', 'myMorph'
-main(90, 90, do_preprocess, use_weight_class, maxRR, use_RR, norm_RR, compute_morph)
+#main(90, 90, do_preprocess, use_weight_class, maxRR, use_RR, norm_RR, compute_morph)
 
 

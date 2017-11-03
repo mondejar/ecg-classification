@@ -84,11 +84,14 @@ def main(winL=90, winR=90, do_preprocess=True, use_weight_class=True,
         maxRR, use_RR, norm_RR, compute_morph, db_path)
     # np.savetxt('mit_db/DS1_labels.csv', tr_labels.astype(int), '%.0f') 
     
+
+    # TODO export features and oversampled features for cross-validation!
     do_oversampling = False
     C_value = 0.001
 
-    # TODO oversampling?
     if do_oversampling:
+        start = time.time()
+
         # imbalanced-learn
         # (ratio='auto', random_state=None, k=None, k_neighbors=5, m=None, m_neighbors=10, out_step=0.5, kind='regular', svm_estimator=None, n_jobs=1)
 
@@ -113,6 +116,9 @@ def main(winL=90, winR=90, do_preprocess=True, use_weight_class=True,
         tr_features, tr_labels = sm_svm.fit_sample(tr_features, tr_labels)
         # TODO Write data oversampled!
 
+        end = time.time()
+        print("Time required SMOTE: " + str(format(end - start, '.2f')) + " sec" )
+
 
     # Normalization of the input data
     # scaled: zero mean unit variance ( z-score )
@@ -126,6 +132,8 @@ def main(winL=90, winR=90, do_preprocess=True, use_weight_class=True,
 
     ##############################
     # Train SVM model
+
+    use_probability = False
 
     model_svm_path = db_path + 'svm_models/rbf'
     model_svm_path = create_svm_model_name(model_svm_path, winL, winR, 
@@ -145,7 +153,7 @@ def main(winL=90, winR=90, do_preprocess=True, use_weight_class=True,
 
         #class_weight='balanced', 
         svm_model = svm.SVC(C=C_value, kernel='rbf', degree=3, gamma='auto', 
-            coef0=0.0, shrinking=True, probability=True, tol=0.001, 
+            coef0=0.0, shrinking=True, probability=use_probability, tol=0.001, 
             cache_size=200, class_weight=class_weights, verbose=False, 
             max_iter=-1, decision_function_shape='ovo', random_state=None)
         

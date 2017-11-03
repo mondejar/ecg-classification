@@ -60,8 +60,10 @@ def compute_RR_intervals(R_poses):
         avg_val = 0
 
         for j in range( 0, i):
-            avg_val = avg_val + pre_R[j]
-        num = i
+            if (R_poses[i] - R_poses[j]) < 108000:
+                avg_val = avg_val + pre_R[j]
+                num = num + 1
+        #num = i
         global_R = np.append(global_R, avg_val / float(num))
 
     for i in range(0, len(R_poses)):
@@ -82,7 +84,7 @@ def compute_wavelet_descriptor(beat, family, level):
 
 # Compute the HOS descriptor for a beat
 # Skewness (3 cumulant) and kurtosis (4 cumulant)
-def compute_host_descriptor(beat, n_intervals, lag):
+def compute_hos_descriptor(beat, n_intervals, lag):
     hos_b = np.zeros((10))
     for i in range(0, n_intervals-1):
         pose = (lag * i)
