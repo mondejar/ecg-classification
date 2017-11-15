@@ -1,5 +1,7 @@
 # ECG Classification 
 
+Warning: This repository is still not finished by the author.
+
 ## Description
 Code for training and test **MIT-BIH Arrhythmia Database** with:
 1. [Support Vector Machine (**SVM**) on Python](matlab/README.md).
