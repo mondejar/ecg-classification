@@ -1,6 +1,33 @@
 #!/usr/bin/env python
 
 """
+evaluation_cnn.py
+    
+Description:
+    Auxiliar file to compute performance measures given the confussion matrix
+
+VARPA, University of Coruna
+Mondejar Guerra, Victor M.
+31 Jan 2018
+"""
+
+from sklearn import metrics
+import numpy as np
+
+class performance_measures:
+    def __init__(self, n):
+        self.n_classes          = n
+        self.confusion_matrix   = np.empty([])
+        self.Recall             = np.empty(n)
+        self.Precision          = np.empty(n)
+        self.Specificity        = np.empty(n)
+        self.Acc                = np.empty(n)
+        self.F_measure          = np.empty(n)
+
+        self.gmean_se          = 0.0
+        self.gmean_p      #!/usr/bin/env python
+
+"""
 train_SVM.py
     
 VARPA, University of Coruna
@@ -29,6 +56,10 @@ class performance_measures:
         self.Ij                 = 0.0
         self.Ijk                = 0.0
 
+        self.Overall_Acc        = 0.0
+        self.kappa              = 0.0
+        self.Ij                 = 0.0
+        self.Ijk                = 0.0
 
 
 # Compute Cohen' kappa from a confussion matrix
@@ -56,24 +87,14 @@ def compute_cohen_kappa(confusion_matrix):
 
     return kappa, prob_observed, prob_expected
 
-# Compute the performance measures following the AAMI recommendations.
-# Using sensivity (recall), specificity (precision) and accuracy 
-# for each class: (N, SVEB, VEB, F)
-def compute_AAMI_performance_measures(predictions, gt_labels):
+def compute_AAMI_performance_measures(conf_mat):
     n_classes = 4 #5
     pf_ms = performance_measures(n_classes)
 
-    # TODO If conf_mat no llega a clases 4 por gt_labels o predictions...
-    # hacer algo para que no falle el codigo...
-    # NOTE: added labels=[0,1,2,3])...
-
-    # Confussion matrix
-    conf_mat = metrics.confusion_matrix(gt_labels, predictions, labels=[0,1,2,3])
-    conf_mat = conf_mat.astype(float)
     pf_ms.confusion_matrix = conf_mat
 
     # Overall Acc
-    pf_ms.Overall_Acc = metrics.accuracy_score(gt_labels, predictions)
+    pf_ms.Overall_Acc = 0.0
 
     # AAMI: Sens, Spec, Acc 
     # N: 0, S: 1, V: 2, F: 3                        # (Q: 4) not used
@@ -98,7 +119,11 @@ def compute_AAMI_performance_measures(predictions, gt_labels):
         else:
             pf_ms.F_measure[i] = 2 * (pf_ms.Precision[i] * pf_ms.Recall[i] )/ (pf_ms.Precision[i] + pf_ms.Recall[i])
 
-    # Compute Cohen's Kappa
+    # Compute Cohen'    # TODO If conf_mat no llega a clases 4 por gt_labels o predictions...
+    # hacer algo para que no falle el codigo...
+    # NOTE: added labels=[0,1,2,3])...
+
+    # Confussion matrixs Kappa
     pf_ms.kappa, prob_obsv, prob_expect = compute_cohen_kappa(conf_mat)
 
     # Compute Index-j   recall_S + recall_V + precision_S + precision_V
@@ -147,5 +172,20 @@ def write_AAMI_results(performance_measures, filename):
     f.write("Sens: " + str(format(performance_measures.Recall[3], '.4f'))+ "\n")
     f.write("Prec: " + str(format(performance_measures.Precision[3], '.4f'))+ "\n")
 
-
     f.close()
+
+results_path = '/home/mondejar/Dropbox/ECG/code/ecg_classification/python/results/ovo/MLII/'
+
+# Our single SVM
+conf_mat = np.array([[39446, 2404, 340, 1843], [443, 1374, 186, 47], [28, 162, 3005, 25], [240, 2, 35, 111]])
+
+conf_mat = conf_mat.astype(float)
+perf_measures = compute_AAMI_performance_measures(conf_mat)
+write_AAMI_results( perf_measures, results_path + 'Single_SVM_score_Ijk_' + str(format(perf_measures.Ijk, '.2f')) + '_DS2.txt')
+
+# Chazal et al
+conf_mat = np.array([[38444, 1904, 303, 3509], [173, 1395, 252, 16], [117, 321, 2504, 176], [33, 1, 7, 347]])
+
+conf_mat = conf_mat.astype(float)
+perf_measures = compute_AAMI_performance_measures(conf_mat)
+write_AAMI_results( perf_measures, results_path + 'Chazal_score_Ijk_' + str(format(perf_measures.Ijk, '.2f')) + '_DS2.txt')

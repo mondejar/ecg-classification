@@ -2,6 +2,9 @@
 
 Warning: This repository is still not finished by the author.
 
+NOTE: if this code is usefull for you, cite our work as:
+
+
 ## Description
 Code for training and test **MIT-BIH Arrhythmia Database** with:
 1. [Support Vector Machine (**SVM**) on Python](matlab/README.md).
@@ -35,7 +38,7 @@ The signal resulting from the second filter operation contains the baseline wand
         MLII[i] = MLII[i] - baseline[i]
 ```
 
-### 2 Beat Detection
+### 2 Segmentation: Beat Detection
 In this work the annotations of the MIT-BIH arrhyhtmia was used in order to detect the R-peak positions. However, in practise they can be detected using the following software (see [Software references: Beat Detection](#software-references:-beat-detection)). 
 
 ### 3 Feature Descriptor
@@ -89,14 +92,31 @@ In order to describe the beats for classification purpose, we employ the followi
     3. local_RR / AVG(local_RR) 
     4. global_RR / AVG(global_RR)   
 
- **TODO**: 
- *Beats having a R–R interval smaller than 150 ms or higher than 2 s most probably involve segmentation errors and are discarded*. Extracted from: Weighted Conditional Random Fields for Supervised Interpatient Heartbeat Classification* 
-
+ **NOTE**: 
+ *Beats having a R–R interval smaller than 150 ms or higher than 2 s most probably involve segmentation errors and are discarded*. 
+ Extracted from: Weighted Conditional Random Fields for Supervised Interpatient Heartbeat Classification* 
 
 ### 4 Normalization of the features
 
-Before train the models. All the input data was standardized with [z-score](https://en.wikipedia.org/wiki/Standard_score), i.e the values
+Before train the models. All the input data was standardized with [z-score](https://en.wikipedia.org/wiki/Standard_score), i.e., the values
 of each dimension are divided by its standard desviation and substracted by its mean.
+
+
+### 5 Feature Selection
+
+methods and file and line codes...
+
+### 6 Oversampling
+
+methods and file and line codes...
+
+### 7 Cross-Validation
+
+methods and file and line codes...
+
+### 8 Final Training and Test
+
+methods and file and line codes...
 
 
 # About datasets:
@@ -253,3 +273,4 @@ of heartbeats using ecg morphology and heartbeat interval features,”
 IEEE Transactions on Biomedical Engineering, vol. 51, no. 7, pp. 1196–1206, July 2004.
 
 * Z. Zhang, J. Dong, X. Luo, K.-S. Choi, and X. Wu, “Heartbeat classification using disease-specific feature selection,” Computers in Biology and Medicine, vol. 46, no. Supplement C, pp. 79 – 89, 2014
+

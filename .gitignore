@@ -2,5 +2,9 @@ matlab/*
 matlab/results/*
 third_party/*
 
+python/generate*
 python/*.pyc
 python/results/*
+python/results*
+
+python/mit_db/*

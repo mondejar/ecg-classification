@@ -8,7 +8,6 @@ Mondejar Guerra, Victor M.
 23 Oct 2017
 """
 
-
 import numpy as np
 from scipy.signal import medfilt
 import scipy.stats
@@ -31,7 +30,7 @@ def compute_RR_intervals(R_poses):
 
     # Pre_R and Post_R
     pre_R = np.append(pre_R, 0)
-    post_R = np.append(post_R, R_poses[1] -R_poses[0])
+    post_R = np.append(post_R, R_poses[1] - R_poses[0])
 
     for i in range(1, len(R_poses)-1):
         pre_R = np.append(pre_R, R_poses[i] - R_poses[i-1])
@@ -78,22 +77,9 @@ def compute_RR_intervals(R_poses):
 
 # Compute the wavelet descriptor for a beat
 def compute_wavelet_descriptor(beat, family, level):
-    db1 = pywt.Wavelet(family)
-    coeffs = pywt.wavedec(beat, db1, level=level)
+    wave_family = pywt.Wavelet(family)
+    coeffs = pywt.wavedec(beat, wave_family, level=level)
     return coeffs[0]
-
-# Compute the HOS descriptor for a beat
-# Skewness (3 cumulant) and kurtosis (4 cumulant)
-def compute_hos_descriptor(beat, n_intervals, lag):
-    hos_b = np.zeros((10))
-    for i in range(0, n_intervals-1):
-        pose = (lag * i)
-        interval = beat[pose:(pose + lag - 1)]
-        # Skewness  
-        hos_b[i] = scipy.stats.skew(interval, 0, True)
-        # Kurtosis
-        hos_b[5+i] = scipy.stats.kurtosis(interval, 0, False, True)
-    return hos_b
 
 # Compute my descriptor based on amplitudes of several intervals
 def compute_my_own_descriptor(beat, winL, winR):
@@ -134,3 +120,38 @@ def compute_my_own_descriptor(beat, winL, winR):
         my_morph[n] = 0.0
 
     return my_morph
+
+
+# Compute the HOS descriptor for a beat
+# Skewness (3 cumulant) and kurtosis (4 cumulant)
+def compute_hos_descriptor(beat, n_intervals, lag):
+    hos_b = np.zeros(( (n_intervals-1) * 2))
+    for i in range(0, n_intervals-1):
+        pose = (lag * (i+1))
+        interval = beat[(pose -(lag/2) ):(pose + (lag/2))]
+        
+        # Skewness  
+        hos_b[i] = scipy.stats.skew(interval, 0, True)
+
+        if np.isnan(hos_b[i]):
+            hos_b[i] = 0.0
+            
+        # Kurtosis
+        hos_b[(n_intervals-1) +i] = scipy.stats.kurtosis(interval, 0, False, True)
+        if np.isnan(hos_b[(n_intervals-1) +i]):
+            hos_b[(n_intervals-1) +i] = 0.0
+    return hos_b
+
+"""
+def compute_hos_descriptor(beat, n_intervals, lag):
+    hos_b = np.zeros(( (n_intervals-1) * 2))
+    for i in range(0, n_intervals-1):
+        pose = (lag * i)
+        interval = beat[pose:(pose + lag - 1)]
+       
+        # Skewness  
+        hos_b[i] = scipy.stats.skew(interval, 0, True)
+        # Kurtosis
+        hos_b[(n_intervals-1) +i] = scipy.stats.kurtosis(interval, 0, False, True)
+    return hos_b
+"""

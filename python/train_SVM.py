@@ -10,39 +10,38 @@ Mondejar Guerra, Victor M.
 
 from load_MITBIH import *
 from evaluation_AAMI import *
+from aggregation_voting_strategies import *
+from oversampling import *
+from cross_validation import *
+from feature_selection import *
 
 import sklearn
 from sklearn.externals import joblib
 from sklearn.preprocessing import StandardScaler
 from sklearn import svm
 
-from imblearn.over_sampling import ADASYN, SMOTE, RandomOverSampler
+from sklearn import decomposition
 
-import time
-
-# Merge the OVO probs in final predictions.
-# N = number of classes
-# M = (N * (N-1))/ 2 OVO pairs
-def voting_ovo(probs):
-    predictions = np.zeros(len(probs))
-    class_p = [0, 0, 0, 1, 1, 2]
-    class_n = [1, 2, 3, 2, 3, 3]
-
-    counter = np.zeros([len(probs), 4])
-
-    for p in range(len(probs)):
-        #for j in range(len(p)):
-        #    prob_sig[j] = (1 / (1 + np.exp(-p[j]))))
-        for i in range(len(probs[p])):
-            counter[p, class_p[i]] = counter[p, class_p[i]] + (1 / (1 + np.exp(-probs[p,i])))
-            counter[p, class_n[i]] = counter[p, class_n[i]] + (1 / (1 + np.exp(probs[p,i])))
-
-        predictions[p] = np.argmax(counter[p])
-
-    return predictions, counter
+import os
 
 def create_svm_model_name(model_svm_path, winL, winR, do_preprocess, 
-    maxRR, use_RR, norm_RR, compute_morph, use_weight_class, do_oversampling, delimiter):
+    maxRR, use_RR, norm_RR, compute_morph, use_weight_class, feature_selection, 
+    oversamp_method, leads_flag, reduced_DS, pca_k, delimiter):
+
+    if reduced_DS == True:
+        model_svm_path = model_svm_path + delimiter + 'exp_2'
+
+    if leads_flag[0] == 1:
+        model_svm_path = model_svm_path + delimiter + 'MLII'
+    
+    if leads_flag[1] == 1:
+        model_svm_path = model_svm_path + delimiter + 'V1'
+
+    if oversamp_method: 
+        model_svm_path = model_svm_path + delimiter + oversamp_method
+
+    if feature_selection:
+        model_svm_path = model_svm_path + delimiter + feature_selection
 
     if do_preprocess:
         model_svm_path = model_svm_path + delimiter + 'rm_bsln'
@@ -56,69 +55,139 @@ def create_svm_model_name(model_svm_path, winL, winR, do_preprocess,
     if norm_RR:
         model_svm_path = model_svm_path + delimiter + 'norm_RR'
     
-    if 'wavelets' in compute_morph:
-        model_svm_path = model_svm_path + delimiter + 'wvlt'
-
-    if 'HOS' in compute_morph:
-        model_svm_path = model_svm_path + delimiter + 'HOS'
-
-    if 'myMorph' in compute_morph:
-        model_svm_path = model_svm_path + delimiter + 'myMorph'
-
+    for descp in compute_morph:
+        model_svm_path = model_svm_path + delimiter + descp
+    
     if use_weight_class:
         model_svm_path = model_svm_path + delimiter + 'weighted'
 
-    if do_oversampling:
-        model_svm_path = model_svm_path + delimiter + 'SMOTE'
+    if pca_k > 0:
+        model_svm_path = model_svm_path + delimiter + 'pca_' + str(pca_k)
 
     return model_svm_path
 
-def main(winL=90, winR=90, do_preprocess=True, use_weight_class=True, 
-    maxRR=True, use_RR=True, norm_RR=True, compute_morph={''}):
+
+# Eval the SVM model and export the results
+def eval_model(svm_model, features, labels, multi_mode, voting_strategy, output_path, C_value, gamma_value, DS):
+    if multi_mode == 'ovo':
+        decision_ovo        = svm_model.decision_function(features)
+        
+        if voting_strategy == 'ovo_voting':
+            predict_ovo, counter    = ovo_voting(decision_ovo, 4)
+
+        elif voting_strategy == 'ovo_voting_both':
+            predict_ovo, counter    = ovo_voting_both(decision_ovo, 4)
+
+        elif voting_strategy == 'ovo_voting_exp':
+            predict_ovo, counter    = ovo_voting_exp(decision_ovo, 4)
+
+        # svm_model.predict_log_proba  svm_model.predict_proba   svm_model.predict ...
+        perf_measures = compute_AAMI_performance_measures(predict_ovo, labels)
+
+    """
+    elif multi_mode == 'ovr':cr
+        decision_ovr = svm_model.decision_function(features)
+        predict_ovr = svm_model.predict(features)
+        perf_measures = compute_AAMI_performance_measures(predict_ovr, labels)
+    """
+
+    # Write results and also predictions on DS2
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+
+    if gamma_value != 0.0:
+        write_AAMI_results( perf_measures, output_path + '/' + DS + 'C_' + str(C_value) + 'g_' + str(gamma_value) + 
+            '_score_Ijk_' + str(format(perf_measures.Ijk, '.2f')) + '_' + voting_strategy + '.txt')
+    else:
+        write_AAMI_results( perf_measures, output_path + '/' + DS + 'C_' + str(C_value) + 
+            '_score_Ijk_' + str(format(perf_measures.Ijk, '.2f')) + '_' + voting_strategy + '.txt')
+    
+    # Array to .csv
+    if multi_mode == 'ovo':
+        if gamma_value != 0.0:
+            np.savetxt(output_path + '/' + DS + 'C_' + str(C_value) + 'g_' + str(gamma_value) + 
+                '_decision_ovo.csv', decision_ovo)
+            np.savetxt(output_path + '/' + DS + 'C_' + str(C_value) + 'g_' + str(gamma_value) + 
+                '_predict_' + voting_strategy + '.csv', predict_ovo.astype(int), '%.0f') 
+        else:
+            np.savetxt(output_path + '/' + DS + 'C_' + str(C_value) +
+                '_decision_ovo.csv', decision_ovo)
+            np.savetxt(output_path + '/' + DS + 'C_' + str(C_value) + 
+                '_predict_' + voting_strategy + '.csv', predict_ovo.astype(int), '%.0f') 
+
+    elif multi_mode == 'ovr':
+        np.savetxt(output_path + '/' + DS + 'C_' + str(C_value) +
+            '_decision_ovr.csv', prob_ovr)
+        np.savetxt(output_path + '/' + DS + 'C_' + str(C_value) + 
+            '_predict_' + voting_strategy + '.csv', predict_ovr.astype(int), '%.0f') 
+
+    print("Results writed at " + output_path + '/' + DS + 'C_' + str(C_value))
+
+
+
+def create_oversamp_name(reduced_DS, do_preprocess, compute_morph, winL, winR, maxRR, use_RR, norm_RR, pca_k):
+    oversamp_features_pickle_name = ''
+    if reduced_DS:
+        oversamp_features_pickle_name += '_reduced_'
+        
+    if do_preprocess:
+        oversamp_features_pickle_name += '_rm_bsline'
+
+    if maxRR:
+        oversamp_features_pickle_name += '_maxRR'
+
+    if use_RR:
+        oversamp_features_pickle_name += '_RR'
+    
+    if norm_RR:
+        oversamp_features_pickle_name += '_norm_RR'
+
+    for descp in compute_morph:
+        oversamp_features_pickle_name += '_' + descp
+
+    if pca_k > 0:
+        oversamp_features_pickle_name += '_pca_' + str(pca_k)
+    
+    oversamp_features_pickle_name += '_wL_' + str(winL) + '_wR_' + str(winR)
+    
+    return oversamp_features_pickle_name
+
+
+
+def main(multi_mode='ovo', winL=90, winR=90, do_preprocess=True, use_weight_class=True, 
+    maxRR=True, use_RR=True, norm_RR=True, compute_morph={''}, oversamp_method = '', pca_k = '', feature_selection = '', do_cross_val = '', C_value = 0.001, gamma_value = 0.0, reduced_DS = False, leads_flag = [1,0]):
     print("Runing train_SVM.py!")
 
     db_path = '/home/mondejar/dataset/ECG/mitdb/m_learning/scikit/'
     
     # Load train data 
-    [tr_features, tr_labels] = load_mit_db('DS1', winL, winR, do_preprocess,
-        maxRR, use_RR, norm_RR, compute_morph, db_path)
-    # np.savetxt('mit_db/DS1_labels.csv', tr_labels.astype(int), '%.0f') 
-    
+    [tr_features, tr_labels, tr_patient_num_beats] = load_mit_db('DS1', winL, winR, do_preprocess,
+        maxRR, use_RR, norm_RR, compute_morph, db_path, reduced_DS, leads_flag)
 
-    # TODO export features and oversampled features for cross-validation!
-    do_oversampling = False
-    C_value = 0.001
+    # Load Test data
+    [eval_features, eval_labels, eval_patient_num_beats] = load_mit_db('DS2', winL, winR, do_preprocess, 
+        maxRR, use_RR, norm_RR, compute_morph, db_path, reduced_DS, leads_flag)
+    if reduced_DS == True:
+        np.savetxt('mit_db/' + 'exp_2_' + 'DS2_labels.csv', eval_labels.astype(int), '%.0f') 
+    else:
+        np.savetxt('mit_db/' + 'DS2_labels.csv', eval_labels.astype(int), '%.0f') 
 
-    if do_oversampling:
-        start = time.time()
+    #if reduced_DS == True:
+    #    np.savetxt('mit_db/' + 'exp_2_' + 'DS1_labels.csv', tr_labels.astype(int), '%.0f') 
+    #else:
+    #np.savetxt('mit_db/' + 'DS1_labels.csv', tr_labels.astype(int), '%.0f') 
+  
+    ##############################################################
+    # 0) TODO if feature_Selection:
+    # before oversamp!!?????
 
-        # imbalanced-learn
-        # (ratio='auto', random_state=None, k=None, k_neighbors=5, m=None, m_neighbors=10, out_step=0.5, kind='regular', svm_estimator=None, n_jobs=1)
+    # TODO perform normalization before the oversampling?
+    if oversamp_method:
+        # Filename
+        oversamp_features_pickle_name = create_oversamp_name(reduced_DS, do_preprocess, compute_morph, winL, winR, maxRR, use_RR, norm_RR, pca_k)
 
-        # ratio: 
-        # (i) 'minority': resample the minority class; 
-        # (ii) 'majority': resample the majority class, 
-        # (iii) 'not minority': resample all classes apart of the minority class, 
-        # (iv) 'all': resample all classes, and 
-        # (v) 'auto': correspond to 'all' with for over-sampling methods and 'not minority' for under-sampling methods.
-        #  The classes targeted will be over-sampled or under-sampled to achieve an equal number of sample with the majority or minority class.
-
-        # kind =  'regular', 'borderline1', 'borderline2', 'svm'.
-
-        # NOTE model for the SMOTE, the configuration must be the same later...
-        svm_model = svm.SVC(C=C_value, kernel='rbf', degree=3, gamma='auto', 
-            coef0=0.0, shrinking=True, probability=True, tol=0.001, 
-            cache_size=200, class_weight='balanced', verbose=False, 
-            max_iter=-1, decision_function_shape='ovo', random_state=None)
-        # imblearn.over_sampling.SMOTE
-        print("Computing oversampling features...")
-        sm_svm = SMOTE(ratio='all', random_state=None, k_neighbors=5, m_neighbors=10, out_step=0.5, kind='svm', svm_estimator=svm_model, n_jobs=1)
-        tr_features, tr_labels = sm_svm.fit_sample(tr_features, tr_labels)
-        # TODO Write data oversampled!
-
-        end = time.time()
-        print("Time required SMOTE: " + str(format(end - start, '.2f')) + " sec" )
-
+        # Do oversampling
+        tr_features, tr_labels = perform_oversampling(oversamp_method, db_path + 'oversamp/python_mit', oversamp_features_pickle_name, tr_features, tr_labels)
 
     # Normalization of the input data
     # scaled: zero mean unit variance ( z-score )
@@ -126,108 +195,167 @@ def main(winL=90, winR=90, do_preprocess=True, use_weight_class=True,
     scaler.fit(tr_features)
     tr_features_scaled = scaler.transform(tr_features)
 
-    # NOTE for cross validation use: 
-    # pipeline = Pipeline([('transformer', scalar), ('estimator', clf)])
-    # instead of "StandardScaler()"
-
-    ##############################
-    # Train SVM model
-
-    use_probability = False
-
-    model_svm_path = db_path + 'svm_models/rbf'
-    model_svm_path = create_svm_model_name(model_svm_path, winL, winR, 
-        do_preprocess, maxRR, use_RR, norm_RR, compute_morph, use_weight_class, do_oversampling, '_')
-    model_svm_path = model_svm_path + '_C_' +  str(C_value) + '.joblib.pkl'
-
-    print("Training model on MIT-BIH DS1: " + model_svm_path + "...")
-
-    if os.path.isfile(model_svm_path):
-        # Load the trained model!
-        svm_model = joblib.load(model_svm_path)
-
-    else:
-        class_weights = {}
-        for c in range(4):
-            class_weights.update({c:len(tr_labels) / float(np.count_nonzero(tr_labels == c))})
-
-        #class_weight='balanced', 
-        svm_model = svm.SVC(C=C_value, kernel='rbf', degree=3, gamma='auto', 
-            coef0=0.0, shrinking=True, probability=use_probability, tol=0.001, 
-            cache_size=200, class_weight=class_weights, verbose=False, 
-            max_iter=-1, decision_function_shape='ovo', random_state=None)
-        
-        # Let's Train!
-
-        start = time.time()
-        svm_model.fit(tr_features_scaled, tr_labels) 
-        end = time.time()
-        # TODO assert that the class_ID appears with the desired order, 
-        # with the goal of ovo make the combinations properly
-        print("Trained completed!\n\t" + model_svm_path + "\n \
-            \tTime required: " + str(format(end - start, '.2f')) + " sec" )
-
-        # Export model: save/write trained SVM model
-        joblib.dump(svm_model, model_svm_path)
-
-        # TODO Export StandardScaler()
-    
-    ##############################
-    ## Test SVM model
-    print("Testing model on MIT-BIH DS2: " + model_svm_path + "...")
-
-    [eval_features, eval_labels] = load_mit_db('DS2', winL, winR, do_preprocess, 
-        maxRR, use_RR, norm_RR, compute_morph, db_path)
-    #np.savetxt('mit_db/DS2_labels.csv', eval_labels.astype(int), '%.0f') 
-
-    # Normalization of the input data
     # scaled: zero mean unit variance ( z-score )
     eval_features_scaled = scaler.transform(eval_features)
+    ##############################################################
+    # 0) ????????????? feature_Selection: also after Oversampling???
+    if feature_selection:
+        print("Runing feature selection")
+        best_features = 7
+        tr_features_scaled, features_index_sorted  = run_feature_selection(tr_features_scaled, tr_labels, feature_selection, best_features)
+        eval_features_scaled = eval_features_scaled[:, features_index_sorted[0:best_features]]
+    # 1)
+    if pca_k > 0:
 
-    # Let's test new data!
-    prob_ovo        = svm_model.decision_function(eval_features_scaled)
-    predict_ovo, counter    = voting_ovo(prob_ovo)
+        # Load if exists??
+        # NOTE PCA do memory error!
 
-    #predicts_log_proba  = svm_model.predict_log_proba(eval_features_scaled)
-    #predicts_proba      = svm_model.predict_proba(eval_features_scaled)
+        # NOTE 11 Enero: TEST WITH IPCA!!!!!!
+        start = time.time()
+        
+        print("Runing IPCA " + str(pca_k) + "...")
 
-    #predicts            = svm_model.predict(eval_features_scaled)
+        # Run PCA
+        IPCA = sklearn.decomposition.IncrementalPCA(pca_k, batch_size=pca_k) # gamma_pca
 
-    print("Evaluation")
-    perf_measures = compute_AAMI_performance_measures(predict_ovo, eval_labels)
-    
-    perf_measures_path = create_svm_model_name('/home/mondejar/Dropbox/ECG/code/ecg_classification/python/results', winL, winR, do_preprocess, 
-        maxRR, use_RR, norm_RR, compute_morph, use_weight_class, do_oversampling, '/')
-    # Write results and also predictions on DS2
-    if not os.path.exists(perf_measures_path):
-        os.makedirs(perf_measures_path)
+        #tr_features_scaled = KPCA.fit_transform(tr_features_scaled) 
+        IPCA.fit(tr_features_scaled) 
 
-    write_AAMI_results( perf_measures, perf_measures_path + '/C_' + str(C_value) + 
-        '_score_Ijk_' + str(format(perf_measures.Ijk, '.2f')) + '.txt')
-    
-    # Array to .csv
-    np.savetxt(perf_measures_path + '/C_' + str(C_value) +
-        '_prob_ovo.csv', prob_ovo)
+        # Apply PCA on test data!
+        tr_features_scaled = IPCA.transform(tr_features_scaled)
+        eval_features_scaled = IPCA.transform(eval_features_scaled)
 
-    np.savetxt(perf_measures_path + '/C_' + str(C_value) + 
-        '_predict_ovo.csv', predict_ovo.astype(int), '%.0f') 
+        """
+        print("Runing TruncatedSVD (singular value decomposition (SVD)!!!) (alternative to PCA) " + str(pca_k) + "...")
 
-    print("Results writed at " + perf_measures_path + '/C_' + str(C_value))
+        svd = decomposition.TruncatedSVD(n_components=pca_k, algorithm='arpack')
+        svd.fit(tr_features_scaled)
+        tr_features_scaled = svd.transform(tr_features_scaled)
+        eval_features_scaled = svd.transform(eval_features_scaled)
+        
+        """
+        end = time.time()
 
-    
-if __name__ == '__main__':
-    import sys
+        print("Time runing IPCA (rbf): " + str(format(end - start, '.2f')) + " sec" )
+    ##############################################################
+    # 2) Cross-validation: 
 
-    winL = sys.argv[1]
-    winR = sys.argv[2]
-    do_preprocess = sys.argv[3]
-    use_weight_class = sys.argv[4]
-    maxRR = sys.argv[5]
-    use_RR = sys.argv[6]
-    norm_RR = sys.argv[7]
-    
-    compute_morph = {''} # 'wavelets', 'HOS', 'myMorph'
-    for s in sys.argv[8:]:
-        compute_morph.add(s)
-    
-    main(winL, winR, do_preprocess, use_weight_class, maxRR, use_RR, norm_RR, compute_morph)
+    if do_cross_val:
+        print("Runing cross val...")
+        start = time.time()
+
+        # TODO Save data over the k-folds and ranked by the best average values in separated files   
+        perf_measures_path = create_svm_model_name('/home/mondejar/Dropbox/ECG/code/ecg_classification/python/results/' + multi_mode, winL, winR, do_preprocess, 
+        maxRR, use_RR, norm_RR, compute_morph, use_weight_class, feature_selection, oversamp_method, leads_flag, reduced_DS,  pca_k, '/')
+
+        # TODO implement this method! check to avoid NaN scores....
+
+        if do_cross_val == 'pat_cv': # Cross validation with one fold per patient
+            cv_scores, c_values =  run_cross_val(tr_features_scaled, tr_labels, tr_patient_num_beats, do_cross_val, len(tr_patient_num_beats))
+
+            if not os.path.exists(perf_measures_path):
+                os.makedirs(perf_measures_path)
+            np.savetxt(perf_measures_path + '/cross_val_k-pat_cv_F_score.csv', (c_values, cv_scores.astype(float)), "%f") 
+
+        elif do_cross_val == 'beat_cv': # cross validation by class id samples
+            k_folds = {5}
+            for k in k_folds:
+                ijk_scores, c_values = run_cross_val(tr_features_scaled, tr_labels, tr_patient_num_beats, do_cross_val, k)
+                # TODO Save data over the k-folds and ranked by the best average values in separated files   
+                perf_measures_path = create_svm_model_name('/home/mondejar/Dropbox/ECG/code/ecg_classification/python/results/' + multi_mode, winL, winR, do_preprocess, 
+                maxRR, use_RR, norm_RR, compute_morph, use_weight_class, feature_selection, oversamp_method, leads_flag, reduced_DS,  pca_k, '/')
+
+                if not os.path.exists(perf_measures_path):
+                    os.makedirs(perf_measures_path)
+                np.savetxt(perf_measures_path + '/cross_val_k-' + str(k) + '_Ijk_score.csv', (c_values, ijk_scores.astype(float)), "%f") 
+            
+            end = time.time()
+            print("Time runing Cross Validation: " + str(format(end - start, '.2f')) + " sec" )
+    else:
+
+        ################################################################################################
+        # 3) Train SVM model
+
+        # TODO load best params from cross validation!
+        
+        use_probability = False
+
+        model_svm_path = db_path + 'svm_models/' + multi_mode + '_rbf'
+
+        model_svm_path = create_svm_model_name(model_svm_path, winL, winR, do_preprocess,
+            maxRR, use_RR, norm_RR, compute_morph, use_weight_class, feature_selection,
+            oversamp_method, leads_flag, reduced_DS, pca_k, '_')
+
+        if gamma_value != 0.0:
+            model_svm_path = model_svm_path + '_C_' +  str(C_value) + '_g_' +  str(gamma_value) +'.joblib.pkl'
+        else:
+            model_svm_path = model_svm_path + '_C_' +  str(C_value) + '.joblib.pkl'
+
+        print("Training model on MIT-BIH DS1: " + model_svm_path + "...")
+
+        if os.path.isfile(model_svm_path):
+            # Load the trained model!
+            svm_model = joblib.load(model_svm_path)
+
+        else:
+            class_weights = {}
+            for c in range(4):
+                class_weights.update({c:len(tr_labels) / float(np.count_nonzero(tr_labels == c))})
+
+            #class_weight='balanced', 
+            if gamma_value != 0.0: # NOTE 0.0 means 1/n_features default value
+                svm_model = svm.SVC(C=C_value, kernel='rbf', degree=3, gamma=gamma_value,  
+                    coef0=0.0, shrinking=True, probability=use_probability, tol=0.001, 
+                    cache_size=200, class_weight=class_weights, verbose=False, 
+                    max_iter=-1, decision_function_shape=multi_mode, random_state=None)
+            else:             
+                svm_model = svm.SVC(C=C_value, kernel='rbf', degree=3, gamma='auto', 
+                    coef0=0.0, shrinking=True, probability=use_probability, tol=0.001, 
+                    cache_size=200, class_weight=class_weights, verbose=False, 
+                    max_iter=-1, decision_function_shape=multi_mode, random_state=None)
+            
+            # Let's Train!
+
+            start = time.time()
+            svm_model.fit(tr_features_scaled, tr_labels) 
+            end = time.time()
+            # TODO assert that the class_ID appears with the desired order, 
+            # with the goal of ovo make the combinations properly
+            print("Trained completed!\n\t" + model_svm_path + "\n \
+                \tTime required: " + str(format(end - start, '.2f')) + " sec" )
+
+            # Export model: save/write trained SVM model
+            joblib.dump(svm_model, model_svm_path)
+
+            # TODO Export StandardScaler()
+        
+        #########################################################################
+        # 4) Test SVM model
+        print("Testing model on MIT-BIH DS2: " + model_svm_path + "...")
+
+        ############################################################################################################
+        # EVALUATION
+        ############################################################################################################
+
+        # Evaluate the model on the training data
+        perf_measures_path = create_svm_model_name('/home/mondejar/Dropbox/ECG/code/ecg_classification/python/results/' + multi_mode, winL, winR, do_preprocess, 
+            maxRR, use_RR, norm_RR, compute_morph, use_weight_class, feature_selection, oversamp_method, leads_flag, reduced_DS, pca_k, '/')
+
+        # ovo_voting:
+        # Simply add 1 to the win class
+        print("Evaluation on DS1 ...")
+        eval_model(svm_model, tr_features_scaled, tr_labels, multi_mode, 'ovo_voting', perf_measures_path, C_value, gamma_value, 'Train_')
+
+        # Let's test new data!
+        print("Evaluation on DS2 ...")   
+        eval_model(svm_model, eval_features_scaled, eval_labels, multi_mode, 'ovo_voting', perf_measures_path, C_value, gamma_value, '')
+
+
+        # ovo_voting_exp:
+        # Consider the post prob adding to both classes
+        print("Evaluation on DS1 ...")
+        eval_model(svm_model, tr_features_scaled, tr_labels, multi_mode, 'ovo_voting_exp', perf_measures_path, C_value, gamma_value, 'Train_')
+
+        # Let's test new data!
+        print("Evaluation on DS2 ...")   
+        eval_model(svm_model, eval_features_scaled, eval_labels, multi_mode, 'ovo_voting_exp', perf_measures_path, C_value, gamma_value, '')

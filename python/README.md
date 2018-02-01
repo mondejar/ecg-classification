@@ -19,7 +19,8 @@ Python (Scikit-learn)
 |---------------|--------------|--------------------------|------------------------|
 | RR_normRR     |  8           |       590.91   |       133.50 sec / (maxRR) 92.88 |
 | Wavelets      |  21          |      1503.19   |       193.01 sec                 |
-| HOS_myMoprh   |  15          |      1004.50   |       158.19 sec                 |   
+| HOS_myMoprh   |  15          |      1004.50   |       158.19 sec                 |  
+| RR_Wav_HOS_myMorph| 44        |                 |  264.69 sec | 
 
 MATLAB (LibSVM) without -b option
 

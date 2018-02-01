@@ -34,7 +34,7 @@ class mit_db:
         # Instance atributes
         self.filename = []
         self.raw_signal = []
-        self.beat = []
+        self.beat = np.empty([]) # record, beat, lead
         self.class_ID = []   
         self.valid_R = []       
         self.R_pos = []
