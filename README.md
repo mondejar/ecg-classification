@@ -59,7 +59,7 @@ In order to describe the beats for classification purpose, we employ the followi
         wavel = coeffs[0]
     ```
 
-    3. **HOS** (10): extracted from 3-4th order cumulant.
+    2. **HOS** (10): extracted from 3-4th order cumulant, skewness and kurtosis. 
     ```python
         import scipy.stats
         ...
@@ -69,16 +69,82 @@ In order to describe the beats for classification purpose, we employ the followi
         ...
         # For each beat 
         for i in range(0, n_intervals-1):
-            pose = (lag * i)
-            interval = beat[pose:(pose + lag - 1)]
+            pose = (lag * (i+1))
+            interval = beat[(pose -(lag/2) ):(pose + (lag/2))]
             # Skewness  
             hos_b[i] = scipy.stats.skew(interval, 0, True)
+
             # Kurtosis
             hos_b[5+i] = scipy.stats.kurtosis(interval, 0, False, True)
     ```
+    3. **U-LBP 1D (59)** 1D version of the popular LBP descriptor. Using the uniform patterns with neighbours = 8
+    ```python
+        import numpy as np
+        ...
 
-    4. **My Descriptor**: computed from the Euclidean distance of some points against the R-peak
+        hist_u_lbp = np.zeros(59, dtype=float)
 
+        for i in range(neigh/2, len(signal) - neigh/2):
+            pattern = np.zeros(neigh)
+            ind = 0
+            for n in range(-neigh/2,0) + range(1,neigh/2+1):
+                if signal[i] > signal[i+n]:
+                    pattern[ind] = 1          
+                ind += 1
+            # Convert pattern to id-int 0-255 (for neigh =8)
+            pattern_id = int("".join(str(c) for c in pattern.astype(int)), 2)
+
+            # Convert id to uniform LBP id 0-57 (uniform LBP)  58: (non uniform LBP)
+            if pattern_id in uniform_pattern_list:
+                pattern_uniform_id = int(np.argwhere(uniform_pattern_list == pattern_id))
+            else:
+                pattern_uniform_id = 58 # Non uniforms patternsuse
+
+            hist_u_lbp[pattern_uniform_id] += 1.0
+    ```
+
+    4. **My Descriptor (4)**: computed from the Euclidean distance of the  R-peak  and  four  points  extracted  from  the 4 following intervals:
+        - max([0, 40])
+        - min([75, 85])
+        - min([95, 105])
+        - max([150, 180])
+
+    ```python
+        import operator
+        ...
+
+        R_pos = int((winL + winR) / 2)
+
+        R_value = beat[R_pos]
+        my_morph = np.zeros((4))
+        y_values = np.zeros(4)
+        x_values = np.zeros(4)
+        # Obtain (max/min) values and index from the intervals
+        [x_values[0], y_values[0]] = max(enumerate(beat[0:40]), key=operator.itemgetter(1))
+        [x_values[1], y_values[1]] = min(enumerate(beat[75:85]), key=operator.itemgetter(1))
+        [x_values[2], y_values[2]] = min(enumerate(beat[95:105]), key=operator.itemgetter(1))
+        [x_values[3], y_values[3]] = max(enumerate(beat[150:180]), key=operator.itemgetter(1))
+        
+        x_values[1] = x_values[1] + 75
+        x_values[2] = x_values[2] + 95
+        x_values[3] = x_values[3] + 150
+        
+        # Norm data before compute distance
+        x_max = max(x_values)
+        y_max = max(np.append(y_values, R_value))
+        x_min = min(x_values)
+        y_min = min(np.append(y_values, R_value))
+        
+        R_pos = (R_pos - x_min) / (x_max - x_min)
+        R_value = (R_value - y_min) / (y_max - y_min)
+                    
+        for n in range(0,4):
+            x_values[n] = (x_values[n] - x_min) / (x_max - x_min)
+            y_values[n] = (y_values[n] - y_min) / (y_max - y_min)
+            x_diff = (R_pos - x_values[n]) 
+            y_diff = R_value - y_values[n]
+            my_morph[n] =  np.linalg.norm([x_diff, y_diff])
+    ```
 
 2. **Interval RR** (4): intervals computed from the time between consequent beats. There are the most common feature employed for ECG classification. 
     1. pre_RR
@@ -100,24 +166,59 @@ In order to describe the beats for classification purpose, we employ the followi
 
 Before train the models. All the input data was standardized with [z-score](https://en.wikipedia.org/wiki/Standard_score), i.e., the values
 of each dimension are divided by its standard desviation and substracted by its mean.
+```python
+    import sklearn
+    from sklearn.externals import joblib
+    from sklearn.preprocessing import StandardScaler
+    from sklearn import svm
+    ...
+
+    scaler = StandardScaler()
+    scaler.fit(tr_features)
+    tr_features_scaled = scaler.transform(tr_features)
+
+    # scaled: zero mean unit variance ( z-score )
+    eval_features_scaled = scaler.transform(eval_features)
+```
+
+### 5 Training and Test
+
+In scikit-learn the multiclass SVM support is handled according to a [one-vs-one](http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html) scheme.
+
+Since   the   MIT-BIH   database presents  high  imbalanced  data,  several  weights
+equal  to the  ratio  between  the  two  classes  of  each model  were
+employed to compensate this differences.
+
+The  Radial  Basis  Function  (RBF) kernel was employed.
+
+```python
+    class_weights = {}
+    for c in range(4):
+        class_weights.update({c:len(tr_labels) / float(np.count_nonzero(tr_labels == c))})
 
 
-### 5 Feature Selection
+    svm_model = svm.SVC(C=C_value, kernel='rbf', degree=3, gamma='auto', 
+                    coef0=0.0, shrinking=True, probability=use_probability, tol=0.001, 
+                    cache_size=200, class_weight=class_weights, verbose=False, 
+                    max_iter=-1, decision_function_shape=multi_mode, random_state=None)
 
-methods and file and line codes...
+    svm_model.fit(tr_features_scaled, tr_labels) 
+```
 
-### 6 Oversampling
 
-methods and file and line codes...
+For evaluating the model, the jk index [Mar et. al](https:doi.org/10.1109/TBME.2011.2113395)) were employed as performance measure
 
-### 7 Cross-Validation
+```python
 
-methods and file and line codes...
+    decision_ovo        = svm_model.decision_function(eval_features_scaled)
+    predict_ovo, counter    = ovo_voting_exp(decision_ovo, 4)
 
-### 8 Final Training and Test
+    perf_measures = compute_AAMI_performance_measures(predict_ovo, labels)
+```
 
-methods and file and line codes...
+### 6 Combining Ensemble of SVM
 
+Several basic combination rules can be employed to combine the decision from different SVM model configurations in a single prediction (see basic_fusion.py)
 
 # About datasets:
 
@@ -126,7 +227,7 @@ https://physionet.org/cgi-bin/atm/ATM
 #### Download via WFDB
 https://www.physionet.org/faq.shtml#downloading-databases
 
-
+decision_ovo        = svm_model.decision_function(features)
 Using the comand **rsync** you can check the datasets availability:
 
 ```
@@ -262,15 +363,20 @@ NOTE:*The beats whose Q and S points were not detected are considered as outlier
 
 # References
 
-* S. Osowski and T. H. Linh, “Ecg beat recognition using fuzzy hybrid neural network,” IEEE Transactions on Biomedical Engineering, vol. 48, no. 11, pp. 1265–1271, Nov 2001.
+* T.  Mar,  S.  Zaunseder,  J.  P.  Martnez,  M.  Llamedo,  and  R.  Poll,
+"Optimization  of  ecg  classification  by  means  of  feature  selection,"
+IEEE  Transactions  on  Biomedical  Engineering, vol.  58,  no.  8,  pp.
+2168–2177, Aug 2011
+
+* S. Osowski and T. H. Linh, "Ecg beat recognition using fuzzy hybrid neural network," IEEE Transactions on Biomedical Engineering, vol. 48, no. 11, pp. 1265–1271, Nov 2001.
 
 * de Lannoy G., François D., Delbeke J., Verleysen M. (2011) Weighted SVMs and Feature Relevance Assessment in Supervised Heart Beat Classification. In: Fred A., Filipe J., Gamboa H. (eds) Biomedical Engineering Systems and Technologies. BIOSTEC 2010. Communications in Computer and Information Science, vol 127. Springer, Berlin, Heidelberg
 
-* E. J. da S. Luz, W. R. Schwartz, G. Cmara-Chvez, and D. Menotti, “Ecg-based heartbeat classification for arrhythmia detection: A survey,” Computer Methods and Programs in Biomedicine, vol. 127, no. Supplement C, pp. 144 – 164, 2016
+* E. J. da S. Luz, W. R. Schwartz, G. Cmara-Chvez, and D. Menotti, "Ecg-based heartbeat classification for arrhythmia detection: A survey," Computer Methods and Programs in Biomedicine, vol. 127, no. Supplement C, pp. 144 – 164, 2016
 
-* P. de Chazal, M. O’Dwyer, and R. B. Reilly, “Automatic classification
-of heartbeats using ecg morphology and heartbeat interval features,”
+* P. de Chazal, M. O’Dwyer, and R. B. Reilly, "Automatic classification
+of heartbeats using ecg morphology and heartbeat interval features,"
 IEEE Transactions on Biomedical Engineering, vol. 51, no. 7, pp. 1196–1206, July 2004.
 
-* Z. Zhang, J. Dong, X. Luo, K.-S. Choi, and X. Wu, “Heartbeat classification using disease-specific feature selection,” Computers in Biology and Medicine, vol. 46, no. Supplement C, pp. 79 – 89, 2014
+* Z. Zhang, J. Dong, X. Luo, K.-S. Choi, and X. Wu, "Heartbeat classification using disease-specific feature selection," Computers in Biology and Medicine, vol. 46, no. Supplement C, pp. 79 – 89, 2014
 
