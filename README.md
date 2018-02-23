@@ -1,7 +1,5 @@
 # ECG Classification 
 
-Warning: This repository is still not finished by the author.
-
 NOTE: if this code is usefull for you, cite our work as:
 
 
@@ -156,13 +154,6 @@ In order to describe the beats for classification purpose, we employ the followi
     1. pre_RR / AVG(pre_RR)
     2. post_RR / AVG(post_RR)
     3. local_RR / AVG(local_Python (Scikit-learn)  
-| Configuration | Feature Size | Time (seconds) with prob | Time (seconds) no prob |
-|---------------|--------------|--------------------------|------------------------|
-| RR_normRR     |  8           |       590.91   |       133.50 sec / (maxRR) 92.88 |
-| Wavelets      |  21          |      1503.19   |       193.01 sec                 |
-| HOS_myMoprh   |  15          |      1004.50   |       158.19 sec                 |  
-| RR_Wav_HOS_myMorph| 44        |                 |  264.69 sec | 
-RR) 
     4. global_RR / AVG(global_RR)   
 
  **NOTE**: 
@@ -233,29 +224,12 @@ Several basic combination rules can be employed to combine the decision from dif
 
 | Classifier          | Acc. | Sens. | jk index |
 |---------------------|------|-------|----------|
-| Our Ensemble of SVMs| 0.945| 0.703 | 0.773 |
-| Zhang et al.        | 0.883| 0.868 | 0.663 |
+| Our Ensemble of SVMs| **0.945**| 0.703 | **0.773** |
+| [Zhang et al.](https://doi.org/10.1016/j.compbiomed.2013.11.019)        | 0.883| **0.868** | 0.663 |
 | Out Single SVM      | 0.884| 0.696 | 0.640 |
-| Mar et al.          | 0.899| 0.802 | 0.649 |
-| Chazal et al.       | 0.862| 0.832 | 0.612 |
+| [Mar et al.](https://doi.org/10.1109/TBME.2011.2113395)| 0.899| 0.802 | 0.649 |
+| [Chazal et al.](https://doi.org/10.1109/TBME.2004.827359)       | 0.862| 0.832 | 0.612 |
 
-
-\label{tab:exp_2}
-\begin{center}
-\begin{tabular}{l |c c | c c |c c |c c | c |c |c |c |c}
-\hline
-\multicolumn{1}{c}{} & \multicolumn{2}{c}{N} & \multicolumn{2}{c}{SVEB} & \multicolumn{2}{c}{VEB} & \multicolumn{2}{c}{F} \\
-Classifier                              & Sens    & P     & Sens    & P     & Sens    & P     & Sens    & P     &  $Acc$  &  $Sens_{AVG}$ & $j$ $index$ & $\kappa$ $index$ & $j\kappa$ $index$\\
-\hline
-Our Ensemble SVM                        & \textbf{0.959} & 0.982 & 0.781 & \textbf{0.497} & \textbf{0.947} & \textbf{0.939} & 0.124 & \textbf{0.236} & \textbf{0.945} & 0.703 & \textbf{3.165} & \textbf{0.755} & \textbf{0.773} \\ % \\(R-R Wavelets HOS OurMorph)
-Zhang \textit{et al.} \cite{ZHANG201479} & 0.889 & 0.990 & 0.791 & 0.359                   & 0.855 & 0.927 & \textbf{0.938} & 0.137 & 0.883 & \textbf{0.868} & 2.934 & 0.592 & 0.663 \\
-Our Single SVM                          & 0.895 & 0.982 & 0.670 & 0.349                   & 0.933 & 0.849 & 0.286 & 0.055 & 0.884 & 0.696 & 2.800 & 0.579 & 0.640 \\ % \\(R-R HOS OurMorph)       
-Mar \textit{et al.} \cite{5711651}       & 0.896 & 0.991 & \textbf{0.832} & 0.335          & 0.868 & 0.759 & 0.611 & 0.166 & 0.899 & 0.802 & 2.798 & 0.599 & 0.649 \\
-Chazal \textit{et al.} \cite{1306572}    & 0.871 & \textbf{0.992} & 0.760 & 0.385          & 0.803 & 0.866 & 0.894 & 0.086 & 0.862 & 0.832 & 2.767 & 0.532 & 0.612 \\
-\hline
-\end{tabular}
-\end{center}
-\end{table*}
 
 # About datasets:
 
@@ -282,7 +256,7 @@ vfdb           	MIT-BIH Malignant Ventricular Ectopy Database (33 MB)
 
 Then select the desired dataset as:
 ```
-rsync -Cavz physionet.org::mitdb /home/mondejar/dataset/ECG/mitdb
+rsync -Cavz physionet.org::mitdb /hstate-ome/mondejar/dataset/ECG/mitdb
 ```
 
 ```
