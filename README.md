@@ -371,23 +371,3 @@ NOTE:*The beats whose Q and S points were not detected are considered as outlier
 
 4. osea
 
-
-# References
-
-* T.  Mar,  S.  Zaunseder,  J.  P.  Martnez,  M.  Llamedo,  and  R.  Poll,
-"Optimization  of  ecg  classification  by  means  of  feature  selection,"
-IEEE  Transactions  on  Biomedical  Engineering, vol.  58,  no.  8,  pp.
-2168–2177, Aug 2011
-
-* S. Osowski and T. H. Linh, "Ecg beat recognition using fuzzy hybrid neural network," IEEE Transactions on Biomedical Engineering, vol. 48, no. 11, pp. 1265–1271, Nov 2001.
-
-* de Lannoy G., François D., Delbeke J., Verleysen M. (2011) Weighted SVMs and Feature Relevance Assessment in Supervised Heart Beat Classification. In: Fred A., Filipe J., Gamboa H. (eds) Biomedical Engineering Systems and Technologies. BIOSTEC 2010. Communications in Computer and Information Science, vol 127. Springer, Berlin, Heidelberg
-
-* E. J. da S. Luz, W. R. Schwartz, G. Cmara-Chvez, and D. Menotti, "Ecg-based heartbeat classification for arrhythmia detection: A survey," Computer Methods and Programs in Biomedicine, vol. 127, no. Supplement C, pp. 144 – 164, 2016
-
-* P. de Chazal, M. O’Dwyer, and R. B. Reilly, "Automatic classification
-of heartbeats using ecg morphology and heartbeat interval features,"
-IEEE Transactions on Biomedical Engineering, vol. 51, no. 7, pp. 1196–1206, July 2004.
-
-* Z. Zhang, J. Dong, X. Luo, K.-S. Choi, and X. Wu, "Heartbeat classification using disease-specific feature selection," Computers in Biology and Medicine, vol. 46, no. Supplement C, pp. 79 – 89, 2014
-
