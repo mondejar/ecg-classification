@@ -238,7 +238,6 @@ https://physionet.org/cgi-bin/atm/ATM
 #### Download via WFDB
 https://www.physionet.org/faq.shtml#downloading-databases
 
-decision_ovo        = svm_model.decision_function(features)
 Using the comand **rsync** you can check the datasets availability:
 
 ```
