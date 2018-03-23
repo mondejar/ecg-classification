@@ -255,14 +255,16 @@ vfdb           	MIT-BIH Malignant Ventricular Ectopy Database (33 MB)
 
 Then select the desired dataset as:
 ```
-rsync -Cavz physionet.org::mitdb /hstate-ome/mondejar/dataset/ECG/mitdb
+rsync -Cavz physionet.org::mitdb /home/mondejar/dataset/ECG/mitdb
 ```
 
 ```
 rsync -Cavz physionet.org::incartdb /home/mondejar/dataset/ECG/incartdb
 ```
 
-(Link file .py converter to .csv and annotations in .txt)
+Finally to convert the data as plain text files use [convert_wfdb_data_2_csv.py](https://github.com/mondejar/WFDB_utils_and_others/blob/master/convert_wfdb_data_2_csv.py). One file with the raw data and one file for annotations ground truth. 
+
+Also check the repo [WFDB_utils_and_others](https://github.com/mondejar/WFDB_utils_and_others) for more info about WFDB database conversion and the original site from [Physionet_tools](https://www.physionet.org/physiotools/wag/wag.htm).
 
 
 # MIT-Arrythmia Database
