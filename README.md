@@ -267,6 +267,10 @@ Finally to convert the data as plain text files use [convert_wfdb_data_2_csv.py]
 Also check the repo [WFDB_utils_and_others](https://github.com/mondejar/WFDB_utils_and_others) for more info about WFDB database conversion and the original site from [Physionet_tools](https://www.physionet.org/physiotools/wag/wag.htm).
 
 
+#### Download via Kaggle
+
+You can also download the raw signals (.csv) and annotations files from [kaggle.com/mondejar/mitbih-database](kaggle.com/mondejar/mitbih-database)
+
 # MIT-Arrythmia Database
 
 <b>360HZ</b>

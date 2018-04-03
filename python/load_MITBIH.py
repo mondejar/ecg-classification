@@ -2,7 +2,10 @@
 
 """
 load_MITBIH.py
-    
+
+Download .csv files and annotations from:
+    kaggle.com/mondejar/mitbih-database
+
 VARPA, University of Coruna
 Mondejar Guerra, Victor M.
 23 Oct 2017
@@ -26,6 +29,8 @@ from sklearn.decomposition import PCA, IncrementalPCA
 from features_ECG import *
 
 from numpy.polynomial.hermite import hermfit, hermval
+
+
 
 def create_features_labels_name(DS, winL, winR, do_preprocess, maxRR, use_RR, norm_RR, compute_morph, db_path, reduced_DS, leads_flag):
     
