@@ -269,7 +269,7 @@ Also check the repo [WFDB_utils_and_others](https://github.com/mondejar/WFDB_uti
 
 #### Download via Kaggle
 
-You can also download the raw signals (.csv) and annotations files from [kaggle.com/mondejar/mitbih-database](kaggle.com/mondejar/mitbih-database)
+You can also download the raw signals (.csv) and annotations files from [kaggle.com/mondejar/mitbih-database](https://www.kaggle.com/mondejar/mitbih-database)
 
 # MIT-Arrythmia Database
 
