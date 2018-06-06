@@ -1,6 +1,6 @@
 # ECG Classification 
 
-NOTE: if this code is usefull for you, cite our work as:
+A paper of this work is currently under review to be published.
 
 
 ## Description
