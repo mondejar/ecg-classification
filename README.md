@@ -6,8 +6,8 @@ A paper of this work is currently under review to be published.
 ## Description
 Code for training and test **MIT-BIH Arrhythmia Database** with:
 1. [Support Vector Machine (**SVM**) on Python](python).
-2. [Support Vector Machine (**SVM**) on MATLAB (*old*)](matlab/README.md).
-3. [Artificial Neural Networks (**ANNs**) on TensorFlow (*old*)](tensorflow/README.md)
+2. [Support Vector Machine (**SVM**) on MATLAB (*old*)](matlab).
+3. [Artificial Neural Networks (**ANNs**) on TensorFlow (*old*)](tensorflow)
 
 The data is splited following the **inter-patient** scheme proposed by [Chazal *et al*](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1306572)., i.e the training and eval set not contain any patient in common.
 
