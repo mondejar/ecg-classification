@@ -5,7 +5,7 @@ A paper of this work is currently under review to be published.
 
 ## Description
 Code for training and test **MIT-BIH Arrhythmia Database** with:
-1. [Support Vector Machine (**SVM**) on Python](python/README.md).
+1. [Support Vector Machine (**SVM**) on Python](python).
 2. [Support Vector Machine (**SVM**) on MATLAB (*old*)](matlab/README.md).
 3. [Artificial Neural Networks (**ANNs**) on TensorFlow (*old*)](tensorflow/README.md)
 
