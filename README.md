@@ -414,4 +414,4 @@ NOTE:*The beats whose Q and S points were not detected are considered as outlier
 
 
 # License
-This repository is available under [GNU GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.html).
+The code of this repository is available under [GNU GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.html).
