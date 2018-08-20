@@ -1,13 +1,13 @@
 # ECG Classification 
 
-NOTE: if this code is usefull for you, cite our work as:
+A paper of this work is currently under review to be published.
 
 
 ## Description
 Code for training and test **MIT-BIH Arrhythmia Database** with:
-1. [Support Vector Machine (**SVM**) on Python](matlab/README.md).
-2. [Support Vector Machine (**SVM**) on MATLAB (*old*)](matlab/README.md).
-3. [Artificial Neural Networks (**ANNs**) on TensorFlow (*old*)](tensorflow/README.md)
+1. [Support Vector Machine (**SVM**) on Python](python).
+2. [Support Vector Machine (**SVM**) on MATLAB (*old*)](matlab).
+3. [Artificial Neural Networks (**ANNs**) on TensorFlow (*old*)](tensorflow)
 
 The data is splited following the **inter-patient** scheme proposed by [Chazal *et al*](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1306572)., i.e the training and eval set not contain any patient in common.
 
@@ -269,7 +269,7 @@ Also check the repo [WFDB_utils_and_others](https://github.com/mondejar/WFDB_uti
 
 #### Download via Kaggle
 
-You can also download the raw signals (.csv) and annotations files from [kaggle.com/mondejar/mitbih-database](kaggle.com/mondejar/mitbih-database)
+You can also download the raw signals (.csv) and annotations files from [kaggle.com/mondejar/mitbih-database](https://www.kaggle.com/mondejar/mitbih-database)
 
 # MIT-Arrythmia Database
 
