@@ -1,17 +1,90 @@
 # ECG Classification 
 
-A paper of this work is currently under review to be published.
+The code contains the implementation of a method for the automatic classification of electrocardiograms (ECG) based on the combination of multiple Support Vector Machines (SVMs). The method relies on the time intervals between consequent beats
+and their morphology for the ECG characterisation.  Different descriptors based on wavelets, local binary patterns
+(LBP), higher order statistics (HOS) and several amplitude values were employed. 
+
+For a detailed explanation refer to the paper. 
+    
+    - Title: Heartbeat Classification Fusing Temporal and Morphological Information of ECGs via Ensemble of Classifiers. 
+    - Authors: V. Mondéjar-Guerra, J. Novo, J. Rouco, M. G.Penedo, M. Ortega
+    - Journal: Biomedical Signal Processing and Control
+    - DOI: 10.1016/j.bspc.2018.08.007
+
+If you use this code, please cite our work.
+
+## Requirements
+
+Python implementation is the most updated version of the repository. Matlab implementation is independent. Both implementations are tested under Ubuntu 16.04. 
+
+### [Python](python)
+
+- [Numpy](https://docs.scipy.org/doc/numpy-1.13.0/user/install.html)
+- [Scikit learn](http://scikit-learn.org/stable/install.html)
+- [Matplotlib](https://matplotlib.org/) (Optional)
+        
+### [Matlab](matlab)
+Performed using Matlab 2016b 64 bits 
+
+- [LibSVM](https://www.csie.ntu.edu.tw/~cjlin/libsvm/#download)
+
+*Implementation for [TensorFlow](tensorflow) is in early stage and will not be maintained by the author.*
 
 
-## Description
-Code for training and test **MIT-BIH Arrhythmia Database** with:
-1. [Support Vector Machine (**SVM**) on Python](python).
-2. [Support Vector Machine (**SVM**) on MATLAB (*old*)](matlab).
-3. [Artificial Neural Networks (**ANNs**) on TensorFlow (*old*)](tensorflow)
+## Steps (How to run)
+ 
+1. Download the dataset:
+    - a) Download via Kaggle:
+
+        The raw signals files (.csv) and annotations files can be downloaded from [kaggle.com/mondejar/mitbih-database](https://www.kaggle.com/mondejar/mitbih-database)
+
+    - b) Download via WFDB:
+
+        https://www.physionet.org/faq.shtml#downloading-databases
+
+        Using the comand **rsync** you can check the datasets availability:
+
+        ```
+        rsync physionet.org::
+        ```
+        The terminal will show all the available datasets:
+        ```
+        physionet      	PhysioNet web site, volume 1 (about 23 GB)
+        physionet-small	PhysioNet web site, excluding databases (about 5 GB)
+        ...
+        ...
+        umwdb          	Unconstrained and Metronomic Walking Database (1 MB)
+        vfdb           	MIT-BIH Malignant Ventricular Ectopy Database (33 MB)
+        ```
+
+        Then select the desired dataset as:
+        ```
+        rsync -Cavz physionet.org::mitdb /home/mondejar/dataset/ECG/mitdb
+        ```
+
+        ```
+        rsync -Cavz physionet.org::incartdb /home/mondejar/dataset/ECG/incartdb
+        ```
+
+        Finally to convert the data as plain text files use [convert_wfdb_data_2_csv.py](https://github.com/mondejar/WFDB_utils_and_others/blob/master/convert_wfdb_data_2_csv.py). One file with the raw data and one file for annotations ground truth. 
+
+        Also check the repo [WFDB_utils_and_others](https://github.com/mondejar/WFDB_utils_and_others) for more info about WFDB database conversion and the original site from [Physionet_tools](https://www.physionet.org/physiotools/wag/wag.htm).
+
+2. Run:
+
+    Run the file *run_train_SVM.py* and adapt the desired configuration to call *train_SVM.py* file. This call method will train the SVM model using the training set and evaluates the model on a different test set. 
+
+    Check and adjust the path dirs on *train_SVM.py* file.
+
+4. Combining multiples classifiers:
+    
+    Run the file *basic_fusion.py* to combine the decisions of previously trained SVM models. 
+
+
+## Methodology
 
 The data is splited following the **inter-patient** scheme proposed by [Chazal *et al*](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1306572)., i.e the training and eval set not contain any patient in common.
 
-## Method
 This code classifies the signal at beat-level following the class labeling of the [AAMI recomendation](###aami-recomendation-for-mit). 
 
 ### 1 Preprocess:
@@ -19,6 +92,7 @@ First, the baseline of the signal is substracted. Additionally, some noise remov
 
 Two median filters are applied for this purpose, of 200-ms and 600-ms.
 Note that this values depend on the frecuency sampling of the signal.
+
 
 ```python
     from scipy.signal import medfilt
@@ -42,7 +116,7 @@ In this work the annotations of the MIT-BIH arrhyhtmia was used in order to dete
 ### 3 Feature Descriptor
 In order to describe the beats for classification purpose, we employ the following  features:
 
-1. **Morphological**: for this features a window of [-90, 90] is centred along the R-peak:
+1. **Morphological**: for this features a window of [-90, 90] was centred along the R-peak:
 
     0. **RAW-Signal** (180): is the most simplier descriptor. Just employ the amplitude values from the signal delimited by the window.
     
@@ -157,8 +231,7 @@ In order to describe the beats for classification purpose, we employ the followi
     4. global_RR / AVG(global_RR)   
 
  **NOTE**: 
- *Beats having a R–R interval smaller than 150 ms or higher than 2 s most probably involve segmentation errors and are discarded*. 
- Extracted from: Weighted Conditional Random Fields for Supervised Interpatient Heartbeat Classification* 
+ *Beats having a R–R interval smaller than 150 ms or higher than 2 s most probably involve segmentation errors and are discarded*. "Weighted Conditional Random Fields for Supervised Interpatient Heartbeat Classification"* 
 
 ### 4 Normalization of the features
 
@@ -230,46 +303,9 @@ Several basic combination rules can be employed to combine the decision from dif
 | [Mar et al.](https://doi.org/10.1109/TBME.2011.2113395)| 0.899| 0.802 | 0.649 |
 | [Chazal et al.](https://doi.org/10.1109/TBME.2004.827359)       | 0.862| 0.832 | 0.612 |
 
-
 # About datasets:
 
 https://physionet.org/cgi-bin/atm/ATM
-
-#### Download via WFDB
-https://www.physionet.org/faq.shtml#downloading-databases
-
-Using the comand **rsync** you can check the datasets availability:
-
-```
-rsync physionet.org::
-```
-The terminal will show all the available datasets:
-```
-physionet      	PhysioNet web site, volume 1 (about 23 GB)
-physionet-small	PhysioNet web site, excluding databases (about 5 GB)
-...
-...
-umwdb          	Unconstrained and Metronomic Walking Database (1 MB)
-vfdb           	MIT-BIH Malignant Ventricular Ectopy Database (33 MB)
-```
-
-Then select the desired dataset as:
-```
-rsync -Cavz physionet.org::mitdb /home/mondejar/dataset/ECG/mitdb
-```
-
-```
-rsync -Cavz physionet.org::incartdb /home/mondejar/dataset/ECG/incartdb
-```
-
-Finally to convert the data as plain text files use [convert_wfdb_data_2_csv.py](https://github.com/mondejar/WFDB_utils_and_others/blob/master/convert_wfdb_data_2_csv.py). One file with the raw data and one file for annotations ground truth. 
-
-Also check the repo [WFDB_utils_and_others](https://github.com/mondejar/WFDB_utils_and_others) for more info about WFDB database conversion and the original site from [Physionet_tools](https://www.physionet.org/physiotools/wag/wag.htm).
-
-
-#### Download via Kaggle
-
-You can also download the raw signals (.csv) and annotations files from [kaggle.com/mondejar/mitbih-database](https://www.kaggle.com/mondejar/mitbih-database)
 
 # MIT-Arrythmia Database
 
@@ -376,3 +412,6 @@ NOTE:*The beats whose Q and S points were not detected are considered as outlier
 
 4. osea
 
+
+# License
+This repository is available under [GNU GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.html).
