@@ -1,7 +1,0 @@
-MIT DB	mitlist		MIT-BIH Arrhythmia Database
-MITx DB	mitxlist	MIT-BIH Arrhythmia Database (excluding paced records)
-AHA DB	ahalist		AHA Database for Evaluation of Ventricular Arrhythmia Detectors
-AHAx DB	ahaxlist	AHA Database (excluding paced records)
-ESC DB	esclist		European ST-T Database
-NST DB	nstlist		Noise Stress Test Database
-CU DB	culist		Creighton University Sustained Ventricular Arrhythmia Database

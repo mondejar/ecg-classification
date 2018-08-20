@@ -1,6 +1,0 @@
-# Use this record on a UNIX system to read directly from a 9-track tape with
-# 4096-byte blocks.
-
-4096 2 250
-/dev/rmt0 16 0 12 0 0 0 4096
-/dev/rmt0 16 0 12 0 0 0 4096

@@ -1,9 +1,0 @@
-xform 4 125 7500 22:00:23 20/07/1995
-xform.dat 212x4 2456/mV 12 0 221 31380 0 V
-xform.dat 212 13.335(-1600)/mmHg 12 0 -700 26762 0 ABP
-xform.dat 212x4 1053/mV 12 0 2 -15184 0 II
-xform.dat 212 39.8(-1605)/mmHg 12 0 141 -17199 0 PAP
-#Produced by xform from record mimicdb/237/237, beginning at 9:19:45
-#record xform, signal 0 <- record mimicdb/237/237, signal 1
-#record xform, signal 1 <- record mimicdb/237/237, signal 2
-#record xform, signal 2 <- record mimicdb/237/237, signal 0

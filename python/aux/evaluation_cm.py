@@ -87,6 +87,55 @@ def compute_cohen_kappa(confusion_matrix):
 
     return kappa, prob_observed, prob_expected
 
+
+
+# Export to filename.txt file the performance measure score
+def write_AAMI_results(performance_measures, filename):
+
+    f = open(filename, "w") 
+
+    f.write("Ijk: " + str(format(performance_measures.Ijk, '.4f')) + "\n")
+    f.write("Ij: " + str(format(performance_measures.Ij, '.4f'))+ "\n")
+    f.write("Cohen's Kappa: " + str(format(performance_measures.kappa, '.4f'))+ "\n\n")
+
+    # Conf matrix
+    f.write("Confusion Matrix:"+ "\n\n")
+    f.write("\n".join(str(elem) for elem in performance_measures.confusion_matrix.astype(int))+ "\n\n")
+
+    f.write("Overall ACC: " + str(format(performance_measures.Overall_Acc, '.4f'))+ "\n\n")
+
+    f.write("mean Acc: " + str(format(np.average(performance_measures.Acc[:]), '.4f'))+ "\n")
+    f.write("mean Recall: " + str(format(np.average(performance_measures.Recall[:]), '.4f'))+ "\n")
+    f.write("mean Precision: " + str(format(np.average(performance_measures.Precision[:]), '.4f'))+ "\n")
+  
+
+    f.write("N:"+ "\n\n")
+    f.write("Sens: " + str(format(performance_measures.Recall[0], '.4f'))+ "\n")
+    f.write("Prec: " + str(format(performance_measures.Precision[0], '.4f'))+ "\n")
+    f.write("Acc: " + str(format(performance_measures.Acc[0], '.4f'))+ "\n")
+
+    f.write("SVEB:"+ "\n\n")
+    f.write("Sens: " + str(format(performance_measures.Recall[1], '.4f'))+ "\n")
+    f.write("Prec: " + str(format(performance_measures.Precision[1], '.4f'))+ "\n")
+    f.write("Acc: " + str(format(performance_measures.Acc[1], '.4f'))+ "\n")
+
+    f.write("VEB:"+ "\n\n")
+    f.write("Sens: " + str(format(performance_measures.Recall[2], '.4f'))+ "\n")
+    f.write("Prec: " + str(format(performance_measures.Precision[2], '.4f'))+ "\n")
+    f.write("Acc: " + str(format(performance_measures.Acc[2], '.4f'))+ "\n")
+
+    f.write("F:"+ "\n\n")
+    f.write("Sens: " + str(format(performance_measures.Recall[3], '.4f'))+ "\n")
+    f.write("Prec: " + str(format(performance_measures.Precision[3], '.4f'))+ "\n")
+    f.write("Acc: " + str(format(performance_measures.Acc[3], '.4f'))+ "\n")
+
+
+    f.close()
+
+
+
+
+
 def compute_AAMI_performance_measures(conf_mat):
     n_classes = 4 #5
     pf_ms = performance_measures(n_classes)
@@ -137,55 +186,47 @@ def compute_AAMI_performance_measures(conf_mat):
     return pf_ms
 
 
-# Export to filename.txt file the performance measure score
-def write_AAMI_results(performance_measures, filename):
-
-    f = open(filename, "w") 
-
-    f.write("Ijk: " + str(format(performance_measures.Ijk, '.4f')) + "\n")
-    f.write("Ij: " + str(format(performance_measures.Ij, '.4f'))+ "\n")
-    f.write("Cohen's Kappa: " + str(format(performance_measures.kappa, '.4f'))+ "\n\n")
-
-    # Conf matrix
-    f.write("Confusion Matrix:"+ "\n\n")
-    f.write("\n".join(str(elem) for elem in performance_measures.confusion_matrix.astype(int))+ "\n\n")
-
-    f.write("Overall ACC: " + str(format(performance_measures.Overall_Acc, '.4f'))+ "\n\n")
-
-    f.write("mean Recall: " + str(format(np.average(performance_measures.Recall[:]), '.4f'))+ "\n")
-    f.write("mean Precision: " + str(format(np.average(performance_measures.Precision[:]), '.4f'))+ "\n")
-  
-
-    f.write("N:"+ "\n\n")
-    f.write("Sens: " + str(format(performance_measures.Recall[0], '.4f'))+ "\n")
-    f.write("Prec: " + str(format(performance_measures.Precision[0], '.4f'))+ "\n")
-
-    f.write("SVEB:"+ "\n\n")
-    f.write("Sens: " + str(format(performance_measures.Recall[1], '.4f'))+ "\n")
-    f.write("Prec: " + str(format(performance_measures.Precision[1], '.4f'))+ "\n")
-
-    f.write("VEB:"+ "\n\n")
-    f.write("Sens: " + str(format(performance_measures.Recall[2], '.4f'))+ "\n")
-    f.write("Prec: " + str(format(performance_measures.Precision[2], '.4f'))+ "\n")
-
-    f.write("F:"+ "\n\n")
-    f.write("Sens: " + str(format(performance_measures.Recall[3], '.4f'))+ "\n")
-    f.write("Prec: " + str(format(performance_measures.Precision[3], '.4f'))+ "\n")
-
-    f.close()
-
 results_path = '/home/mondejar/Dropbox/ECG/code/ecg_classification/python/results/ovo/MLII/'
 
 # Our single SVM
-conf_mat = np.array([[39446, 2404, 340, 1843], [443, 1374, 186, 47], [28, 162, 3005, 25], [240, 2, 35, 111]])
+#conf_mat = np.array([[39446, 2404, 340, 1843], [443, 1374, 186, 47], [28, 162, 3005, 25], [240, 2, 35, 111]])
 
+# Our features individually
+## RR C_0.001_IJK_0.44
+conf_mat = np.array([[33881, 2531, 2385, 5236], [263, 1036, 725, 26], [63, 350, 2584, 223], [43, 2, 4, 339]])
 conf_mat = conf_mat.astype(float)
 perf_measures = compute_AAMI_performance_measures(conf_mat)
-write_AAMI_results( perf_measures, results_path + 'Single_SVM_score_Ijk_' + str(format(perf_measures.Ijk, '.2f')) + '_DS2.txt')
+write_AAMI_results( perf_measures, results_path + 'RR_score_Ijk_' + str(format(perf_measures.Ijk, '.2f')) + '_DS2.txt')
+
+
+## HOS
+conf_mat = np.array([[25171, 11907, 1125, 5830], [340, 1474, 39, 197], [212, 486, 2369, 153], [31, 5, 55, 297]])
+conf_mat = conf_mat.astype(float)
+perf_measures = compute_AAMI_performance_measures(conf_mat)
+write_AAMI_results( perf_measures, results_path + 'HOS_score_Ijk_' + str(format(perf_measures.Ijk, '.2f')) + '_DS2.txt')
+
+## W C_0.001 IJK 0.38
+conf_mat = np.array([[37752, 2484, 3722, 75], [1755, 217, 76, 2], [98, 27, 3087, 8], [12, 1, 370, 5]])
+conf_mat = conf_mat.astype(float)
+perf_measures = compute_AAMI_performance_measures(conf_mat)
+write_AAMI_results( perf_measures, results_path + 'W_score_Ijk_' + str(format(perf_measures.Ijk, '.2f')) + '_DS2.txt')
+
+
+## Our Morph C_0.001 IJK 0.35
+conf_mat = np.array([[20601, 11239, 1817, 10376], [327, 1450, 16, 257], [302, 165, 2483, 270], [277, 78, 21, 12]])
+conf_mat = conf_mat.astype(float)
+perf_measures = compute_AAMI_performance_measures(conf_mat)
+write_AAMI_results( perf_measures, results_path + 'Our_morph_score_Ijk_' + str(format(perf_measures.Ijk, '.2f')) + '_DS2.txt')
+
+## LBP C_0.001 IJK 0.17
+conf_mat = np.array([[32771, 1211, 4256, 5795], [1922, 11, 51, 66], [847, 91, 1688, 594], [27, 0, 360, 1]])
+conf_mat = conf_mat.astype(float)
+perf_measures = compute_AAMI_performance_measures(conf_mat)
+write_AAMI_results( perf_measures, results_path + 'LBP_score_Ijk_' + str(format(perf_measures.Ijk, '.2f')) + '_DS2.txt')
 
 # Chazal et al
-conf_mat = np.array([[38444, 1904, 303, 3509], [173, 1395, 252, 16], [117, 321, 2504, 176], [33, 1, 7, 347]])
+#conf_mat = np.array([[38444, 1904, 303, 3509], [173, 1395, 252, 16], [117, 321, 2504, 176], [33, 1, 7, 347]])
 
-conf_mat = conf_mat.astype(float)
-perf_measures = compute_AAMI_performance_measures(conf_mat)
-write_AAMI_results( perf_measures, results_path + 'Chazal_score_Ijk_' + str(format(perf_measures.Ijk, '.2f')) + '_DS2.txt')
+#conf_mat = conf_mat.astype(float)
+#perf_measures = compute_AAMI_performance_measures(conf_mat)
+#write_AAMI_results( perf_measures, results_path + 'Chazal_score_Ijk_' + str(format(perf_measures.Ijk, '.2f')) + '_DS2.txt')

@@ -1,1 +1,0 @@
-%_topdir %(echo $HOME)/rpmbuild

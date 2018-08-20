@@ -1,7 +1,0 @@
-# Use this record on a UNIX system to read directly from a 9-track AHA DB
-# distribution tape with 4096-byte blocks.  The tape must be positioned to
-# the beginning of the ECG data file before using this record.
-
-ahatape 2 250
-/dev/nrmt0 16 0 12 0 0 0 4096
-/dev/nrmt0 16 0 12 0 0 0 4096

@@ -127,6 +127,7 @@ def write_AAMI_results(performance_measures, filename):
 
     f.write("Overall ACC: " + str(format(performance_measures.Overall_Acc, '.4f'))+ "\n\n")
 
+    f.write("mean Acc: " + str(format(np.average(performance_measures.Acc[:]), '.4f'))+ "\n")
     f.write("mean Recall: " + str(format(np.average(performance_measures.Recall[:]), '.4f'))+ "\n")
     f.write("mean Precision: " + str(format(np.average(performance_measures.Precision[:]), '.4f'))+ "\n")
   
@@ -134,18 +135,22 @@ def write_AAMI_results(performance_measures, filename):
     f.write("N:"+ "\n\n")
     f.write("Sens: " + str(format(performance_measures.Recall[0], '.4f'))+ "\n")
     f.write("Prec: " + str(format(performance_measures.Precision[0], '.4f'))+ "\n")
+    f.write("Acc: " + str(format(performance_measures.Acc[0], '.4f'))+ "\n")
 
     f.write("SVEB:"+ "\n\n")
     f.write("Sens: " + str(format(performance_measures.Recall[1], '.4f'))+ "\n")
     f.write("Prec: " + str(format(performance_measures.Precision[1], '.4f'))+ "\n")
+    f.write("Acc: " + str(format(performance_measures.Acc[1], '.4f'))+ "\n")
 
     f.write("VEB:"+ "\n\n")
     f.write("Sens: " + str(format(performance_measures.Recall[2], '.4f'))+ "\n")
     f.write("Prec: " + str(format(performance_measures.Precision[2], '.4f'))+ "\n")
+    f.write("Acc: " + str(format(performance_measures.Acc[2], '.4f'))+ "\n")
 
     f.write("F:"+ "\n\n")
     f.write("Sens: " + str(format(performance_measures.Recall[3], '.4f'))+ "\n")
     f.write("Prec: " + str(format(performance_measures.Precision[3], '.4f'))+ "\n")
+    f.write("Acc: " + str(format(performance_measures.Acc[3], '.4f'))+ "\n")
 
 
     f.close()
