@@ -4,14 +4,22 @@ The code contains the implementation of a method for the automatic classificatio
 and their morphology for the ECG characterisation.  Different descriptors based on wavelets, local binary patterns
 (LBP), higher order statistics (HOS) and several amplitude values were employed. 
 
-For a detailed explanation refer to the paper. 
-    
-    - Title: Heartbeat Classification Fusing Temporal and Morphological Information of ECGs via Ensemble of Classifiers. 
-    - Authors: V. Mondéjar-Guerra, J. Novo, J. Rouco, M. G.Penedo, M. Ortega
-    - Journal: Biomedical Signal Processing and Control
-    - DOI: 10.1016/j.bspc.2018.08.007
+For a detailed explanation refer to the paper: [http://www.sciencedirect.com/science/article/pii/S1746809418301976](http://www.sciencedirect.com/science/article/pii/S1746809418301976)
 
-If you use this code, please cite our work.
+If you use this code for your publications, please cite it as:
+
+    @article{MONDEJARGUERRA201941,
+    author = {Mond{\'{e}}jar-Guerra, V and Novo, J and Rouco, J and Penedo, M G and Ortega, M},
+    doi = {https://doi.org/10.1016/j.bspc.2018.08.007},
+    issn = {1746-8094},
+    journal = {Biomedical Signal Processing and Control},
+    pages = {41--48},
+    title = {{Heartbeat classification fusing temporal and morphological information of ECGs via ensemble of classifiers}},
+    volume = {47},
+    year = {2019}
+    }
+
+
 
 ## Requirements
 
