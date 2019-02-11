@@ -390,7 +390,7 @@ DS_2 Test: = 100, 103, 105, 111, 113, 117, 121, 123, 200, 202, 210, 212, 213, 21
 
 | Class|N|SVEB|VEB|F|Q|
 |------|-|-|-|-|-|
-| instances| 44743|1837|3447|388|8005|    
+| instances| 44743|1837|3447|388|8|    
  
 # INCART Database 
 https://www.physionet.org/pn3/incartdb/
