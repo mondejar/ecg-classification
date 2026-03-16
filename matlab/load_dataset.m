@@ -28,7 +28,7 @@ function [data, label, signal_patients, db, index_per_record, selected_beat] = l
 % patients_test = [100, 103, 105, 111, 113, 117, 121, 123, 200, 202, 210, 212, 213, 214, 219, 221, 222, 228, 231, 232, 233, 234];
 % load_dataset('mitdb', patients_train, 90, 90, 3, true, false, false, false, true, true)
 
-path_dataset = '/home/mondejar/dataset/ECG/';
+path_dataset = 'C:/Users/18515/Desktop/FYP/dataset/ECG/';
 full_path = [path_dataset, dataset_name, '/m_learning/'];
 %full_path = ['/home/mondejar/Dropbox/ECG/code/'];
 
@@ -84,8 +84,13 @@ if(isempty(patient_list) == false)
         datasetAux.temporal_features{p} = db.temporal_features{pos};
         
         if(use_HB)
-            datasetAux.HB_intervals{p} = db.HB_intervals{pos};
-            datasetAux.fiducial_points{p} = db.fiducial_points{pos};
+            datasetAux.HB_intervals{p} = db.temporal_features{pos};
+            %datasetAux.fiducial_points{p} = db.fiducial_points{pos};
+            if isfield(db,'fiducial_points')
+         datasetAux.fiducial_points{p} = db.fiducial_points{pos};
+else
+    datasetAux.fiducial_points{p} = [];
+end
         else
             datasetAux.selected_R{p} = db.selected_R{pos};
         end  
@@ -161,6 +166,7 @@ end
 %% Wave Signal
 if(sum(morphology_type == 1 ))
     % Wavelets
+    features_wave = cell(size(db.signals,2),1);
     features_wave{size(db.signals, 2)} = [];
     
     for(p = 1:size(db.signals, 2))
@@ -636,8 +642,11 @@ for(p = 1:size(db.signals,2))
             db.temporal_features{p}.post_R / max_temp_f;
             db.temporal_features{p}.local_R / max_temp_f;
             db.temporal_features{p}.global_R/ max_temp_f];
-        
-        % Rhythm Labeling
+        features_patient = [features_patient;
+        db.temporal_features{p}.RR_ratio;
+        db.temporal_features{p}.RR_std;
+        db.temporal_features{p}.RMSSD;
+        db.temporal_features{p}.RR_diff];
         % (Amp_pre, Amp_post, Amp, RR_interval, . )
         % seven rhythm labels to discern between four beat rhythm types
         
